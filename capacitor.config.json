@@ -1,6 +1,6 @@
 {
   "appId": "ph.buhay.app",
-  "appName": "BUHAY",
+  "appName": "BUHAY-AH",
   "webDir": "docs/app",
   "android": {
     "allowMixedContent": false,

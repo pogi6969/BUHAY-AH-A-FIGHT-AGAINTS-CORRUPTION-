@@ -48,19 +48,19 @@ jobs:
           ./gradlew assembleDebug --no-daemon
 
       - name: Collect APK
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk BUHAY.apk
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk BUHAY-AH.apk
 
       - uses: actions/upload-artifact@v4
         with:
-          name: BUHAY-apk
-          path: BUHAY.apk
+          name: BUHAY-AH-apk
+          path: BUHAY-AH.apk
 
       - name: Publish to the apk-latest release (download link used by the website)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete apk-latest --yes --cleanup-tag || true
-          gh release create apk-latest BUHAY.apk \
-            --title "BUHAY for Android (latest build)" \
-            --notes "Installable Android package of the BUHAY app, built from commit ${GITHUB_SHA::7}. Allow installs from your browser when prompted." \
+          gh release create apk-latest BUHAY-AH.apk \
+            --title "BUHAY-AH for Android (latest build)" \
+            --notes "Installable Android package of the BUHAY-AH app, built from commit ${GITHUB_SHA::7}. Allow installs from your browser when prompted." \
             --target "$GITHUB_SHA"

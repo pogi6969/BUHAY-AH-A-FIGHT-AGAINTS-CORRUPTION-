@@ -3,15 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>BUHAY</title>
+<title>BUHAY-AH</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="BUHAY prices public buildings and bridges from their plans using DPWH and international standards, gives a lean start quotation, and flags over-budgeted contracts. Download the app.">
+<meta name="description" content="BUHAY-AH designs public buildings and bridges from a requirement or a budget, prices them under DPWH and international standards, gives a lean start quotation, and flags over-budgeted contracts. Download the app.">
 <meta name="theme-color" content="#13213a">
 <link rel="icon" href="app/icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;600&family=Source+Sans+3:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="app/vendor/leaflet/leaflet.css">
 <style>
 /* Layout: long-scroll download page. Full-bleed bands, content in a 1120px column.
    Identity: blueprint navy ink + survey grid paper, DPWH-sign yellow reserved for the download actions. */
@@ -114,19 +113,24 @@ a { color: var(--blue); }
 .t b { display: block; font-family: var(--f-mono); font-size: 1.6rem; }
 .t p { color: var(--muted); font-size: 0.92rem; margin-top: 6px; }
 
-/* map */
-#map { height: 520px; border-radius: 12px; border: 1px solid var(--line); background: var(--sheet-2); margin-top: 22px; }
-.leaflet-container { font-family: var(--f-body); background: var(--sheet-2); }
-.mapbar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: end; }
-.seg { display: inline-flex; background: var(--sheet); border: 1px solid var(--line); border-radius: 9px; padding: 3px; gap: 3px; }
-.seg button { border: 0; background: none; font: inherit; font-weight: 600; color: var(--muted); padding: 7px 14px; border-radius: 7px; cursor: pointer; }
-.seg button[aria-pressed="true"] { background: var(--navy); color: var(--navy-ink); }
-.legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; font-size: 0.88rem; color: var(--muted); }
-.legend i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
-.mapstats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-top: 16px; }
-.mapstats div { background: var(--sheet); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
-.mapstats b { display: block; font-family: var(--f-mono); font-size: 1.4rem; }
-.mapstats span { color: var(--muted); font-size: 0.86rem; }
+/* design studio demo */
+.demo { display: grid; grid-template-columns: 1fr; gap: 18px; margin-top: 24px; }
+@media (min-width: 900px) { .demo { grid-template-columns: 320px 1fr; } }
+.panel { background: var(--sheet); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.panel label { font-size: 0.85rem; font-weight: 600; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+.panel select, .panel input { font: inherit; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--sheet-2); color: var(--ink); }
+.panel input[type=range] { padding: 0; accent-color: var(--blue); }
+.budgetval { font-family: var(--f-mono); font-size: 1.6rem; font-weight: 600; color: var(--ink); }
+.opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; min-width: 0; }
+.opt { position: relative; background: var(--sheet); border: 1px solid var(--line); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.opt.best { box-shadow: 0 0 0 2px var(--sign) inset; border-color: var(--sign); }
+.opt .tag { position: absolute; top: 8px; right: 8px; background: var(--sign); color: var(--sign-ink); font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 6px; border-radius: 4px; }
+.opt b { font-size: 1.02rem; }
+.opt span { color: var(--muted); font-size: 0.86rem; }
+.opt .cost { font-family: var(--f-mono); color: var(--ink); }
+.thumb { background: #fff; border: 1px solid var(--line); border-radius: 8px; height: 130px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.thumb svg { width: 100%; height: 100%; }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin-top: 18px; }
 
 /* sdg */
 .sdgs { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 28px; }
@@ -157,12 +161,12 @@ footer .wrap { display: flex; flex-direction: column; gap: 10px; }
 <body>
 <header class="nav">
   <div class="wrap">
-    <a class="brand" href="#top" aria-label="BUHAY home">
+    <a class="brand" href="#top" aria-label="BUHAY-AH home">
       <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#13213a"/><path d="M6 40h9l5-14 6 14h5l4-9 4 9h3c2-9 7-14 9-14s7 5 9 14" fill="none" stroke="#f2b200" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 46h48" stroke="#6aa5ff" stroke-width="3" stroke-linecap="round"/></svg>
-      <b>BUHAY</b>
+      <b>BUHAY-AH</b>
     </a>
     <nav aria-label="Sections">
-      <a href="#how">How it works</a><a href="#map-section">Map</a><a href="#sdg">SDGs</a><a href="#research">Research</a><a class="get" href="#download">Download</a>
+      <a href="#how">How it works</a><a href="#designs">Design studio</a><a href="#sdg">SDGs</a><a href="#research">Research</a><a class="get" href="#download">Download</a>
     </nav>
   </div>
 </header>
@@ -170,19 +174,19 @@ footer .wrap { display: flex; flex-direction: column; gap: 10px; }
 <section class="hero" id="top">
   <div class="wrap">
     <div class="stack">
-      <div class="eyebrow">Public buildings &amp; bridges · DPWH &amp; international standards</div>
-      <h1>BUHAY<span>Buildings-and-Bridges Unit-cost Hybrid Analytics and Yardstick</span></h1>
-      <p class="lede">Give it the plan of a school building, health station, evacuation center or bridge. BUHAY takes off the quantities, prices them with DPWH pay items and gives you a <b>lean start quotation</b>, a fair estimate and a ceiling. Give it the contract amount and it tells you whether the project is over-budgeted.</p>
+      <div class="eyebrow">Design · quote · check public buildings &amp; bridges</div>
+      <h1>BUHAY-AH<span>Buildings-and-Bridges Unit-cost Hybrid Analytics and Yardstick for Accountable and Honest infrastructure</span></h1>
+      <p class="lede">No blueprint yet? Tell BUHAY-AH what the school, health station, evacuation center or bridge must hold, or how much money you have. It designs the facility, takes off every quantity under NSCP, DPWH and AASHTO rules, and gives you a <b>lean start quotation</b>, a fair estimate and a ceiling. Give it a contract amount and it tells you whether the project is over-budgeted.</p>
       <div class="btns">
-        <a class="btn sign" id="apkBtn" href="https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/releases/download/apk-latest/BUHAY.apk"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-4.5-4.5M12 15l4.5-4.5M4.5 19.5h15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Download for Android</a>
+        <a class="btn sign" id="apkBtn" href="https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/releases/download/apk-latest/BUHAY-AH.apk"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-4.5-4.5M12 15l4.5-4.5M4.5 19.5h15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Download for Android</a>
         <a class="btn blue" href="app/index.html#home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m0 0-5-5m5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Open the web app</a>
         <a class="btn" href="#download">Install on iPhone or PC</a>
       </div>
       <p class="muted" style="font-size:0.92rem">Free · works offline after first load · your plans stay on your device</p>
     </div>
     <div class="phones" aria-label="App screens">
-      <div class="phone up"><img src="assets/screen-quote.png" alt="BUHAY quotation screen showing lean, standard and ceiling estimates for a 2-storey school building"></div>
-      <div class="phone"><img src="assets/screen-check.png" alt="BUHAY check screen flagging a padded contract with risk index 83"></div>
+      <div class="phone up"><img src="assets/screen-design.png" alt="BUHAY-AH design studio showing designs that fit a ₱25 million budget"></div>
+      <div class="phone"><img src="assets/screen-quote.png" alt="BUHAY-AH quotation screen showing lean, standard and ceiling estimates"></div>
     </div>
   </div>
 </section>
@@ -203,28 +207,34 @@ footer .wrap { display: flex; flex-direction: column; gap: 10px; }
 <section class="band" id="how" aria-labelledby="how-h">
   <div class="wrap">
     <div class="eyebrow">How it works</div>
-    <h2 id="how-h">From plan to fair price in four steps</h2>
+    <h2 id="how-h">From a need or a budget to a fair price</h2>
     <div class="steps">
-      <div class="step"><span class="n">01</span><h3>Provide the plan</h3><p>Start from a reference plan, import a DXF floor plan, or type the dimensions: storeys, spans, widths, foundation.</p></div>
-      <div class="step"><span class="n">02</span><h3>Quantity take-off</h3><p>Concrete, rebar, formwork, masonry, roofing, piles and girders are computed with NSCP 2015, DPWH Blue Book and AASHTO rules.</p></div>
-      <div class="step"><span class="n">03</span><h3>Quotation</h3><p>DPWH pay items and Bicol unit costs build the ABC with D.O. 197 s. 2016 / D.O. 30 s. 2025 markups, in lean, standard and ceiling tiers.</p></div>
-      <div class="step"><span class="n">04</span><h3>Over-budget check</h3><p>The over-budget ratio, an XGBoost cost model, and an Isolation Forest combine into the BUHAY Risk Index. SHAP explains every result.</p></div>
+      <div class="step"><span class="n">01</span><h3>Start anywhere</h3><p>A requirement (classrooms, beds, staff, evacuees, stalls), a budget, a DXF floor plan, or one of 55 design templates.</p></div>
+      <div class="step"><span class="n">02</span><h3>Design</h3><p>Reusable space modules on DepEd, DOH, NBC and DSWD norms are laid out into a schematic plan you can edit, save and combine.</p></div>
+      <div class="step"><span class="n">03</span><h3>Quotation</h3><p>Quantities from NSCP 2015, DPWH Blue Book and AASHTO rules, priced with DPWH pay items into lean, standard and ceiling ABCs.</p></div>
+      <div class="step"><span class="n">04</span><h3>Over-budget check</h3><p>The over-budget ratio, an XGBoost cost model and an Isolation Forest combine into the BUHAY-AH Risk Index. SHAP explains every result.</p></div>
     </div>
     <div class="tiersdemo" id="tiersDemo" aria-live="polite"></div>
     <p class="muted" style="margin-top:10px;font-size:0.92rem" id="tiersNote"></p>
   </div>
 </section>
 
-<section class="band" id="map-section" aria-labelledby="map-h" style="padding-top:20px">
+<section class="band" id="designs" aria-labelledby="des-h" style="padding-top:20px">
   <div class="wrap">
-    <div class="mapbar">
-      <div><div class="eyebrow">BUHAY Map · Bicol Region V</div><h2 id="map-h">Where the risk sits</h2></div>
-      <div class="seg" role="group" aria-label="Filter projects"><button type="button" data-k="all" aria-pressed="true">All</button><button type="button" data-k="building" aria-pressed="false">Buildings</button><button type="button" data-k="bridge" aria-pressed="false">Bridges</button></div>
+    <div class="eyebrow">Design studio · try it here</div>
+    <h2 id="des-h">What can your budget build?</h2>
+    <div class="demo">
+      <div class="panel">
+        <label for="dUsage">Facility<select id="dUsage"><option value="school">School building (classrooms)</option><option value="health">Health facility (beds)</option><option value="office">Government office (staff)</option><option value="evacuation">Evacuation center (persons)</option><option value="market">Public market (stalls)</option><option value="dorm">Dormitory (beds)</option></select></label>
+        <label for="dBudget">Budget<input id="dBudget" type="range" min="5000000" max="80000000" step="1000000" value="25000000"></label>
+        <span class="budgetval" id="dBudgetVal">₱25.00M</span>
+        <p class="muted" style="font-size:0.88rem">BUHAY-AH evaluates every storey count and capacity, prices each design from its quantities (lean start quotation, Albay 2025 prices, lot up to 60 m long) and keeps only designs that no other design beats on both capacity and cost.</p>
+      </div>
+      <div class="opts" id="dOpts" aria-live="polite"></div>
     </div>
-    <div id="map" role="region" aria-label="Map of screened projects in Bicol"></div>
-    <div class="legend"><span><i style="background:var(--bad)"></i>High risk (BRI ≥ 30)</span><span><i style="background:var(--warn)"></i>For review</span><span><i style="background:var(--ok)"></i>Within fair range</span></div>
-    <div class="mapstats" id="mapStats"></div>
-    <p class="muted" style="margin-top:12px;font-size:0.9rem">Pins show the 300-project simulated benchmark used in the research (SBD-300). They are not real DPWH contracts. In the app, your own screened contracts appear on the same map.</p>
+    <h3 style="margin-top:34px">From the design library</h3>
+    <div class="gallery" id="gallery"></div>
+    <p class="muted" style="margin-top:12px;font-size:0.9rem">Schematic designs for estimating, not for construction. In the app every design can be edited space by space, saved, and added as a wing of another design.</p>
   </div>
 </section>
 
@@ -245,11 +255,11 @@ footer .wrap { display: flex; flex-direction: column; gap: 10px; }
 <section class="band dark" id="download" aria-labelledby="dl-h">
   <div class="wrap">
     <div class="eyebrow">Download</div>
-    <h2 id="dl-h">Get BUHAY</h2>
+    <h2 id="dl-h">Get BUHAY-AH</h2>
     <div class="dl">
-      <div class="card feature" style="color:var(--ink)"><h3>Android app (APK)</h3><ol><li>Tap the button to download <span class="mono">BUHAY.apk</span>.</li><li>Open it and allow “Install unknown apps” for your browser.</li><li>Open BUHAY from your home screen.</li></ol><a class="btn sign" href="https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/releases/download/apk-latest/BUHAY.apk">Download APK</a></div>
+      <div class="card feature" style="color:var(--ink)"><h3>Android app (APK)</h3><ol><li>Tap the button to download <span class="mono">BUHAY-AH.apk</span>.</li><li>Open it and allow “Install unknown apps” for your browser.</li><li>Open BUHAY-AH from your home screen.</li></ol><a class="btn sign" href="https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/releases/download/apk-latest/BUHAY-AH.apk">Download APK</a></div>
       <div class="card" style="color:var(--ink)"><h3>Install on any phone or PC</h3><ol><li>Open the web app in Chrome, Edge or Safari.</li><li>Android/PC: tap <b>Install app</b> or the install icon in the address bar.</li><li>iPhone: Share → <b>Add to Home Screen</b>.</li></ol><a class="btn blue" href="app/index.html#home">Open the web app</a></div>
-      <div class="card" style="color:var(--ink)"><h3>Offline package</h3><ol><li>Download the ZIP and extract it.</li><li>Open <span class="mono">index.html</span> in any browser.</li><li>Quotations, checks and the map work without a server.</li></ol><a class="btn" href="downloads/BUHAY-App-Offline.zip">Download ZIP</a></div>
+      <div class="card" style="color:var(--ink)"><h3>Offline package</h3><ol><li>Download the ZIP and extract it.</li><li>Open <span class="mono">index.html</span> in any browser.</li><li>Designs, quotations and checks work without a server.</li></ol><a class="btn" href="downloads/BUHAY-AH-App-Offline.zip">Download ZIP</a></div>
       <div class="card" style="color:var(--ink)"><h3>Sample plan</h3><ol><li>Download the sample DXF floor plan (2-classroom school).</li><li>In the app: Quote → Import plan file.</li><li>Set storeys and spacing, read the quotation.</li></ol><a class="btn" href="app/data/sample-plan.dxf">Download DXF</a></div>
     </div>
   </div>
@@ -259,14 +269,15 @@ footer .wrap { display: flex; flex-direction: column; gap: 10px; }
   <div class="wrap paper">
     <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
       <div class="eyebrow">The research</div>
-      <h2 id="res-h" style="font-size:clamp(1.7rem,4vw,2.4rem)">BUHAY: A blueprint-driven quantity take-off and hybrid machine-learning system for standards-based start quotations and over-budget detection in public buildings and bridges</h2>
-      <div class="abstract">The study builds a standards-based quantity take-off engine for public buildings and bridges in Bicol Region V and couples it with Multiple Linear Regression, XGBoost, Isolation Forest and SHAP. On a 300-project simulated benchmark with known overpricing, the standard estimate came within 5.2% (buildings) and 7.7% (bridges) mean absolute percentage error of fair awarded costs, and the BUHAY Risk Index caught 94.4% of padded contracts (AUC 0.987) where an Isolation Forest alone caught 27.8%.</div>
-      <div class="btns"><a class="btn blue" href="downloads/BUHAY-Research-Paper.pdf">Read the paper (PDF)</a><a class="btn" href="downloads/BUHAY-Research-Paper.docx">Word version (DOCX)</a></div>
+      <h2 id="res-h" style="font-size:clamp(1.7rem,4vw,2.4rem)">BUHAY-AH: A budget-to-blueprint design generator, standards-based quantity take-off and hybrid machine-learning system for start quotations and over-budget detection in public buildings and bridges</h2>
+      <div class="abstract" id="abstractText">BUHAY-AH turns a requirement or a budget into a schematic design, prices it with a standards-based quantity take-off, and screens contract amounts with Multiple Linear Regression, XGBoost, Isolation Forest and SHAP. On a 300-project simulated benchmark with known overpricing, the standard estimate came within 5.2% (buildings) and 7.7% (bridges) of fair awarded costs, and the BUHAY-AH Risk Index caught 94.4% of padded contracts (AUC 0.987) where an Isolation Forest alone caught 27.8%.</div>
+      <div class="btns"><a class="btn blue" href="downloads/BUHAY-AH-Research-Paper.pdf">Read the paper (PDF)</a><a class="btn" href="downloads/BUHAY-AH-Research-Paper.docx">Word version (DOCX)</a><a class="btn" href="downloads/BUHAY-AH-Rationale-Script.pdf">Rationale script (PDF)</a></div>
+      <div class="btns"><a class="btn" href="downloads/BUHAY-AH-PR2-Introduction-Methodology.pptx">Slides: Introduction &amp; Methods</a><a class="btn" href="downloads/BUHAY-AH-PR2-Full-Research.pptx">Slides: Full research</a></div>
       <div class="team"><div class="avatar" aria-hidden="true">EB</div><div><b>Enrique Miguel C. Buban</b><div class="muted">Lead researcher</div></div></div>
     </div>
     <div class="results" id="results">
       <div><b>94.4%</b><span>of injected overpricing flagged (recall)</span></div>
-      <div><b>0.987</b><span>ROC AUC of the BUHAY Risk Index</span></div>
+      <div><b>0.987</b><span>ROC AUC of the BUHAY-AH Risk Index</span></div>
       <div><b>5.2%</b><span>MAPE, standard estimate vs. fair awarded cost, buildings</span></div>
       <div><b>7.7%</b><span>MAPE, standard estimate vs. fair awarded cost, bridges</span></div>
       <div><b>14.4%</b><span>average saving of the lean start quotation vs. the standard estimate, buildings</span></div>
@@ -277,20 +288,26 @@ footer .wrap { display: flex; flex-direction: column; gap: 10px; }
 
 <footer>
   <div class="wrap">
-    <p><b>BUHAY</b> is a screening tool. A flag means a contract deserves a closer look by the implementing office, the Commission on Audit, the Office of the Ombudsman or the Independent Commission for Infrastructure. It is not proof of irregularity.</p>
-    <p>Unit costs are indicative 2025 Bicol rates and can be edited in the app. Map boundaries: OCHA/PSA via faeldon/philippines-json-maps. Map tiles © OpenStreetMap contributors.</p>
+    <p><b>BUHAY-AH</b> is a screening tool. A flag means a contract deserves a closer look by the implementing office, the Commission on Audit, the Office of the Ombudsman or the Independent Commission for Infrastructure. It is not proof of irregularity.</p>
+    <p>Unit costs are indicative 2025 Bicol rates and can be edited in the app. Designs are schematic and must be completed by licensed architects and engineers before construction.</p>
     <p>© 2026 Enrique Miguel C. Buban · <a href="https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-">Source code</a></p>
   </div>
 </footer>
 
-<script src="app/vendor/leaflet/leaflet.js"></script>
 <script src="app/js/engine.js"></script>
+<script src="app/js/designs.js"></script>
 <script>
 (function () {
   'use strict';
-  var E = window.BuhayEngine;
+  var E = window.BuhayEngine, DS = window.BuhayDesign;
   function pesoM(n) { return '₱' + (n / 1e6).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + 'M'; }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function capText(d) {
+    var c = d.capacity, p = [];
+    if (c.classrooms) p.push(c.classrooms + ' classrooms'); if (c.beds) p.push(c.beds + ' beds'); if (c.consult && !c.beds) p.push(c.consult + ' consultation rooms');
+    if (c.staff) p.push(c.staff + ' staff'); if (c.persons) p.push(c.persons + ' persons'); if (c.stalls) p.push(c.stalls + ' stalls');
+    return p.join(' · ');
+  }
 
   // live quotation of a reference plan, computed by the same engine as the app
   var ref = E.ARCHETYPES.filter(function (a) { return a.id === 'sb-2s4c'; })[0];
@@ -299,48 +316,34 @@ footer .wrap { display: flex; flex-direction: column; gap: 10px; }
     '<div class="t start"><span class="tag">Start quotation</span><span class="eyebrow">Lean</span><b>' + pesoM(q.start) + '</b><p>Code-minimum reinforcement, basic finishes, every NSCP and PD 1096 requirement kept.</p></div>' +
     '<div class="t"><span class="eyebrow">Standard fair estimate</span><b>' + pesoM(q.fair) + '</b><p>Typical DPWH design intensities and finishes.</p></div>' +
     '<div class="t"><span class="eyebrow">Ceiling</span><b>' + pesoM(q.ceiling) + '</b><p>Highest defensible price. A contract above it is flagged.</p></div>';
-  document.getElementById('tiersNote').textContent = 'Live example: ' + ref.name + ', Albay, 2025 prices, computed in your browser by the BUHAY engine.';
+  document.getElementById('tiersNote').textContent = 'Live example: ' + ref.name + ', Albay, 2025 prices, computed in your browser by the BUHAY-AH engine.';
 
-  // map
-  var map = null, projects = [], kind = 'all';
-  var css = getComputedStyle(document.documentElement);
-  function col(s) { return (css.getPropertyValue({ red: '--bad', amber: '--warn', green: '--ok' }[s]) || '#888').trim(); }
-  function draw(geo) {
-    if (typeof L === 'undefined') return;
-    if (!map) {
-      map = L.map('map', { scrollWheelZoom: false }).setView([13.25, 123.55], 8);
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap contributors' }).addTo(map);
-      if (geo) L.geoJSON(geo, { style: { color: '#1f5fad', weight: 1.2, fillColor: '#1f5fad', fillOpacity: 0.06 }, onEachFeature: function (f, l) { l.bindTooltip(f.properties.name, { sticky: true }); } }).addTo(map);
-      map.pins = L.layerGroup().addTo(map);
-    }
-    map.pins.clearLayers();
-    var shown = projects.filter(function (p) { return kind === 'all' || p.kind === kind; });
-    shown.forEach(function (p) {
-      L.circleMarker([p.lat, p.lon], { radius: p.status === 'red' ? 7 : 5, color: '#fff', weight: 1, fillColor: col(p.status), fillOpacity: 0.92 })
-        .bindPopup('<b>' + esc(p.label) + '</b><br><span style="font-family:monospace">' + esc(p.id) + '</span> · ' + esc(p.province) + ' · ' + p.year +
-          '<br>Contract ' + pesoM(p.awarded) + ' · BUHAY standard ' + pesoM(p.fair) + '<br>Over-budget ratio <b>' + p.obr.toFixed(2) + '</b> · Risk index <b>' + p.bri.toFixed(0) + '</b><br><i>Simulated benchmark record</i>')
-        .addTo(map.pins);
-    });
-    var red = shown.filter(function (p) { return p.status === 'red'; });
-    var excess = red.reduce(function (s, p) { return s + Math.max(0, p.awarded - p.ceiling); }, 0);
-    document.getElementById('mapStats').innerHTML =
-      '<div><b>' + shown.length + '</b><span>projects screened</span></div>' +
-      '<div><b>' + red.length + '</b><span>high-risk flags</span></div>' +
-      '<div><b>' + pesoM(excess) + '</b><span>above the ceiling in flagged projects</span></div>' +
-      '<div><b>' + pesoM(shown.reduce(function (s, p) { return s + p.awarded; }, 0)) + '</b><span>total contract value</span></div>';
+  // budget-to-design demo
+  var usageSel = document.getElementById('dUsage'), budget = document.getElementById('dBudget');
+  function run() {
+    var B = +budget.value, U = DS.USAGE[usageSel.value];
+    document.getElementById('dBudgetVal').textContent = pesoM(B);
+    var res = DS.fromBudget(usageSel.value, B, { basis: 'start', maxLength: 60 });
+    var el = document.getElementById('dOpts');
+    if (!res.options.length) { el.innerHTML = '<div class="opt"><b>Not enough for the smallest ' + esc(U.label.toLowerCase()) + '.</b><span>Move the budget up.</span></div>'; return; }
+    el.innerHTML = res.options.map(function (o) {
+      return '<div class="opt' + (o.best ? ' best' : '') + '">' + (o.best ? '<span class="tag">Most ' + esc(U.capLabel) + '</span>' : '') +
+        '<div class="thumb">' + DS.planSVG(o.design, 0, { bare: true }) + '</div><b>' + o.k + ' ' + esc(U.capLabel) + ', ' + o.N + ' storey' + (o.N > 1 ? 's' : '') + '</b>' +
+        '<span>' + o.design.L.toFixed(1) + ' × ' + o.design.W.toFixed(1) + ' m · ' + Math.round(o.design.gfa).toLocaleString() + ' m²</span>' +
+        '<span class="cost">' + pesoM(o.cost) + ' · ' + Math.round(o.cost / B * 100) + '% of budget</span></div>';
+    }).join('') + '<p class="muted" style="grid-column:1/-1;font-size:0.85rem">' + res.evaluations + ' designs evaluated in your browser.</p>';
   }
-  document.querySelectorAll('.seg button').forEach(function (b) {
-    b.addEventListener('click', function () {
-      kind = b.dataset.k;
-      document.querySelectorAll('.seg button').forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
-      draw();
-    });
-  });
-  Promise.all([
-    fetch('app/data/projects.json').then(function (r) { return r.json(); }),
-    fetch('app/data/bicol.geojson').then(function (r) { return r.json(); })
-  ]).then(function (res) { projects = res[0].projects; draw(res[1]); })
-    .catch(function () { document.getElementById('mapStats').innerHTML = '<div><span>The map data could not be loaded. Open the web app to see the map.</span></div>'; draw(null); });
+  usageSel.addEventListener('change', run); budget.addEventListener('input', run); run();
+
+  // gallery
+  var pick = ['sch-2s6', 'sch-3s12', 'bhs-birthing', 'hospital-25', 'mun-hall', 'evac-200', 'market-100', 'court-std'];
+  document.getElementById('gallery').innerHTML = pick.map(function (id) {
+    var t = DS.TEMPLATES.filter(function (x) { return x.id === id; })[0], d = DS.build(t), qq = DS.quote(d);
+    return '<div class="opt"><div class="thumb">' + DS.planSVG(d, 0, { bare: true }) + '</div><b>' + esc(t.name) + '</b><span>' + esc(capText(d)) + '</span><span class="cost">Start ' + pesoM(qq.start) + ' · standard ' + pesoM(qq.fair) + '</span></div>';
+  }).join('') + DS.BRIDGE_TEMPLATES.filter(function (b) { return ['br-rcdg60', 'br-truss45'].indexOf(b.id) >= 0; }).map(function (b) {
+    var qq = E.quote(b.plan);
+    return '<div class="opt"><div class="thumb">' + DS.bridgeSVG(b.plan) + '</div><b>' + esc(b.name) + '</b><span>' + esc(E.SUPERSTRUCTURES[b.plan.superstructure].label) + '</span><span class="cost">Start ' + pesoM(qq.start) + ' · standard ' + pesoM(qq.fair) + '</span></div>';
+  }).join('');
 }());
 </script>
 </body>
