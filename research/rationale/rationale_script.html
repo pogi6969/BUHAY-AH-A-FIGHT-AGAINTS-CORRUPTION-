@@ -62,12 +62,12 @@
     <div class="brand">BUHAY-AH</div>
     <div class="bar"></div>
     <div class="t1">RATIONALE SCRIPT</div>
-    <div class="t2">The whole research explained, and the part Mathematical and Computational Sciences played in it</div>
-    <div class="title">BUHAY-AH: A Budget-to-Blueprint Design Generator, Standards-Based Quantity Take-Off, and Hybrid Machine Learning System for Start Quotations and Over-Budget Detection in Public Buildings and Bridges</div>
+    <div class="t2">The whole research explained, and the part Mathematics and Computational Science played in it</div>
+    <div class="title">BUHAY-AH: A Budget-to-Blueprint Design Generator, Standards-Based Quantity Take-Off, and Hybrid Machine Learning System for Start Quotations and Over-Budget Detection in Public Buildings, Bridges, Airports and Seaports</div>
   </div>
   <div class="who">
     <b>Enrique Miguel C. Buban</b><br>Lead Researcher<br><br>
-    <span class="meta">Category: Mathematical and Computational Sciences (MCS) · 2026</span>
+    <span class="meta">Category: Mathematics and Computational Science (MCS) · 2026</span>
   </div>
 </section>
 
@@ -80,7 +80,7 @@
     <tr><td>1</td><td>Opening</td><td class="n">0:45</td><td>Title</td></tr>
     <tr><td>2</td><td>Rationale: the problem and the gaps</td><td class="n">1:30</td><td>Background, gaps</td></tr>
     <tr><td>3</td><td>What BUHAY-AH is: objective and research questions</td><td class="n">1:00</td><td>Objective</td></tr>
-    <tr><td>4</td><td>How Mathematical and Computational Sciences built it</td><td class="n">4:00</td><td>Framework, methods</td></tr>
+    <tr><td>4</td><td>How Mathematics and Computational Science built it</td><td class="n">4:00</td><td>Framework, methods</td></tr>
     <tr><td>5</td><td>Results by research question</td><td class="n">2:30</td><td>Findings</td></tr>
     <tr><td>6</td><td>SDGs, significance and limits</td><td class="n">1:00</td><td>Impact</td></tr>
     <tr><td>7</td><td>Conclusion and closing</td><td class="n">0:45</td><td>Conclusion</td></tr>
@@ -121,7 +121,7 @@
   <h2>Part 3. What BUHAY-AH Is</h2>
   <div class="cue">SLIDE: Objective of the Study and the six research questions.</div>
   <div class="say">
-    <p>BUHAY-AH stands for <b>Buildings-and-Bridges Unit-cost Hybrid Analytics and Yardstick for Accountable and Honest infrastructure</b>. <i>Buhay</i> means life, because public infrastructure carries lives.</p>
+    <p>BUHAY-AH now covers schools, hospitals, airports, seaports, PUV terminals, bridges, runways and piers. BUHAY-AH stands for <b>Buildings-and-Bridges Unit-cost Hybrid Analytics and Yardstick for Accountable and Honest infrastructure</b>. <i>Buhay</i> means life, because public infrastructure carries lives.</p>
     <p>This study aimed to develop BUHAY-AH, a budget-to-blueprint design generator, standards-based quantity take-off and hybrid machine-learning system that produces start quotations and detects over-budgeted public buildings and bridges in Bicol Region V. Specifically, it sought to answer six questions:</p>
     <ol>
       <li>What plan variables and derived indicators can be extracted from building and bridge plans and engineering standards to estimate construction cost?</li>
@@ -129,16 +129,17 @@
       <li>How accurately does the standards-based quantity take-off engine estimate cost, through its lean start quotation, standard fair estimate and ceiling?</li>
       <li>How do Multiple Linear Regression and XGBoost perform in predicting construction cost under leave-one-out cross-validation?</li>
       <li>How effectively do the over-budget ratio, the XGBoost residual, the Isolation Forest and the hybrid BUHAY-AH Risk Index detect over-budgeted contracts?</li>
+      <li>How can the generator and engine be extended to hospitals, airport and seaport terminals, jeepney, UV Express and bus terminals, airfield pavements and port structures?</li>
       <li>How can the system be deployed as a mobile application, a download website and an explainable interface?</li>
     </ol>
   </div>
   <figure><img src="../figures/diagram_conceptual.png" alt=""><figcaption>Conceptual paradigm: requirement, budget or plan in; designs, quotations and flags out.</figcaption></figure>
 
 <!-- ============================== PART 4 -->
-  <h2>Part 4. How Mathematical and Computational Sciences Built BUHAY-AH</h2>
+  <h2>Part 4. How Mathematics and Computational Science Built BUHAY-AH</h2>
   <div class="cue">SLIDE: "MCS is the engine" — the theoretical paradigm (five theories) then the method diagram.</div>
   <div class="say">
-    <p>This is a Mathematical and Computational Sciences study because every part of BUHAY-AH is a mathematical model that a computer evaluates. There is no survey and no experiment on people. The problem was expressed as mathematics, solved as algorithms, and validated with statistics. Four kinds of mathematics work together: <b>deterministic modeling</b> to compute cost from standards, <b>combinatorial optimization</b> to design from a budget, <b>statistical and machine learning</b> to learn from past projects and detect outliers, and <b>simulation</b> to build a benchmark where the truth is known.</p>
+    <p>This is a Mathematics and Computational Science study because every part of BUHAY-AH is a mathematical model that a computer evaluates. There is no survey and no experiment on people. The problem was expressed as mathematics, solved as algorithms, and validated with statistics. Four kinds of mathematics work together: <b>deterministic modeling</b> to compute cost from standards, <b>combinatorial optimization</b> to design from a budget, <b>statistical and machine learning</b> to learn from past projects and detect outliers, and <b>simulation</b> to build a benchmark where the truth is known.</p>
   </div>
 
   <table>
@@ -273,7 +274,10 @@
   </table>
   <div class="say"><p>The Risk Index caught 34 of 36 padded contracts. The Isolation Forest alone caught only 27.8 percent, which proves the validation gap was real: a padded ordinary building looks normal unless you know what it should cost. For buildings alone the index reached an F1 of 0.927. Most false alarms were bridges with pile lengths longer than planned, which is why the paper recommends site geotechnical data before a bridge is flagged.</p></div>
 
-  <h3>RQ6. Deployment</h3>
+  <h3>RQ6. Hospitals, terminals, airfields and ports</h3>
+  <div class="say"><p>The same engine and generator were extended with 51 new space modules: DOH Level 1 to 3 hospitals, airport and seaport passenger terminals, jeepney, UV Express and bus terminals with their loading bays, runways, taxiways and aprons under ICAO and FAA rules, and piers and wharves on piles under OCDI and PIANC guidance. The library now holds 80 designs, and all 210 space-standard checks pass. On SBD-EXT, a 180-project simulated benchmark built the same way as SBD-300, the standard estimate was within 6.40 percent of fair awarded costs, and the standards-based rule caught 21 of 22 padded contracts, recall 95.5 percent, without any machine-learning model.</p></div>
+
+  <h3>RQ7. Deployment</h3>
   <div class="say"><p>BUHAY-AH runs as an installable offline app with five screens: Home, Design, Quote, Check and Library. It produces floor plans, elevations, 3D models, bills of quantities, quotations, line-item checks of a contractor's BOQ, and SHAP explanations. It is distributed as an Android package, an offline ZIP and a download website.</p></div>
   <div class="two">
     <figure><img src="../figures/app_design_budget.png" alt=""><figcaption>Design from a budget</figcaption></figure>
@@ -303,7 +307,7 @@
 <section class="page"></section>
 <section>
   <h2>Anticipated Questions from the Judges</h2>
-  <div class="qa"><p class="q">1. Why is this a Mathematical and Computational Sciences project and not engineering or social science?</p><p>The contribution is the mathematics and the algorithms: a deterministic cost model, an integer program with a Pareto filter, statistical and machine-learning models, an anomaly detector, Shapley-value explanations and a Monte Carlo benchmark, all implemented and validated computationally. No human participants or physical experiments are involved.</p></div>
+  <div class="qa"><p class="q">1. Why is this a Mathematics and Computational Science project and not engineering or social science?</p><p>The contribution is the mathematics and the algorithms: a deterministic cost model, an integer program with a Pareto filter, statistical and machine-learning models, an anomaly detector, Shapley-value explanations and a Monte Carlo benchmark, all implemented and validated computationally. No human participants or physical experiments are involved.</p></div>
   <div class="qa"><p class="q">2. Your data are simulated. How do we know it works on real contracts?</p><p>We do not claim that yet. Itemized bills of quantities for awarded DPWH buildings and bridges are not publicly available in machine-readable form, and recall cannot be measured without known overpricing. The benchmark tests the method where the truth is known; the first recommendation is validation on actual contracts. The cost engine itself uses real DPWH pay items and real code provisions.</p></div>
   <div class="qa"><p class="q">3. Isn't the standards engine just recovering its own numbers?</p><p>No. Each benchmark project carries hidden variation the plan does not show: unit prices ±7%, reinforcement ±10%, concrete ±6%, MEPF ±8%, earthworks, and pile lengths up to 35% longer than planned. That is why bridge error is higher and why most false alarms are bridges.</p></div>
   <div class="qa"><p class="q">4. Why not use binary search for the budget-to-design problem?</p><p>Because cost is not monotonic in capacity. One more classroom can force a new floor, an extra stair or bigger footings, so a budget that cannot afford k classrooms might afford k + 1 in a different layout. Exhaustive enumeration is exact; the largest search evaluated 604 complete designs and still finished in 37 milliseconds or less.</p></div>
@@ -321,7 +325,7 @@
   <table>
     <tr><th style="width:18mm">Time</th><th style="width:58mm">Visual</th><th>Narration</th></tr>
     <tr><td>0:00–0:12</td><td>News headlines: collapsed bridge, flood-control audit</td><td>A 1.2-billion-peso bridge collapsed a month after it opened. Billions in flood-control funds are under investigation. Before a contract is signed, who checks the price?</td></tr>
-    <tr><td>0:12–0:25</td><td>BUHAY-AH logo, app on a phone</td><td>This is BUHAY-AH: an app that designs, prices and checks public buildings and bridges, built with Mathematical and Computational Sciences.</td></tr>
+    <tr><td>0:12–0:25</td><td>BUHAY-AH logo, app on a phone</td><td>This is BUHAY-AH: an app that designs, prices and checks public buildings and bridges, built with Mathematics and Computational Science.</td></tr>
     <tr><td>0:25–0:45</td><td>Design screen: budget slider, cards appear</td><td>Type a budget. An optimization algorithm searches every design from 55 standard space modules and returns the largest school, clinic or evacuation center it can honestly build, in milliseconds.</td></tr>
     <tr><td>0:45–1:05</td><td>Quote screen: three tiers, BOQ table</td><td>Give it a plan, and a quantity take-off under the National Structural Code and DPWH pay items builds the bill of quantities and three prices: a lean start quotation, a standard fair estimate and a ceiling.</td></tr>
     <tr><td>1:05–1:25</td><td>Check screen: gauge to red, SHAP bars</td><td>Enter a contract amount. Regression, XGBoost, an Isolation Forest and Shapley values from game theory combine into one risk index, and explain why a price looks high.</td></tr>
