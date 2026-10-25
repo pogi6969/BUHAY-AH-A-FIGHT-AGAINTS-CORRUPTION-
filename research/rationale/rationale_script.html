@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BUHAY-AH Rationale Script</title>
+<style>
+  @page { size: A4; margin: 20mm 18mm 20mm 18mm; }
+  :root { --ink:#14202e; --mute:#5a6675; --line:#d5dbe3; --navy:#12345a; --gold:#e3a51a; --soft:#f3f6fa; --cue:#8a4b00; }
+  * { box-sizing: border-box; }
+  body { font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.5; color: var(--ink); margin: 0; background: #fff; }
+  h1, h2, h3, .sans { font-family: "Liberation Sans", Arial, Helvetica, sans-serif; }
+  h1 { font-size: 20pt; color: var(--navy); margin: 0 0 6pt; letter-spacing: .3pt; }
+  h2 { font-size: 15pt; color: var(--navy); margin: 18pt 0 6pt; border-bottom: 2px solid var(--gold); padding-bottom: 3pt; break-after: avoid; }
+  h3 { font-size: 12.5pt; color: var(--navy); margin: 12pt 0 4pt; break-after: avoid; }
+  p { margin: 0 0 7pt; text-align: justify; }
+  .page { break-after: page; }
+  .cover { height: 250mm; display: flex; flex-direction: column; justify-content: space-between; text-align: center; }
+  .cover .top { margin-top: 30mm; }
+  .cover .brand { font-family: "Liberation Sans", Arial, sans-serif; font-weight: 700; font-size: 44pt; letter-spacing: 2pt; color: var(--navy); }
+  .cover .bar { width: 80mm; height: 4pt; background: var(--gold); margin: 8pt auto 14pt; }
+  .cover .t1 { font-family: "Liberation Sans", Arial, sans-serif; font-size: 18pt; font-weight: 700; }
+  .cover .t2 { font-size: 13pt; color: var(--mute); margin-top: 6pt; }
+  .cover .title { font-size: 12.5pt; max-width: 150mm; margin: 22pt auto 0; font-style: italic; }
+  .cover .who { font-size: 13pt; }
+  .cover .who b { font-size: 14pt; }
+  .cue { font-family: "Liberation Sans", Arial, sans-serif; font-size: 9.5pt; color: var(--cue); background: #fff5e3; border-left: 3px solid var(--gold); padding: 3pt 7pt; margin: 6pt 0 6pt; break-inside: avoid; }
+  .say { border-left: 3px solid var(--navy); padding: 2pt 0 2pt 10pt; margin: 4pt 0 8pt; }
+  .say p { text-align: left; }
+  .meta { font-family: "Liberation Sans", Arial, sans-serif; font-size: 9.5pt; color: var(--mute); }
+  table { border-collapse: collapse; width: 100%; margin: 6pt 0 10pt; font-size: 10.5pt; break-inside: avoid; }
+  th, td { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 4pt 6pt; text-align: left; vertical-align: top; }
+  th { font-family: "Liberation Sans", Arial, sans-serif; font-size: 9.5pt; background: var(--soft); color: var(--navy); }
+  td.n, th.n { text-align: right; white-space: nowrap; }
+  .eq { text-align: center; margin: 6pt 0 8pt; break-inside: avoid; }
+  .eq img { max-width: 100%; }
+  .eq .lab { display: block; font-family: "Liberation Sans", Arial, sans-serif; font-size: 8.5pt; color: var(--mute); }
+  .math { border: 1px solid var(--line); border-radius: 4pt; padding: 8pt 10pt; margin: 8pt 0 10pt; background: #fbfcfe; break-inside: avoid; }
+  .math h3 { margin-top: 0; }
+  .math .row { display: grid; grid-template-columns: 30mm 1fr; gap: 3pt 10pt; font-size: 11pt; }
+  .math .row b { font-family: "Liberation Sans", Arial, sans-serif; font-size: 9pt; color: var(--mute); text-transform: uppercase; letter-spacing: .4pt; padding-top: 2pt; }
+  figure { margin: 8pt 0 10pt; text-align: center; break-inside: avoid; }
+  figure img { max-width: 100%; max-height: 85mm; border: 1px solid var(--line); }
+  figcaption { font-family: "Liberation Sans", Arial, sans-serif; font-size: 9pt; color: var(--mute); margin-top: 3pt; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8pt; }
+  .two figure img { max-height: 62mm; }
+  ol, ul { margin: 0 0 8pt 18pt; padding: 0; }
+  li { margin: 0 0 3pt; }
+  .qa { break-inside: avoid; margin: 0 0 8pt; }
+  .qa .q { font-weight: 700; }
+  .stat { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6pt; margin: 8pt 0 10pt; }
+  .stat div { border: 1px solid var(--line); border-top: 3px solid var(--gold); padding: 6pt; text-align: center; }
+  .stat b { display: block; font-family: "Liberation Sans", Arial, sans-serif; font-size: 16pt; color: var(--navy); }
+  .stat span { font-size: 9.5pt; color: var(--mute); }
+  .note { font-size: 10pt; color: var(--mute); font-style: italic; }
+</style>
+</head>
+<body>
+
+<!-- ============================== COVER -->
+<section class="page cover">
+  <div class="top">
+    <div class="brand">BUHAY-AH</div>
+    <div class="bar"></div>
+    <div class="t1">RATIONALE SCRIPT</div>
+    <div class="t2">The whole research explained, and the part Mathematical and Computational Sciences played in it</div>
+    <div class="title">BUHAY-AH: A Budget-to-Blueprint Design Generator, Standards-Based Quantity Take-Off, and Hybrid Machine Learning System for Start Quotations and Over-Budget Detection in Public Buildings and Bridges</div>
+  </div>
+  <div class="who">
+    <b>Enrique Miguel C. Buban</b><br>Lead Researcher<br><br>
+    <span class="meta">Category: Mathematical and Computational Sciences (MCS) · 2026</span>
+  </div>
+</section>
+
+<!-- ============================== GUIDE -->
+<section>
+  <h2>How to Use This Script</h2>
+  <p>This script is read aloud during the oral presentation and the judges' interview. Orange boxes are stage cues (slide to show, action, timing); text inside the blue rule is what the presenter says. Numbers come from the research paper; every result is from the simulated benchmark SBD-300 and must be described that way.</p>
+  <table>
+    <tr><th>Part</th><th>Content</th><th class="n">Time</th><th>Slides</th></tr>
+    <tr><td>1</td><td>Opening</td><td class="n">0:45</td><td>Title</td></tr>
+    <tr><td>2</td><td>Rationale: the problem and the gaps</td><td class="n">1:30</td><td>Background, gaps</td></tr>
+    <tr><td>3</td><td>What BUHAY-AH is: objective and research questions</td><td class="n">1:00</td><td>Objective</td></tr>
+    <tr><td>4</td><td>How Mathematical and Computational Sciences built it</td><td class="n">4:00</td><td>Framework, methods</td></tr>
+    <tr><td>5</td><td>Results by research question</td><td class="n">2:30</td><td>Findings</td></tr>
+    <tr><td>6</td><td>SDGs, significance and limits</td><td class="n">1:00</td><td>Impact</td></tr>
+    <tr><td>7</td><td>Conclusion and closing</td><td class="n">0:45</td><td>Conclusion</td></tr>
+    <tr><td></td><td><b>Total</b></td><td class="n"><b>11:30</b></td><td></td></tr>
+  </table>
+  <p>Also included: anticipated judges' questions with answers, a 2-minute video explainer script, and a one-page equation sheet.</p>
+
+<!-- ============================== PART 1 -->
+  <h2>Part 1. Opening</h2>
+  <div class="cue">SLIDE: Title. Stand still, look at the panel, pause one beat before speaking.</div>
+  <div class="say">
+    <p>Good day, honorable judges. I am Enrique Miguel C. Buban, and this is BUHAY-AH.</p>
+    <p>Every peso padded into a public building is a classroom that does not get built, a clinic bed that does not exist, a bridge that is thinner than it should be. In 2025, a newly opened 1.2-billion-peso bridge in Isabela collapsed less than a month after completion. The question behind this research is simple: <i>before a contract is signed, can anyone tell what a building or bridge should really cost?</i></p>
+    <p>BUHAY-AH answers that question with mathematics. Give it a plan, and it prices it the way an engineer would. Give it only a budget, and it designs the largest facility that budget can honestly build. Give it a contract amount, and it tells you whether that price is defensible.</p>
+  </div>
+
+<!-- ============================== PART 2 -->
+  <h2>Part 2. Rationale: Why This Study Was Needed</h2>
+  <div class="cue">SLIDE: Background figures (CPI 2025, flood-control audit, CCMC, Cabagan bridge).</div>
+  <div class="say">
+    <p>Construction is one of the sectors most exposed to corruption worldwide; the Infrastructure Transparency Initiative estimates that 10 to 30 percent of investment in publicly funded infrastructure is lost to corruption, mismanagement and inefficiency.</p>
+    <p>The Philippines shows the same pattern. In the 2025 Corruption Perceptions Index, the country scored 32 out of 100 and ranked 120th of 182. In August 2025 it was reported that about 20 percent of 545.64 billion pesos in flood-control projects went to only 15 contractors, and an Independent Commission for Infrastructure was created to investigate. In Cebu City, the Commission on Audit found the Cebu City Medical Center building overstated by about 62.64 million pesos, partly because value-added tax was computed at 12 percent instead of the 5 percent the DPWH rule prescribes. That is not a hidden deal. That is arithmetic that nobody checked.</p>
+  </div>
+  <div class="cue">SLIDE: The five gaps.</div>
+  <div class="say">
+    <p>My earlier study, CORA, screened road contracts with machine learning. Building on it, I found five gaps.</p>
+    <ol>
+      <li><b>Scope gap.</b> Cost screening research has focused on roads. Buildings and bridges have different structures: frames, footings, girders, piles.</li>
+      <li><b>Reference gap.</b> Data-driven models learn what similar projects <i>have</i> cost. If past prices were padded, the model learns the padding. They cannot say what a project <i>should</i> cost.</li>
+      <li><b>Validation gap.</b> Anomaly detectors are usually tested where nobody knows which contracts are truly overpriced, so their recall cannot be measured.</li>
+      <li><b>Design gap.</b> Communities often know only what they need and how much they have. Without a plan, there is no independent price at all.</li>
+      <li><b>Access gap.</b> Most models stay in notebooks. The people closest to a project, barangay officials, school heads, auditors, reporters, need a tool on their phones.</li>
+    </ol>
+    <p>BUHAY-AH was built to close all five.</p>
+  </div>
+
+<!-- ============================== PART 3 -->
+  <h2>Part 3. What BUHAY-AH Is</h2>
+  <div class="cue">SLIDE: Objective of the Study and the six research questions.</div>
+  <div class="say">
+    <p>BUHAY-AH stands for <b>Buildings-and-Bridges Unit-cost Hybrid Analytics and Yardstick for Accountable and Honest infrastructure</b>. <i>Buhay</i> means life, because public infrastructure carries lives.</p>
+    <p>This study aimed to develop BUHAY-AH, a budget-to-blueprint design generator, standards-based quantity take-off and hybrid machine-learning system that produces start quotations and detects over-budgeted public buildings and bridges in Bicol Region V. Specifically, it sought to answer six questions:</p>
+    <ol>
+      <li>What plan variables and derived indicators can be extracted from building and bridge plans and engineering standards to estimate construction cost?</li>
+      <li>How can schematic designs be generated from a requirement or a budget, through a modular design library, budget-to-design optimization, and compliance with design and space standards?</li>
+      <li>How accurately does the standards-based quantity take-off engine estimate cost, through its lean start quotation, standard fair estimate and ceiling?</li>
+      <li>How do Multiple Linear Regression and XGBoost perform in predicting construction cost under leave-one-out cross-validation?</li>
+      <li>How effectively do the over-budget ratio, the XGBoost residual, the Isolation Forest and the hybrid BUHAY-AH Risk Index detect over-budgeted contracts?</li>
+      <li>How can the system be deployed as a mobile application, a download website and an explainable interface?</li>
+    </ol>
+  </div>
+  <figure><img src="../figures/diagram_conceptual.png" alt=""><figcaption>Conceptual paradigm: requirement, budget or plan in; designs, quotations and flags out.</figcaption></figure>
+
+<!-- ============================== PART 4 -->
+  <h2>Part 4. How Mathematical and Computational Sciences Built BUHAY-AH</h2>
+  <div class="cue">SLIDE: "MCS is the engine" — the theoretical paradigm (five theories) then the method diagram.</div>
+  <div class="say">
+    <p>This is a Mathematical and Computational Sciences study because every part of BUHAY-AH is a mathematical model that a computer evaluates. There is no survey and no experiment on people. The problem was expressed as mathematics, solved as algorithms, and validated with statistics. Four kinds of mathematics work together: <b>deterministic modeling</b> to compute cost from standards, <b>combinatorial optimization</b> to design from a budget, <b>statistical and machine learning</b> to learn from past projects and detect outliers, and <b>simulation</b> to build a benchmark where the truth is known.</p>
+  </div>
+
+  <table>
+    <tr><th>MCS discipline</th><th>Where it is used in BUHAY-AH</th><th>What it produces</th></tr>
+    <tr><td>Geometry and measurement</td><td>Shoelace area and perimeter of DXF outlines; footprint, wall, slab and girder geometry</td><td>Plan variables from a drawing</td></tr>
+    <tr><td>Deterministic mathematical modeling</td><td>Quantity take-off under NSCP 2015, DPWH and AASHTO; footing sizing; reinforcement intensities</td><td>Itemized bill of quantities</td></tr>
+    <tr><td>Linear algebra and arithmetic of prices</td><td>EDC as a weighted sum of quantities and unit costs; ABC with OCM, profit and VAT</td><td>Lean, standard and ceiling quotations</td></tr>
+    <tr><td>Combinatorial optimization</td><td>Packing space modules into rows and floors; budget-to-design integer program; Pareto filter; bridge type and span selection</td><td>Designs that fit a budget</td></tr>
+    <tr><td>Statistics</td><td>Multiple Linear Regression, VIF, t-tests, LOOCV, RMSE, MAPE, R²</td><td>Interpretable cost model</td></tr>
+    <tr><td>Machine learning</td><td>XGBoost regularized gradient boosting on log cost</td><td>Expected cost from history</td></tr>
+    <tr><td>Probability and anomaly detection</td><td>Isolation Forest path length and harmonic numbers</td><td>Anomaly score</td></tr>
+    <tr><td>Cooperative game theory</td><td>Shapley values computed exactly by TreeSHAP</td><td>Why a price is high</td></tr>
+    <tr><td>Monte Carlo simulation</td><td>SBD-300 benchmark with hidden variation and injected overpricing</td><td>Ground truth for testing</td></tr>
+    <tr><td>Computational science</td><td>Algorithms, complexity, floating-point parity, offline web and Android deployment</td><td>A phone app anyone can use</td></tr>
+  </table>
+
+  <div class="math">
+    <h3>4.1 Deterministic Modeling: Pricing a Plan from the Standards</h3>
+    <div class="row"><b>Say</b><div>A fair price can be built from the bottom up: compute how much concrete, steel, formwork, masonry and roofing the codes require, then multiply each quantity by its DPWH unit cost. This is the Should-Cost model, the same method the U.S. GAO and the DPWH use.</div></div>
+    <div class="eq"><img src="../figures/eq/edc.png" alt=""><span class="lab">Estimated direct cost: quantity × unit rate × location factor × year index, summed over all pay items</span></div>
+    <div class="eq"><img src="../figures/eq/abc.png" alt=""><span class="lab">Approved Budget for the Contract: OCM o, profit π, and 5% VAT v per DPWH D.O. 197 s. 2016 / D.O. 30 s. 2025</span></div>
+    <div class="row"><b>Say</b><div>Structural quantities come from engineering formulas. A footing is sized so the column load does not exceed the soil's bearing capacity, and steel is computed from concrete volume and code-minimum reinforcement intensities.</div></div>
+    <div class="eq"><img src="../figures/eq/footing.png" alt=""><span class="lab">Footing width from tributary area, storeys, service load and allowable soil bearing</span></div>
+    <div class="eq"><img src="../figures/eq/rebar.png" alt=""><span class="lab">Reinforcing steel mass from element volumes and intensities, scaled by tier and seismic zone</span></div>
+    <div class="row"><b>Why MCS</b><div>One model, three parameter sets: the lean tier uses code-minimum reinforcement and basic finishes (the start quotation); the standard tier uses typical DPWH intensities; the ceiling is the highest price still defensible. The CCMC VAT error becomes a one-line check: the engine recomputes VAT and markups from the brackets.</div></div>
+  </div>
+
+  <div class="math">
+    <h3>4.2 Combinatorial Optimization: From a Budget to a Blueprint</h3>
+    <div class="row"><b>Say</b><div>When there is no blueprint, BUHAY-AH designs one. It has 55 space modules, such as a 7 × 9 m DepEd classroom, a six-bed ward or a 20-person evacuation bay, sized to DepEd, DOH, National Building Code and humanitarian norms. A program of modules is laid out along corridors, in rows and floors; the building's length is the longest row.</div></div>
+    <div class="eq"><img src="../figures/eq/pack.png" alt=""><span class="lab">Layout: longest row sets length L; rows and corridor set width W; GFA = L × W × N storeys</span></div>
+    <div class="eq"><img src="../figures/eq/cap.png" alt=""><span class="lab">Capacity is the sum of the capacities of the modules</span></div>
+    <div class="row"><b>Say</b><div>Given a budget B, the best design is the solution of a constrained integer program: maximize capacity, such as classrooms, beds or evacuees, subject to the price fitting the budget, the building fitting the lot, and the storeys staying within the limit.</div></div>
+    <div class="eq"><img src="../figures/eq/opt.png" alt=""><span class="lab">Budget-to-design integer program over capacity step k and storeys N</span></div>
+    <div class="eq"><img src="../figures/eq/pareto.png" alt=""><span class="lab">Pareto dominance: keep only designs no other design beats on both capacity and cost</span></div>
+    <div class="row"><b>Key insight</b><div>Cost is not monotonic in capacity: adding one classroom can trigger a new stair, a second floor or a bigger footing, so cost jumps. Binary search therefore misses feasible designs. BUHAY-AH enumerates the whole discrete space instead. With at most 150 capacity steps and five storey counts, the search is O(k<sub>max</sub> · N<sub>max</sub> · T<sub>QTO</sub>), finishing in a median of 3.6 milliseconds on a phone.</div></div>
+    <div class="eq"><img src="../figures/eq/bridge.png" alt=""><span class="lab">Bridge selection: cheapest superstructure type t and span count n whose span fits the type's range</span></div>
+  </div>
+
+  <div class="math">
+    <h3>4.3 Statistics: An Interpretable Cost Model</h3>
+    <div class="row"><b>Say</b><div>Multiple Linear Regression expresses cost as a weighted sum of plan features. Each coefficient has a meaning: for buildings, every added square metre of floor area adds about ₱20,379.</div></div>
+    <div class="eq"><img src="../figures/eq/mlr.png" alt=""><span class="lab">Multiple Linear Regression</span></div>
+    <div class="eq"><img src="../figures/eq/vif.png" alt=""><span class="lab">Variance Inflation Factor; predictors with VIF above 10 were removed</span></div>
+    <div class="row"><b>Why MCS</b><div>Bridge deck area (VIF 44.40) and total length (VIF 44.44) carried the same information, because deck area is length times width. Removing deck area brought every VIF to 3.42 or below. Models were validated by leave-one-out cross-validation: each project is predicted by a model that never saw it, which gives an honest error on small samples.</div></div>
+    <div class="eq"><img src="../figures/eq/mape.png" alt=""><span class="lab">Mean absolute percentage error, with RMSE and R² as companions</span></div>
+  </div>
+
+  <div class="math">
+    <h3>4.4 Machine Learning: Gradient Boosting</h3>
+    <div class="row"><b>Say</b><div>XGBoost adds decision trees one at a time; each new tree corrects the errors of the ones before it. The objective balances fit against complexity, penalizing the number of leaves and the size of the leaf weights so the model does not memorize.</div></div>
+    <div class="eq"><img src="../figures/eq/xgb.png" alt=""><span class="lab">Additive tree ensemble and regularized objective (Chen &amp; Guestrin, 2016)</span></div>
+    <div class="row"><b>Why MCS</b><div>The model is trained on the logarithm of cost, so a ₱2-million culvert and a ₱150-million bridge are judged on comparable relative error. Hyperparameters were chosen by randomized search with five-fold cross-validation.</div></div>
+  </div>
+
+  <div class="math">
+    <h3>4.5 Probability: The Isolation Forest</h3>
+    <div class="row"><b>Say</b><div>An Isolation Forest isolates a record by random splits. Unusual records are isolated in fewer splits, so their average path length is short and their anomaly score is high.</div></div>
+    <div class="eq"><img src="../figures/eq/iforest.png" alt=""><span class="lab">Anomaly score from expected path length, normalized with the harmonic number H</span></div>
+    <div class="row"><b>Why MCS</b><div>This is the CORA-style detector. BUHAY-AH shows mathematically why it is not enough on its own: an ordinary building at a padded price is not unusual in its plan features, so the forest cannot see it. It needs a reference price.</div></div>
+  </div>
+
+  <div class="math">
+    <h3>4.6 Cooperative Game Theory: Explaining Each Price</h3>
+    <div class="row"><b>Say</b><div>The Shapley value, from Lloyd Shapley's 1953 game theory, divides a team's payout fairly among its players. Here the payout is the predicted cost, and the players are the plan features. SHAP tells an auditor that, for example, floor area added this much to the expected cost and pile length added that much.</div></div>
+    <div class="eq"><img src="../figures/eq/shap.png" alt=""><span class="lab">Additive feature attribution: base value plus one contribution per feature</span></div>
+    <div class="row"><b>Why MCS</b><div>BUHAY-AH computes exact Shapley values with the TreeSHAP algorithm, re-implemented in JavaScript so it runs on a phone. Its output matches the Python reference to within 1 × 10⁻⁵.</div></div>
+  </div>
+
+  <div class="math">
+    <h3>4.7 Monte Carlo Simulation: A Benchmark Where the Truth Is Known</h3>
+    <div class="row"><b>Say</b><div>To measure recall, you must know which contracts are padded. Itemized public bills of quantities are not available in machine-readable form, so I built SBD-300: 160 buildings and 140 bridges priced by the engine plus hidden variation the plan cannot see, then bid competition, and in 36 projects, deliberate overpricing of 20 to 110 percent.</div></div>
+    <div class="eq"><img src="../figures/eq/sim.png" alt=""><span class="lab">Awarded cost = true cost × lognormal bid competition × markup μ (μ &gt; 1 in injected cases)</span></div>
+    <div class="row"><b>Why MCS</b><div>Hidden variation in unit prices, reinforcement, pile lengths and earthworks means the standards engine does not simply recover its own numbers. The benchmark tests the method under stated assumptions; it is not a claim about any real contract.</div></div>
+  </div>
+
+  <div class="math">
+    <h3>4.8 A Decision Index: The BUHAY-AH Risk Index</h3>
+    <div class="row"><b>Say</b><div>Three signals are combined into one number from 0 to 100. The over-budget ratio, the contract divided by the standard estimate, carries the most weight because it does not depend on past prices.</div></div>
+    <div class="eq"><img src="../figures/eq/obr.png" alt=""><span class="lab">Over-Budget Ratio</span></div>
+    <div class="eq"><img src="../figures/eq/bri.png" alt=""><span class="lab">BUHAY-AH Risk Index; 30 or more is flagged, 20 to 30 is for review</span></div>
+    <div class="eq"><img src="../figures/eq/bri_s.png" alt=""><span class="lab">Each signal is scaled and clipped to [0, 1]</span></div>
+  </div>
+
+  <div class="math">
+    <h3>4.9 Computational Science: From Equations to a Phone</h3>
+    <div class="row"><b>Say</b><div>Mathematics only fights corruption if people can use it. One JavaScript cost engine is shared by the app, the website and the research pipeline, so the paper and the phone give the same answer. The trained XGBoost trees and the Isolation Forest are exported to JSON and evaluated in the browser.</div></div>
+    <div class="row"><b>Key insight</b><div>XGBoost stores its split thresholds in 32-bit floating point. A first port compared 64-bit values and drifted by about 0.08 in log cost. Rounding both sides to single precision with <code>Math.fround</code> restored parity to 1 × 10⁻⁵. Floating-point arithmetic is part of the mathematics.</div></div>
+    <div class="row"><b>Delivery</b><div>Progressive web app that works offline, Android package built automatically by GitHub Actions, offline ZIP, and a download website with a live budget-to-design demo.</div></div>
+  </div>
+
+  <figure><img src="../figures/diagram_method.png" alt=""><figcaption>Methodological paradigm: plan acquisition → standards and price book → QTO → simulation → models → validation → app.</figcaption></figure>
+
+<!-- ============================== PART 5 -->
+  <h2>Part 5. Results</h2>
+  <div class="cue">SLIDE: Headline numbers. Say "on the simulated benchmark" at least once.</div>
+  <div class="stat">
+    <div><b>5.21%</b><span>MAPE of the standard estimate, buildings</span></div>
+    <div><b>94.4%</b><span>padded contracts caught by the Risk Index</span></div>
+    <div><b>3.6 ms</b><span>median budget-to-design search</span></div>
+    <div><b>152/152</b><span>space-standard checks passed</span></div>
+  </div>
+
+  <h3>RQ1. Plan variables</h3>
+  <div class="say"><p>Nine variables describe a building: gross floor area, footprint, storeys, structural span, floor height, facility type, roof system, location factor and cost index. Eleven describe a bridge: total length, deck width, deck area, span length, pier and abutment heights, superstructure and foundation types, pile length, location and cost index. All can be read from a plan, a DXF file or a design the app generates. In the benchmark, buildings ranged from ₱5.37 million to ₱56.77 million and bridges from ₱1.00 million to ₱179.23 million.</p></div>
+
+  <h3>RQ2. Designs from a requirement or a budget</h3>
+  <div class="say"><p>From 55 space modules the generator produced 41 building templates and 13 bridge templates, from a 149-square-metre barangay health station to a 3,024-square-metre multi-storey facility. A 2-storey 6-classroom school comes out 38.5 by 9.5 metres with 732 square metres of floor, a lean start quotation of ₱16.25 million and a standard estimate of ₱18.77 million. All 152 applicable checks, classroom size, corridor width, stairs and exits per floor, toilets with PWD cubicles, evacuation living space and natural light, passed. With ₱10 million, the solver returns a 4-classroom school; with ₱25 million, 9 classrooms in 2 storeys; with ₱50 million, 15 classrooms in 4 storeys. Allowing multi-storey designs added an average of 6.4 and up to 10 classrooms for the same budget. For bridges, culverts were cheapest up to 12 metres and multi-span RC deck girders from 20 to 120 metres.</p></div>
+  <div class="two">
+    <figure><img src="../figures/plan_school_gf.png" alt=""><figcaption>Generated ground floor, 2-storey 6-classroom school</figcaption></figure>
+    <figure><img src="../figures/frontier_school.png" alt=""><figcaption>Budget-to-design frontier by storey limit</figcaption></figure>
+  </div>
+
+  <h3>RQ3. Accuracy of the standards-based engine</h3>
+  <div class="say"><p>Against the fair awarded costs, the standard estimate reached a MAPE of 5.21 percent for buildings and 7.67 percent for bridges, with R² of 0.9799 and 0.9801. That is less than half the error of the best data-driven model. The lean start quotation was at or below the fair awarded cost for 94.3 percent of buildings and 81.5 percent of bridges, about 14.4 and 5.9 percent below standard, and the ceiling covered 100 percent of fair buildings and 88.7 percent of fair bridges.</p></div>
+
+  <h3>RQ4. Machine-learning models</h3>
+  <table>
+    <tr><th>Model (LOOCV)</th><th class="n">Buildings R²</th><th class="n">Buildings MAPE</th><th class="n">Bridges R²</th><th class="n">Bridges MAPE</th></tr>
+    <tr><td>Multiple Linear Regression</td><td class="n">0.8112</td><td class="n">13.43%</td><td class="n">0.8640</td><td class="n">65.65%</td></tr>
+    <tr><td>XGBoost</td><td class="n">0.7874</td><td class="n">13.94%</td><td class="n">0.8630</td><td class="n">19.18%</td></tr>
+  </table>
+  <div class="say"><p>For buildings, regression was as good as XGBoost because cost is close to linear in floor area. For bridges, XGBoost cut the error from 65.65 to 19.18 percent, because a bridge's cost depends on interactions: once the tree knows the bridge is a culvert, a girder or a truss, length and piles tell the rest. SHAP confirmed that gross floor area drives building cost and deck area, pile length and total length drive bridge cost.</p></div>
+
+  <h3>RQ5. Detecting over-budgeted contracts</h3>
+  <table>
+    <tr><th>Signal (all 300 projects)</th><th class="n">Precision</th><th class="n">Recall</th><th class="n">F1</th><th class="n">AUC</th></tr>
+    <tr><td>Standards-based rule (above ceiling)</td><td class="n">0.682</td><td class="n">0.833</td><td class="n">0.750</td><td class="n">0.994</td></tr>
+    <tr><td>XGBoost residual (&gt; 1.25 × predicted)</td><td class="n">0.706</td><td class="n">0.667</td><td class="n">0.686</td><td class="n">0.955</td></tr>
+    <tr><td>Isolation Forest (CORA-style)</td><td class="n">0.556</td><td class="n">0.278</td><td class="n">0.370</td><td class="n">0.731</td></tr>
+    <tr><td><b>BUHAY-AH Risk Index (≥ 30)</b></td><td class="n"><b>0.642</b></td><td class="n"><b>0.944</b></td><td class="n"><b>0.764</b></td><td class="n"><b>0.987</b></td></tr>
+  </table>
+  <div class="say"><p>The Risk Index caught 34 of 36 padded contracts. The Isolation Forest alone caught only 27.8 percent, which proves the validation gap was real: a padded ordinary building looks normal unless you know what it should cost. For buildings alone the index reached an F1 of 0.927. Most false alarms were bridges with pile lengths longer than planned, which is why the paper recommends site geotechnical data before a bridge is flagged.</p></div>
+
+  <h3>RQ6. Deployment</h3>
+  <div class="say"><p>BUHAY-AH runs as an installable offline app with five screens: Home, Design, Quote, Check and Library. It produces floor plans, elevations, 3D models, bills of quantities, quotations, line-item checks of a contractor's BOQ, and SHAP explanations. It is distributed as an Android package, an offline ZIP and a download website.</p></div>
+  <div class="two">
+    <figure><img src="../figures/app_design_budget.png" alt=""><figcaption>Design from a budget</figcaption></figure>
+    <figure><img src="../figures/app_check.png" alt=""><figcaption>Check screen screening a padded contract</figcaption></figure>
+  </div>
+
+<!-- ============================== PART 6 -->
+  <h2>Part 6. SDGs, Significance and Limits</h2>
+  <div class="cue">SLIDE: SDG tiles 16, 9, 11, 12, 4.</div>
+  <div class="say">
+    <p><b>SDG 16.5, 16.6 and 16.10</b>: substantially reduce corruption and bribery, build accountable institutions and ensure public access to information. <b>SDG 9.1 and 11.5</b>: fair prices protect the quality of resilient infrastructure in a typhoon- and earthquake-prone region. <b>SDG 12.7</b>: sustainable public procurement under Republic Act 12009. <b>SDG 4.a</b>: every peso saved on a school building becomes more classrooms.</p>
+    <p>District engineering offices can cross-check their own estimates. The COA, the Ombudsman and the Independent Commission for Infrastructure can rank contracts by risk. Schools, health offices and barangays can get a design and a price from just a need and a budget. Honest contractors get a public reference that defends a fair bid. Citizens and journalists get a calculator in their pocket.</p>
+    <p>I also want to be clear about the limits. The accuracy and detection results come from a simulated benchmark built under stated assumptions; they must be re-validated on actual DPWH contracts. Generated designs are schematic and for estimating only; they must be developed and signed by licensed architects and engineers. And a flag is a reason to review, never proof of wrongdoing.</p>
+  </div>
+
+<!-- ============================== PART 7 -->
+  <h2>Part 7. Conclusion and Closing</h2>
+  <div class="cue">SLIDE: Conclusion. Slow down. Final line looking at the panel.</div>
+  <div class="say">
+    <p>BUHAY-AH shows that mathematics can stand between a budget and a padded price. Deterministic models priced plans within about 5 to 8 percent of fair cost. Optimization turned a budget into the largest honest design in milliseconds. Statistics and machine learning learned from history, game theory explained every prediction, and simulation proved that a standards-based reference catches what anomaly detection alone misses: 94.4 percent of padded contracts against 27.8 percent.</p>
+    <p>The recommendations are direct: validate on actual contracts, review the template library with licensed professionals, add geotechnical data for bridges, connect current price data, and pilot the tool with oversight bodies.</p>
+    <p>A building should be priced by what it needs, not by who builds it. With BUHAY-AH, anyone with a plan, or only a budget, can know what is fair. Thank you.</p>
+  </div>
+</section>
+
+<!-- ============================== Q&A -->
+<section class="page"></section>
+<section>
+  <h2>Anticipated Questions from the Judges</h2>
+  <div class="qa"><p class="q">1. Why is this a Mathematical and Computational Sciences project and not engineering or social science?</p><p>The contribution is the mathematics and the algorithms: a deterministic cost model, an integer program with a Pareto filter, statistical and machine-learning models, an anomaly detector, Shapley-value explanations and a Monte Carlo benchmark, all implemented and validated computationally. No human participants or physical experiments are involved.</p></div>
+  <div class="qa"><p class="q">2. Your data are simulated. How do we know it works on real contracts?</p><p>We do not claim that yet. Itemized bills of quantities for awarded DPWH buildings and bridges are not publicly available in machine-readable form, and recall cannot be measured without known overpricing. The benchmark tests the method where the truth is known; the first recommendation is validation on actual contracts. The cost engine itself uses real DPWH pay items and real code provisions.</p></div>
+  <div class="qa"><p class="q">3. Isn't the standards engine just recovering its own numbers?</p><p>No. Each benchmark project carries hidden variation the plan does not show: unit prices ±7%, reinforcement ±10%, concrete ±6%, MEPF ±8%, earthworks, and pile lengths up to 35% longer than planned. That is why bridge error is higher and why most false alarms are bridges.</p></div>
+  <div class="qa"><p class="q">4. Why not use binary search for the budget-to-design problem?</p><p>Because cost is not monotonic in capacity. One more classroom can force a new floor, an extra stair or bigger footings, so a budget that cannot afford k classrooms might afford k + 1 in a different layout. Exhaustive enumeration is exact; the largest search evaluated 604 complete designs and still finished in 37 milliseconds or less.</p></div>
+  <div class="qa"><p class="q">5. Why did regression fail on bridges?</p><p>Bridge cost depends on interactions: a 10-metre culvert and a 10-metre girder bridge cost very differently. A linear model adds effects; tree ensembles split by type first. The 65.65% MAPE comes mostly from over-predicting small culverts.</p></div>
+  <div class="qa"><p class="q">6. How were the Risk Index weights chosen?</p><p>By design priority: the over-budget ratio gets 0.5 because it does not inherit past padding; the XGBoost residual 0.3; the Isolation Forest 0.2. Thresholds of 30 (flag) and 20 (review) were set before testing; the paper recommends calibrating them per asset class once real cases are confirmed.</p></div>
+  <div class="qa"><p class="q">7. What is the start quotation, and is it too low to be safe?</p><p>It is the lowest code-compliant price: NSCP minimum reinforcement and basic finishes, while keeping every NSCP, DPWH and PD 1096 requirement. It is a starting point for estimating, not a structural design.</p></div>
+  <div class="qa"><p class="q">8. Can the generated designs be built?</p><p>They are schematic designs for estimating and planning. They satisfy space standards such as classroom size, corridor width, exits, toilets and PWD access, but must be developed and signed by licensed architects and engineers.</p></div>
+  <div class="qa"><p class="q">9. How is SHAP computed on a phone?</p><p>The exact TreeSHAP algorithm was ported to JavaScript and runs on the exported trees. Its output matches the Python reference within 1 × 10⁻⁵.</p></div>
+  <div class="qa"><p class="q">10. What happens if a flag is wrong?</p><p>A flag is a reason to look, never an accusation. The app shows the drivers, the line items above the price book, and reminds the user that a flag calls for review by the implementing office, the COA, the Ombudsman or the ICI.</p></div>
+  <div class="qa"><p class="q">11. How is this different from your earlier study, CORA?</p><p>CORA screened roads using past prices and an Isolation Forest. BUHAY-AH covers buildings and bridges, adds a standards-based reference price, generates designs from budgets, and validates detection where overpricing is known. CORA-style isolation alone caught 27.8% of padded contracts; the Risk Index caught 94.4%.</p></div>
+  <div class="qa"><p class="q">12. Can a local government use its own prices?</p><p>Yes. The price book is editable in the Library screen, and every design and quotation follows the new rates immediately.</p></div>
+
+<!-- ============================== VIDEO -->
+  <h2>2-Minute Video Explainer Script</h2>
+  <table>
+    <tr><th style="width:18mm">Time</th><th style="width:58mm">Visual</th><th>Narration</th></tr>
+    <tr><td>0:00–0:12</td><td>News headlines: collapsed bridge, flood-control audit</td><td>A 1.2-billion-peso bridge collapsed a month after it opened. Billions in flood-control funds are under investigation. Before a contract is signed, who checks the price?</td></tr>
+    <tr><td>0:12–0:25</td><td>BUHAY-AH logo, app on a phone</td><td>This is BUHAY-AH: an app that designs, prices and checks public buildings and bridges, built with Mathematical and Computational Sciences.</td></tr>
+    <tr><td>0:25–0:45</td><td>Design screen: budget slider, cards appear</td><td>Type a budget. An optimization algorithm searches every design from 55 standard space modules and returns the largest school, clinic or evacuation center it can honestly build, in milliseconds.</td></tr>
+    <tr><td>0:45–1:05</td><td>Quote screen: three tiers, BOQ table</td><td>Give it a plan, and a quantity take-off under the National Structural Code and DPWH pay items builds the bill of quantities and three prices: a lean start quotation, a standard fair estimate and a ceiling.</td></tr>
+    <tr><td>1:05–1:25</td><td>Check screen: gauge to red, SHAP bars</td><td>Enter a contract amount. Regression, XGBoost, an Isolation Forest and Shapley values from game theory combine into one risk index, and explain why a price looks high.</td></tr>
+    <tr><td>1:25–1:45</td><td>Result tiles: 5.21%, 94.4%, 3.6 ms</td><td>On a 300-project simulated benchmark, the standard estimate was within 5.21 percent for buildings, and the risk index caught 94.4 percent of padded contracts.</td></tr>
+    <tr><td>1:45–2:00</td><td>SDG 16 tile, download page</td><td>For SDG 16 and every community that deserves what it paid for. BUHAY-AH: design it, price it, keep it honest.</td></tr>
+  </table>
+
+<!-- ============================== EQUATION SHEET -->
+  <h2>Equation Sheet</h2>
+  <table>
+    <tr><th style="width:45mm">Model</th><th>Equation</th></tr>
+    <tr><td>Estimated direct cost</td><td class="eq"><img src="../figures/eq/edc.png" alt=""></td></tr>
+    <tr><td>Approved Budget for the Contract</td><td class="eq"><img src="../figures/eq/abc.png" alt=""></td></tr>
+    <tr><td>Footing width</td><td class="eq"><img src="../figures/eq/footing.png" alt=""></td></tr>
+    <tr><td>Reinforcing steel</td><td class="eq"><img src="../figures/eq/rebar.png" alt=""></td></tr>
+    <tr><td>Layout and floor area</td><td class="eq"><img src="../figures/eq/pack.png" alt=""></td></tr>
+    <tr><td>Budget-to-design program</td><td class="eq"><img src="../figures/eq/opt.png" alt=""></td></tr>
+    <tr><td>Pareto dominance</td><td class="eq"><img src="../figures/eq/pareto.png" alt=""></td></tr>
+    <tr><td>Bridge type and spans</td><td class="eq"><img src="../figures/eq/bridge.png" alt=""></td></tr>
+    <tr><td>Over-budget ratio</td><td class="eq"><img src="../figures/eq/obr.png" alt=""></td></tr>
+    <tr><td>Simulated awarded cost</td><td class="eq"><img src="../figures/eq/sim.png" alt=""></td></tr>
+    <tr><td>Multiple Linear Regression</td><td class="eq"><img src="../figures/eq/mlr.png" alt=""></td></tr>
+    <tr><td>Variance Inflation Factor</td><td class="eq"><img src="../figures/eq/vif.png" alt=""></td></tr>
+    <tr><td>XGBoost</td><td class="eq"><img src="../figures/eq/xgb.png" alt=""></td></tr>
+    <tr><td>Isolation Forest</td><td class="eq"><img src="../figures/eq/iforest.png" alt=""></td></tr>
+    <tr><td>SHAP</td><td class="eq"><img src="../figures/eq/shap.png" alt=""></td></tr>
+    <tr><td>BUHAY-AH Risk Index</td><td class="eq"><img src="../figures/eq/bri.png" alt=""></td></tr>
+    <tr><td>Signal scaling</td><td class="eq"><img src="../figures/eq/bri_s.png" alt=""></td></tr>
+    <tr><td>RMSE</td><td class="eq"><img src="../figures/eq/rmse.png" alt=""></td></tr>
+    <tr><td>Coefficient of determination</td><td class="eq"><img src="../figures/eq/r2.png" alt=""></td></tr>
+    <tr><td>MAPE</td><td class="eq"><img src="../figures/eq/mape.png" alt=""></td></tr>
+    <tr><td>Precision, recall, F1</td><td class="eq"><img src="../figures/eq/prf.png" alt=""></td></tr>
+  </table>
+  <p class="note">All results in this script are from the simulated benchmark SBD-300 described in the research paper. The full paper, the app and the code are in the BUHAY-AH repository.</p>
+</section>
+<script>
+  // size equation images by their natural pixel size (rendered at 300 dpi) so all share one type size
+  document.querySelectorAll('.eq img').forEach(function (im) {
+    function fit() { im.style.width = (im.naturalWidth / 300 * 0.8 * 96) + 'px'; }
+    if (im.complete) fit(); else im.addEventListener('load', fit);
+  });
+</script>
+</body>
+</html>

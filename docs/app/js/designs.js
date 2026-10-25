@@ -86,11 +86,11 @@
   // ------------------------------------------------------------------ usages
   var USAGE = {
     school:     { label: 'School building', costType: 'school', layout: 'single', depth: 7.0, corridor: 2.5, fh: 3.3, bay: 4.5, cap: 'classrooms', capLabel: 'classrooms', unit: 'classroom', range: [1, 40, 1] },
-    health:     { label: 'Health facility', costType: 'health', layout: 'double', depth: 5.0, corridor: 2.4, fh: 3.3, bay: 5.0, cap: 'beds', capLabel: 'beds', unit: 'bed', range: [0, 100, 1] },
+    health:     { label: 'Health facility', costType: 'health', layout: 'double', depth: 5.0, corridor: 2.4, fh: 3.3, bay: 5.0, cap: 'beds', capLabel: 'beds', unit: 'bed', range: [0, 150, 1] },
     office:     { label: 'Government office', costType: 'office', layout: 'double', depth: 6.0, corridor: 2.4, fh: 3.4, bay: 6.0, cap: 'staff', capLabel: 'staff', unit: 'staff', range: [6, 300, 6] },
-    evacuation: { label: 'Evacuation center / multi-purpose hall', costType: 'evacuation', layout: 'open', depth: 12.0, corridor: 0, fh: 5.0, bay: 6.0, cap: 'persons', capLabel: 'persons', unit: 'person', range: [40, 1200, 20] },
-    market:     { label: 'Public market', costType: 'market', layout: 'open', depth: 12.0, corridor: 0, fh: 4.5, bay: 6.0, cap: 'stalls', capLabel: 'stalls', unit: 'stall', range: [20, 400, 10] },
-    dorm:       { label: 'Dormitory / quarters', costType: 'dorm', layout: 'double', depth: 5.0, corridor: 2.0, fh: 3.0, bay: 4.5, cap: 'beds', capLabel: 'beds', unit: 'bed', range: [8, 320, 8] },
+    evacuation: { label: 'Evacuation center / multi-purpose hall', costType: 'evacuation', layout: 'open', depth: 12.0, corridor: 0, fh: 5.0, bay: 6.0, cap: 'persons', capLabel: 'persons', unit: 'person', range: [40, 1500, 20] },
+    market:     { label: 'Public market', costType: 'market', layout: 'open', depth: 12.0, corridor: 0, fh: 4.5, bay: 6.0, cap: 'stalls', capLabel: 'stalls', unit: 'stall', range: [20, 500, 10] },
+    dorm:       { label: 'Dormitory / quarters', costType: 'dorm', layout: 'double', depth: 5.0, corridor: 2.0, fh: 3.0, bay: 4.5, cap: 'beds', capLabel: 'beds', unit: 'bed', range: [8, 480, 8] },
     court:      { label: 'Covered court', costType: 'court', layout: 'open', depth: 20.0, corridor: 0, fh: 8.0, bay: 6.0, cap: 'persons', capLabel: 'persons', unit: 'person', range: [300, 900, 120] }
   };
 

@@ -25,6 +25,11 @@ EQ = {
     'r2': r'$R^{2}=1-\dfrac{\sum_i (y_i-\hat{y}_i)^{2}}{\sum_i (y_i-\bar{y})^{2}}$',
     'mape': r'$\mathrm{MAPE}=\dfrac{100\%}{n}\sum_{i=1}^{n}\left|\dfrac{y_i-\hat{y}_i}{y_i}\right|$',
     'prf': r'$P=\dfrac{TP}{TP+FP},\qquad R=\dfrac{TP}{TP+FN},\qquad F_1=\dfrac{2PR}{P+R}$',
+    'pack': r'$L=\max_{f,\,r}\ \sum_{i\in \mathcal{R}_{f,r}} w_i,\qquad W=n_r\,d+c,\qquad \mathrm{GFA}=L\,W\,N$',
+    'cap': r'$\kappa(x)=\sum_{i\in x}\kappa_i$',
+    'opt': r'$x^{*}=\arg\max_{k,\,N}\ \kappa(k,N)\quad \mathrm{s.t.}\quad \mathrm{ABC}_{\tau}(k,N)\leq B,\ \ L(k,N)\leq L_{\max},\ \ N\leq N_{\max}$',
+    'pareto': r'$x\ \mathrm{is\ dominated}\ \Leftrightarrow\ \exists\,y:\ \kappa(y)\geq\kappa(x),\ \mathrm{ABC}(y)\leq\mathrm{ABC}(x),\ y\neq x$',
+    'bridge': r'$(t^{*},n^{*})=\arg\min_{t,\,n}\ \mathrm{ABC}_{\mathrm{std}}(t,n)\quad \mathrm{s.t.}\quad S_{\min}(t)\leq G/n\leq S_{\max}(t)$',
 }
 for k, tex in EQ.items():
     fig = plt.figure(figsize=(0.1, 0.1))
