@@ -1,9 +1,7 @@
 name: Deploy website and app to GitHub Pages
 
+# Run manually after Settings → Pages → Source is set to "GitHub Actions".
 on:
-  push:
-    branches: [main, claude/buhay-buildings-bridges]
-    paths: ['docs/**', '.github/workflows/pages.yml']
   workflow_dispatch:
 
 permissions:
