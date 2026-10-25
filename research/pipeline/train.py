@@ -366,7 +366,7 @@ def main():
     models['generated'] = 'research/pipeline/train.py on research/data/buhay_sbd300.csv (simulated benchmark)'
     json.dump(models, open(os.path.join(APPDATA, 'models.json'), 'w'), separators=(',', ':'))
     json.dump({'note': 'Simulated benchmark projects (SBD-300) for demonstration. Not real DPWH contracts.',
-               'projects': scored}, open(os.path.join(APPDATA, 'projects.json'), 'w'), separators=(',', ':'))
+               'projects': scored}, open(os.path.join(OUT, 'projects_scored.json'), 'w'), separators=(',', ':'))
     print('pooled', {k: {m: round(v[m], 3) for m in ('Precision', 'Recall', 'F1', 'AUC')} for k, v in report['pooled'].items()})
 
 

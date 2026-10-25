@@ -1,4 +1,4 @@
-"""Pack the app data (models, benchmark projects, map, sample plan) into docs/app/data/bundle.js
+"""Pack the app data (models and the sample plan) into docs/app/data/bundle.js
 so the app also works offline and from a local folder (file://), where fetch() is blocked."""
 import json
 import os
@@ -10,8 +10,6 @@ for k in ('building', 'bridge'):
     models[k].pop('_parity', None)
 data = {
     'models': models,
-    'projects': json.load(open(os.path.join(D, 'projects.json'))),
-    'geo': json.load(open(os.path.join(D, 'bicol.geojson'))),
     'sampleDxf': open(os.path.join(D, 'sample-plan.dxf')).read(),
 }
 with open(os.path.join(D, 'bundle.js'), 'w') as f:

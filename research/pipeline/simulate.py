@@ -36,7 +36,7 @@ PROV_W = np.array([0.30, 0.22, 0.14, 0.14, 0.10, 0.10])
 YEARS = [2022, 2023, 2024, 2025]
 
 # ---------------------------------------------------------------- geography
-geo = json.load(open(os.path.join(ROOT, 'docs', 'app', 'data', 'bicol.geojson')))
+geo = json.load(open(os.path.join(ROOT, 'research', 'data', 'bicol.geojson')))
 POLYS = {}
 for f in geo['features']:
     rings = [poly[0] for poly in f['geometry']['coordinates']]  # outer rings

@@ -1,7 +1,7 @@
 {
-  "name": "BUHAY — Buildings & Bridges Fair-Cost Checker",
-  "short_name": "BUHAY",
-  "description": "Turn a building or bridge plan into a standards-based start quotation and flag over-budgeted public infrastructure.",
+  "name": "BUHAY-AH — Design, Quote & Check Public Buildings and Bridges",
+  "short_name": "BUHAY-AH",
+  "description": "Design public buildings and bridges from a requirement or a budget, price them with standards-based quantity take-off, and flag over-budgeted contracts.",
   "start_url": "./index.html#home",
   "scope": "./",
   "display": "standalone",

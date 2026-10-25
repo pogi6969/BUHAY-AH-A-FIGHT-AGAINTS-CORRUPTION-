@@ -1,5 +1,5 @@
 /*
- * BUHAY parametric 3D viewer: builds a building or bridge model straight from the plan
+ * BUHAY-AH parametric 3D viewer: builds a building or bridge model straight from the plan
  * geometry returned by the cost engine and draws it on a 2D canvas (orthographic projection,
  * painter's algorithm, flat shading). Drag to orbit, scroll or pinch to zoom, double-tap to reset.
  */

@@ -1,5 +1,5 @@
 /*
- * BUHAY plan import: reads a floor plan in DXF (ASCII, R12–2018) or a BUHAY plan file (.buhay.json)
+ * BUHAY-AH plan import: reads a floor plan in DXF (ASCII, R12–2018) or a BUHAY-AH plan file (.buhay.json)
  * and returns the plan parameters the cost engine needs.
  * DXF: the largest closed polyline is taken as the building outline (footprint area and perimeter);
  * lines and polylines on layers named like WALL / PARTITION are measured as interior walls.
@@ -98,7 +98,7 @@
     var o = JSON.parse(text);
     var plan = o.plan || o;
     if (plan.kind !== 'building' && plan.kind !== 'bridge') throw new Error('Plan file needs "kind": "building" or "bridge".');
-    plan.source = 'BUHAY plan file';
+    plan.source = 'BUHAY-AH plan file';
     return plan;
   }
 

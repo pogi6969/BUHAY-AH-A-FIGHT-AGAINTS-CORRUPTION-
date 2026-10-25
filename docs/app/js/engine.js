@@ -1,5 +1,5 @@
 /*
- * BUHAY cost engine — standards-based quantity take-off (QTO) and
+ * BUHAY-AH cost engine — standards-based quantity take-off (QTO) and
  * Approved Budget for the Contract (ABC) builder for public buildings and bridges.
  *
  * One source of truth: the same file runs in the browser app (window.BuhayEngine)
@@ -20,7 +20,7 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '1.0.0';
+  var VERSION = '1.1.0';
   var PRICE_BASIS = 'Bicol Region V, base Albay (Legazpi City), 2025-Q4, direct cost (materials + labor + equipment)';
 
   // ---------------------------------------------------------------- price book
@@ -105,9 +105,10 @@
     health:     { label: 'Health facility (RHU / BHS / birthing)', elec: 2900, plumb: 2300, mech: 1800, w: 12.0, wall: 0.24, win: 0.20, doorArea: 15, sog: 1 },
     evacuation: { label: 'Multi-purpose hall / evacuation center', elec: 1400, plumb: 950,  mech: 0,    w: 10.0, wall: 0.05, win: 0.18, doorArea: 60, sog: 1 },
     dorm:       { label: 'Dormitory / staff housing',              elec: 1700, plumb: 1700, mech: 0,    w: 10.5, wall: 0.28, win: 0.18, doorArea: 12, sog: 1 },
-    market:     { label: 'Public market',                          elec: 1500, plumb: 1400, mech: 0,    w: 13.0, wall: 0.10, win: 0.15, doorArea: 25, sog: 1 }
+    market:     { label: 'Public market',                          elec: 1500, plumb: 1400, mech: 0,    w: 13.0, wall: 0.10, win: 0.15, doorArea: 25, sog: 1 },
+    court:      { label: 'Covered court / open pavilion',          elec: 650,  plumb: 250,  mech: 0,    w: 4.0,  wall: 0,    win: 0,    doorArea: 400, sog: 1, open: true }
   };
-  var TYPE_INDEX = { evacuation: 1, school: 2, market: 3, dorm: 4, office: 5, health: 6 };
+  var TYPE_INDEX = { court: 1, evacuation: 1, school: 2, market: 3, dorm: 4, office: 5, health: 6 };
 
   var SUPERSTRUCTURES = {
     box_culvert: { label: 'RC box culvert', idx: 1, maxSpan: 6 },
@@ -243,12 +244,12 @@
 
     // structural grid
     var nbx = Math.max(1, Math.round(L / p.bayX)), nby = Math.max(1, Math.round(W / p.bayY));
-    var sx = L / nbx, sy = W / nby, span = Math.max(sx, sy), shortSpan = Math.min(sx, sy);
+    var sx = L / nbx, sy = W / nby, span = bt.open ? sx : Math.max(sx, sy), shortSpan = Math.min(sx, sy);
     var gx = nbx + 1, gy = nby + 1, nCol = gx * gy;
-    var colB = N <= 2 ? 0.30 : N <= 4 ? 0.40 : N <= 6 ? 0.50 : 0.60;
+    var colB = N <= 2 ? (h > 6 ? 0.45 : 0.30) : N <= 4 ? 0.40 : N <= 6 ? 0.50 : 0.60;
     var beamD = Math.max(0.40, ceilTo(span / 12, 0.05)), beamB = Math.max(0.25, ceilTo(beamD * 0.5, 0.05));
     var ts = shortSpan <= 4.5 ? 0.125 : 0.150;
-    var beamLen = gy * L + gx * W; // per level
+    var beamLen = bt.open ? 2 * (L + W) : gy * L + gx * W; // per level (open pavilions: ring beams only)
     var Df = 1.5;
 
     // footings (isolated, sized from service load and allowable bearing)
@@ -286,15 +287,15 @@
 
     // masonry, finishes, openings
     var clearH = Math.max(2.2, h - beamD);
-    var extWallGross = P * clearH * N;
-    var winArea = Math.max(bt.win * extWallGross, 0.10 * GFA); // PD 1096: windows ≥ 10% of floor area
-    var nDoors = Math.ceil(GFA / bt.doorArea) + 2 * N;
+    var extWallGross = bt.open ? P * 1.2 : P * clearH * N;
+    var winArea = bt.open ? 0 : Math.max(bt.win * extWallGross, 0.10 * GFA); // PD 1096: windows ≥ 10% of floor area
+    var nDoors = bt.open ? 2 : Math.ceil(GFA / bt.doorArea) + 2 * N;
     var extWall = Math.max(0, extWallGross - winArea - 2 * N * 2.1 * 1.8);
-    var intLen = num(p.interiorWallLength, 0) > 0 ? num(p.interiorWallLength) * N : bt.wall * A * N;
+    var intLen = bt.open ? 0 : num(p.interiorWallLength, 0) > 0 ? num(p.interiorWallLength) * N : bt.wall * A * N;
     var intWall = intLen * clearH * 0.90 - Math.max(0, nDoors - 2 * N) * 0.9 * 2.1;
     intWall = Math.max(0, intWall);
     var plasterArea = (extWall + intWall) * 2 * 1.10;
-    var ceilingArea = A * N * 0.95;
+    var ceilingArea = bt.open ? 0 : A * N * 0.95;
     var floorArea = A * N * 0.92;
     var paintArea = plasterArea + ceilingArea;
 
@@ -340,7 +341,7 @@
     }
     if (N > 1) boq.add(G4, 'railing', (N - 1) * L * (p.type === 'school' || p.type === 'dorm' ? 1 : 0.3) + nStairs * (N - 1) * 9);
     boq.add(G4, 'ceiling', ceilingArea, { rate: { lean: 880, standard: 1050, premium: 1350 }[T.finish] });
-    var floorId = { lean: 'floorcement', standard: 'floortile', premium: 'floorprem' }[T.finish];
+    var floorId = bt.open ? 'floorcement' : { lean: 'floorcement', standard: 'floortile', premium: 'floorprem' }[T.finish];
     boq.add(G4, floorId, floorArea);
 
     boq.add(G5, 'door', nDoors, { rate: { lean: 11500, standard: 13500, premium: 17500 }[T.finish] });
@@ -390,7 +391,7 @@
     p.superstructure = SUPERSTRUCTURES[p.superstructure] ? p.superstructure : 'rcdg';
     p.spans = Math.max(1, Math.round(num(p.spans, 1)));
     p.totalLength = Math.max(2, num(p.totalLength, 20));
-    p.carriageway = clamp(num(p.carriageway, 6.70), 3.0, 20);
+    p.carriageway = clamp(num(p.carriageway, 6.70), 2.0, 20);
     p.sidewalk = clamp(num(p.sidewalk, p.superstructure === 'box_culvert' ? 0 : 0.75), 0, 3);
     p.pierHeight = clamp(num(p.pierHeight, 6), 1.5, 40);
     p.abutmentHeight = clamp(num(p.abutmentHeight, p.superstructure === 'box_culvert' ? 3 : 5), 1.5, 15);

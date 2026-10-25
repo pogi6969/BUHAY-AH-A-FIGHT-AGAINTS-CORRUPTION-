@@ -1,4 +1,4 @@
-/* BUHAY app: plan → standards-based quotation → over-budget screening → map. */
+/* BUHAY-AH app: requirement or budget → design → standards-based quotation → over-budget screening. */
 (function () {
   'use strict';
   var E = window.BuhayEngine, ML = window.BuhayML, IMP = window.BuhayImport, Viewer = window.BuhayViewer;
@@ -49,8 +49,14 @@
     prices: store.get('prices', {}),
     saved: store.get('saved', []),
     checks: store.get('checks', []),
-    mapKind: 'all', mapStatus: 'all'
+    dmode: 'templates', dfilter: 'all', dlevel: 0,
+    design: store.get('design', null),
+    designs: store.get('designs', []),
+    dreq: { usage: 'school', k: 8, N: 'auto', maxL: 60 },
+    dbud: { usage: 'school', budget: 25000000, basis: 'start', maxN: 4, maxL: 60 },
+    dbr: { gap: 45, lanes: 2, pierHeight: 6, abutmentHeight: 5, pileLength: 15, budget: '' }
   };
+  (function () { var ds = store.get('dstate', null); if (ds) { Object.assign(S.dreq, ds.dreq); Object.assign(S.dbud, ds.dbud); Object.assign(S.dbr, ds.dbr); } }());
   function plan() { return S.plans[S.kind]; }
   function persist() { store.set('kind', S.kind); store.set('plans', S.plans); store.set('check', S.check); }
   var quoteCache = { key: '', q: null };
@@ -81,12 +87,13 @@
     quote: '<rect x="5" y="3" width="14" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
     check: '<path d="M12 3 4.5 6v5.5c0 4.5 3.2 8 7.5 9.5 4.3-1.5 7.5-5 7.5-9.5V6L12 3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m8.8 12 2.3 2.3 4.3-4.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
     map: '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/>',
+    design: '<path d="M4 19.5h16M6 16.5V8l6-4 6 4v8.5M9.5 16.5v-4h5v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/><path d="M14.5 4.5l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
     library: '<path d="M4 5.5h6a2 2 0 0 1 2 2V20a2 2 0 0 0-2-2H4V5.5ZM20 5.5h-6a2 2 0 0 0-2 2V20a2 2 0 0 1 2-2h6V5.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
     building: '<path d="M4 20V9l8-5 8 5v11M9 20v-5h6v5M8 10.5h2M14 10.5h2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>',
     bridge: '<path d="M2 15h20M4 15c2-5 5-7.5 8-7.5s6 2.5 8 7.5M7 15v4M17 15v4M12 7.5V15M8.5 9.8V15M15.5 9.8V15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'
   };
   function icon(n) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICON[n] + '</svg>'; }
-  var TABS = [['home', 'Home'], ['quote', 'Quote'], ['check', 'Check'], ['map', 'Map'], ['library', 'Library']];
+  var TABS = [['home', 'Home'], ['design', 'Design'], ['quote', 'Quote'], ['check', 'Check'], ['library', 'Library']];
   function renderNav() {
     var html = TABS.map(function (t) { return '<button class="tab" type="button" data-go="' + t[0] + '"' + (S.view === t[0] ? ' aria-current="page"' : '') + '>' + icon(t[0]) + '<span>' + t[1] + '</span></button>'; }).join('');
     $('#tabsTop').innerHTML = html; $('#tabsBottom').innerHTML = html;
@@ -96,7 +103,7 @@
     if (location.hash.slice(1) !== view) { try { history.replaceState(null, '', '#' + view); } catch (e) { /* ignore */ } }
     renderNav();
     var v = $('#view');
-    ({ home: renderHome, quote: renderQuote, check: renderCheck, map: renderMap, library: renderLibrary }[view] || renderHome)(v);
+    ({ home: renderHome, design: renderDesign, quote: renderQuote, check: renderCheck, library: renderLibrary }[view] || renderHome)(v);
     window.scrollTo(0, 0);
   }
 
@@ -163,17 +170,15 @@
 
   // ------------------------------------------------------------------ home
   function renderHome(v) {
-    var P = (DATA.projects && DATA.projects.projects) || [];
-    var red = P.filter(function (p) { return p.status === 'red'; });
-    var excess = red.reduce(function (s, p) { return s + Math.max(0, p.awarded - p.ceiling); }, 0);
     var q = getQuote();
+    var picks = ['sch-2s6', 'bhs-birthing', 'evac-200', 'mun-hall'].map(function (id) { return DS.TEMPLATES.filter(function (t) { return t.id === id; })[0]; });
     v.innerHTML =
       '<section class="hero">' +
         '<div class="stack">' +
-          '<div class="eyebrow">Buildings · Bridges · DPWH & international standards</div>' +
-          '<h1>Provide the plan.<br>Get the <em>fair price.</em></h1>' +
-          '<p style="max-width:60ch">BUHAY reads a building or bridge plan, takes off the quantities, prices them with DPWH pay items and unit costs, and returns a lean <b>start quotation</b>, a standard fair estimate and a ceiling. Enter a contract amount and it screens for over-budgeting with a hybrid machine-learning check.</p>' +
-          '<div class="row"><button class="btn sign" data-action="new" data-kind="building">' + icon('building') + ' Quote a building</button><button class="btn primary" data-action="new" data-kind="bridge">' + icon('bridge') + ' Quote a bridge</button><button class="btn" id="installBtn" hidden>Install app</button></div>' +
+          '<div class="eyebrow">Public buildings · bridges · DPWH & international standards</div>' +
+          '<h1>Design it. Price it.<br><em>Keep it honest.</em></h1>' +
+          '<p style="max-width:60ch">BUHAY-AH designs public buildings and bridges from what they must hold or from the budget you have, takes off every quantity under NSCP, DPWH and AASHTO rules, and returns a lean <b>start quotation</b>, a standard fair estimate and a ceiling. Enter a contract amount and it flags over-budgeting with a hybrid machine-learning check.</p>' +
+          '<div class="row"><button class="btn sign" data-action="go-budget">' + icon('design') + ' Design from a budget</button><button class="btn primary" data-go="quote">' + icon('quote') + ' Quote a plan</button><button class="btn" id="installBtn" hidden>Install app</button></div>' +
         '</div>' +
         '<div class="card stack">' +
           '<div class="row" style="justify-content:space-between"><div><div class="eyebrow">Current plan</div><h3>' + esc(plan().name || 'Untitled plan') + '</h3></div><button class="btn sm" data-go="quote">Open</button></div>' +
@@ -184,18 +189,15 @@
       '</section>' +
       '<div style="height:18px"></div>' +
       '<div class="actions">' +
-        '<button class="action" data-action="new" data-kind="building">' + icon('building') + '<b>Building quotation</b><span>Schools, health stations, offices, evacuation centers, markets</span></button>' +
-        '<button class="action" data-action="new" data-kind="bridge">' + icon('bridge') + '<b>Bridge quotation</b><span>Box culverts, RCDG, PSCG and steel truss bridges</span></button>' +
+        '<button class="action" data-action="go-budget">' + icon('design') + '<b>Design from a budget</b><span>The largest school, clinic, hall or market your money can build</span></button>' +
+        '<button class="action" data-action="go-templates">' + icon('building') + '<b>Design templates</b><span>' + DS.TEMPLATES.length + ' building and ' + DS.BRIDGE_TEMPLATES.length + ' bridge designs to customize and combine</span></button>' +
+        '<button class="action" data-go="quote">' + icon('quote') + '<b>Quote a plan</b><span>Type the dimensions or import a DXF floor plan for a full bill of quantities</span></button>' +
         '<button class="action" data-go="check">' + icon('check') + '<b>Check a contract</b><span>Over-budget ratio, ML expectation, anomaly score, risk index</span></button>' +
-        '<button class="action" data-go="map">' + icon('map') + '<b>Project map</b><span>Bicol Region V projects coloured by risk</span></button>' +
       '</div>' +
       '<div style="height:18px"></div>' +
-      (P.length ? '<div class="card stack"><div class="row" style="justify-content:space-between"><h3>Benchmark screening</h3><span class="pill low">Simulated data</span></div>' +
-        '<div class="stats">' +
-          '<div class="stat"><b>' + P.length + '</b><span>projects screened (160 buildings, 140 bridges)</span></div>' +
-          '<div class="stat"><b>' + red.length + '</b><span>high-risk flags (BRI ≥ 30)</span></div>' +
-          '<div class="stat"><b>' + pesoM(excess) + '</b><span>above the ceiling estimate in flagged projects</span></div>' +
-        '</div><p class="small muted">Demo records come from the research benchmark (SBD-300). They are simulated, not real DPWH contracts.</p></div>' : '') +
+      '<div class="card stack"><div class="row" style="justify-content:space-between"><h3>From the design library</h3><button class="btn sm" data-action="go-templates">See all designs</button></div><div class="dgrid">' +
+        picks.map(function (t) { var d = builtDesign(t), qq = getQuote(d.plan); return '<article class="dcard">' + thumb(d) + '<b>' + esc(t.name) + '</b><span class="small muted">' + esc(capText(d)) + '</span><span class="small mono">Start ' + pesoM(qq.start) + '</span><button type="button" class="btn sm primary" data-action="d-open" data-id="' + t.id + '" data-mine="0">Open design</button></article>'; }).join('') +
+      '</div></div>' +
       (S.saved.length ? '<div style="height:18px"></div><div class="card stack"><h3>My saved plans</h3><div class="list">' + S.saved.slice(0, 4).map(savedItem).join('') + '</div></div>' : '');
     var vw = new Viewer($('#homeV')); vw.set(q.tiers.standard.geometry);
     setupInstall();
@@ -352,7 +354,7 @@
     return lines.map(function (r) { return r.map(function (c) { c = String(c == null ? '' : c); return /[",\n]/.test(c) ? '"' + c.replace(/"/g, '""') + '"' : c; }).join(','); }).join('\n');
   }
   function summaryText(p, q) {
-    return 'BUHAY quotation — ' + (p.name || 'Untitled plan') + '\n' + planSummary(p) + '\n' +
+    return 'BUHAY-AH quotation — ' + (p.name || 'Untitled plan') + '\n' + planSummary(p) + '\n' +
       'Start quotation (lean): ' + peso(q.start) + '\nStandard fair estimate: ' + peso(q.fair) + '\nCeiling (flag above): ' + peso(q.ceiling) + '\n' +
       'Basis: DPWH pay items, NSCP 2015, D.O. 197 s. 2016 / D.O. 30 s. 2025 indirect costs; ' + q.priceBasis + '.';
   }
@@ -368,8 +370,6 @@
           '<form class="fields" id="checkFields" onsubmit="return false">' +
             fieldHtml({ k: 'amount', l: 'Contract amount (ABC or awarded)', u: '₱', step: 1000, wide: true }, c.amount, 'c_') +
             fieldHtml({ k: 'cid', l: 'Contract ID', t: 'text', hint: 'optional' }, c.cid, 'c_') +
-            fieldHtml({ k: 'lat', l: 'Latitude', step: 0.0001, hint: 'optional' }, c.lat, 'c_') +
-            fieldHtml({ k: 'lon', l: 'Longitude', step: 0.0001, hint: 'optional' }, c.lon, 'c_') +
           '</form>' +
           '<details class="more"><summary>Check the ABC markups (OCM, profit, VAT)</summary><form class="fields" id="markupFields" onsubmit="return false" style="margin-top:8px">' +
             fieldHtml({ k: 'edc', l: 'Submitted EDC', u: '₱', step: 1000, wide: true }, c.edc, 'c_') +
@@ -378,12 +378,12 @@
             fieldHtml({ k: 'vat', l: 'VAT', u: '%', step: 0.5 }, c.vat, 'c_') +
           '</form></details>' +
           '<div class="row"><span class="small muted">Examples:</span><button type="button" class="btn sm" data-action="example" data-mult="0.98">Fair bid</button><button type="button" class="btn sm" data-action="example" data-mult="1.18">Slightly high</button><button type="button" class="btn sm" data-action="example" data-mult="1.6">Padded</button></div>' +
-          '<div class="row"><button type="button" class="btn primary" data-action="save-check">Save to my checks</button><button type="button" class="btn" data-go="map">View on map</button></div>' +
+          '<div class="row"><button type="button" class="btn primary" data-action="save-check">Save to my checks</button><button type="button" class="btn" data-go="design">Open design studio</button></div>' +
         '</div>' +
         '<div class="stack" id="checkOut"></div>' +
       '</div>' +
       '<div style="height:14px"></div>' +
-      '<div class="card stack"><h3>Line-item check</h3><p class="small muted">Paste the contractor\'s bill of quantities as CSV (item, description, unit, quantity, unit cost). Each unit cost is compared with the BUHAY all-in rate (direct cost × location × OCM, profit and VAT).</p>' +
+      '<div class="card stack"><h3>Line-item check</h3><p class="small muted">Paste the contractor\'s bill of quantities as CSV (item, description, unit, quantity, unit cost). Each unit cost is compared with the BUHAY-AH all-in rate (direct cost × location × OCM, profit and VAT).</p>' +
         '<div class="field"><label for="boqText">Contractor BOQ (CSV)</label><div class="in"><textarea id="boqText" spellcheck="false" placeholder="Item,Description,Unit,Quantity,Unit cost"></textarea></div></div>' +
         '<div class="row"><label class="btn sm">Upload CSV<input type="file" id="boqFile" accept=".csv,.txt"></label><button type="button" class="btn sm" data-action="boq-example">Load example</button><button type="button" class="btn sm primary" data-action="boq-compare">Compare unit costs</button></div>' +
         '<div id="boqOut"></div></div>';
@@ -395,7 +395,7 @@
   function gauge(val, status) {
     var a = Math.min(100, Math.max(0, val)) / 100, R = 46, C = 2 * Math.PI * R * 0.75;
     var col = { green: 'var(--ok)', amber: 'var(--warn)', red: 'var(--bad)' }[status] || 'var(--accent)';
-    return '<svg class="gauge" viewBox="0 0 112 112" role="img" aria-label="BUHAY Risk Index ' + val.toFixed(0) + ' of 100">' +
+    return '<svg class="gauge" viewBox="0 0 112 112" role="img" aria-label="BUHAY-AH Risk Index ' + val.toFixed(0) + ' of 100">' +
       '<circle cx="56" cy="56" r="' + R + '" fill="none" stroke="var(--line)" stroke-width="10" stroke-dasharray="' + C + ' 999" transform="rotate(135 56 56)" stroke-linecap="round"/>' +
       '<circle cx="56" cy="56" r="' + R + '" fill="none" stroke="' + col + '" stroke-width="10" stroke-dasharray="' + (C * a) + ' 999" transform="rotate(135 56 56)" stroke-linecap="round"/>' +
       '<text x="56" y="58" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="26" font-weight="600" fill="var(--ink)">' + val.toFixed(0) + '</text>' +
@@ -405,7 +405,7 @@
     var W = 520, H = 128, lo = Math.min(q.start, ml ? ml.band[0] : q.start, amount) * 0.9, hi = Math.max(q.ceiling, ml ? ml.band[1] : 0, amount) * 1.06;
     var x = function (v) { return 20 + (v - lo) / (hi - lo) * (W - 40); };
     var tick = function (v, label, y, anchor) { return '<line x1="' + x(v) + '" x2="' + x(v) + '" y1="34" y2="62" stroke="var(--ink)" stroke-width="1"/><text x="' + x(v) + '" y="' + y + '" font-size="11" text-anchor="' + (anchor || 'middle') + '">' + label + '</text>'; };
-    var s = '<svg class="strip" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Contract amount compared with BUHAY estimates">' +
+    var s = '<svg class="strip" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Contract amount compared with BUHAY-AH estimates">' +
       '<rect x="' + x(q.start) + '" y="40" width="' + (x(q.fair * 1.10) - x(q.start)) + '" height="16" fill="var(--ok)" opacity="0.35"/>' +
       '<rect x="' + x(q.fair * 1.10) + '" y="40" width="' + Math.max(0, x(q.ceiling) - x(q.fair * 1.10)) + '" height="16" fill="var(--warn)" opacity="0.45"/>' +
       '<rect x="' + x(q.ceiling) + '" y="40" width="' + (W - 20 - x(q.ceiling)) + '" height="16" fill="var(--bad)" opacity="0.30"/>' +
@@ -419,7 +419,7 @@
     var out = $('#checkOut'); if (!out) return;
     var p = plan(), q = getQuote(), amount = parseFloat(S.check.amount);
     if (!(amount > 0)) {
-      out.innerHTML = '<div class="card stack"><h3>Enter a contract amount</h3><p class="muted">BUHAY compares it with the lean, standard and ceiling estimates of this plan (' + pesoM(q.start) + ' · ' + pesoM(q.fair) + ' · ' + pesoM(q.ceiling) + '), with the historical-model expectation and with the anomaly detector. Use an example button to see a result.</p></div>';
+      out.innerHTML = '<div class="card stack"><h3>Enter a contract amount</h3><p class="muted">BUHAY-AH compares it with the lean, standard and ceiling estimates of this plan (' + pesoM(q.start) + ' · ' + pesoM(q.fair) + ' · ' + pesoM(q.ceiling) + '), with the historical-model expectation and with the anomaly detector. Use an example button to see a result.</p></div>';
       return;
     }
     var a = E.assess(q, amount), ml = screenFor(p, q, amount);
@@ -427,7 +427,7 @@
     if (a.status === 'red') status = 'red';
     var title = { red: 'Over-budget flag', amber: 'For review', green: 'Within the fair range' }[status];
     var lines = [];
-    lines.push(pesoM(amount) + ' is <b>' + (a.deviation >= 0 ? pct(a.deviation) + ' above' : pct(-a.deviation) + ' below') + '</b> the BUHAY standard estimate' + (ml ? ' and ' + (ml.mlRatio >= 1 ? pct(ml.mlRatio - 1) + ' above' : pct(1 - ml.mlRatio) + ' below') + ' the historical-model expectation.' : '.'));
+    lines.push(pesoM(amount) + ' is <b>' + (a.deviation >= 0 ? pct(a.deviation) + ' above' : pct(-a.deviation) + ' below') + '</b> the BUHAY-AH standard estimate' + (ml ? ' and ' + (ml.mlRatio >= 1 ? pct(ml.mlRatio - 1) + ' above' : pct(1 - ml.mlRatio) + ' below') + ' the historical-model expectation.' : '.'));
     if (a.excessOverCeiling > 0) lines.push('It exceeds the ceiling estimate by <b class="mono">' + peso(a.excessOverCeiling) + '</b>.');
     if (a.status === 'low') lines.push('The amount is well below the fair range. Check that the scope, specifications and quality requirements are complete.');
     var mk = null;
@@ -450,14 +450,14 @@
       '<div class="card stack"><svg style="display:none"></svg>' + strip(q, ml, amount) +
         '<div class="metrics">' +
           '<div class="metric"><b>' + a.obr.toFixed(3) + '</b><span>Over-budget ratio (vs. standard)</span></div>' +
-          (ml ? '<div class="metric"><b>' + ml.mlRatio.toFixed(3) + '</b><span>Actual ÷ ML expected</span></div><div class="metric"><b>' + ml.iso.toFixed(3) + '</b><span>Isolation Forest score' + (ml.isoAnomalous ? ' (unusual)' : '') + '</span></div><div class="metric"><b>' + ml.bri.toFixed(1) + '</b><span>BUHAY Risk Index (flag ≥ 30)</span></div>' : '') +
+          (ml ? '<div class="metric"><b>' + ml.mlRatio.toFixed(3) + '</b><span>Actual ÷ ML expected</span></div><div class="metric"><b>' + ml.iso.toFixed(3) + '</b><span>Isolation Forest score' + (ml.isoAnomalous ? ' (unusual)' : '') + '</span></div><div class="metric"><b>' + ml.bri.toFixed(1) + '</b><span>BUHAY-AH Risk Index (flag ≥ 30)</span></div>' : '') +
         '</div>' +
         (ml ? '<p class="small muted">Primary anomaly driver: <b>' + esc(ml.driver.label) + '</b> (z = ' + ml.driver.z.toFixed(2) + '). Risk index parts: over-budget ' + ml.briParts.obr.toFixed(1) + ' + model residual ' + ml.briParts.ml.toFixed(1) + ' + isolation ' + ml.briParts.iso.toFixed(1) + '.</p>' : '') +
       '</div>' +
       (mk ? '<div class="card stack"><h3>ABC markup check</h3>' + (mk.ok ? '<div class="note">Markups are within the DPWH caps for this EDC bracket (OCM ' + pct(mk.caps.ocm, 0) + ', profit ' + pct(mk.caps.profit, 0) + ', VAT 5%).</div>' : mk.issues.map(function (i) { return '<div class="note bad">' + esc(i) + '</div>'; }).join('')) + '</div>' : '') +
       shapHtml +
       '<div class="card"><div class="viewer" style="height:240px"><canvas id="checkV"></canvas><span class="hint">Model tinted by screening result</span></div></div>' +
-      '<div class="note small">BUHAY is a screening tool. A flag means the contract deserves a closer look by the implementing office, COA, the Office of the Ombudsman or the Independent Commission for Infrastructure (EO 94 s. 2025). It is not proof of irregularity.</div>';
+      '<div class="note small">BUHAY-AH is a screening tool. A flag means the contract deserves a closer look by the implementing office, COA, the Office of the Ombudsman or the Independent Commission for Infrastructure (EO 94 s. 2025). It is not proof of irregularity.</div>';
     var vw = new Viewer($('#checkV')); vw.set(q.tiers.standard.geometry, status);
   }
 
@@ -510,8 +510,8 @@
       if (st === 'red') { flagged++; if (qty > 0) excess += (rate - allIn * 1.10) * qty; }
       return '<tr><td class="mono small">' + esc(ci >= 0 ? r[ci] : '') + '</td><td>' + esc(di >= 0 ? r[di] : '') + '<div class="small muted">matched: ' + esc(E.PRICE_BOOK[id][1]) + '</div></td><td class="n">' + fmt(rate) + ' / ' + esc(ui >= 0 ? r[ui] : E.PRICE_BOOK[id][2]) + '</td><td class="n">' + fmt(allIn) + '</td><td class="n">' + (ratio >= 1 ? '+' : '') + pct(ratio - 1) + '</td><td><span class="pill ' + st + '">' + { red: 'Overpriced', amber: 'Review', green: 'OK' }[st] + '</span></td></tr>';
     }).join('');
-    out.innerHTML = '<div class="note ' + (flagged ? 'bad' : '') + '">' + flagged + ' item' + (flagged === 1 ? '' : 's') + ' priced more than 25% above the BUHAY all-in rate' + (excess > 0 ? '; about <b class="mono">' + peso(excess) + '</b> above a 10% tolerance' : '') + '.</div>' +
-      '<div class="tablewrap" style="margin-top:10px"><table><thead><tr><th>Item</th><th>Description</th><th class="n">Contractor rate ₱</th><th class="n">BUHAY all-in ₱</th><th class="n">Variance</th><th>Status</th></tr></thead><tbody>' + body + '</tbody></table></div>';
+    out.innerHTML = '<div class="note ' + (flagged ? 'bad' : '') + '">' + flagged + ' item' + (flagged === 1 ? '' : 's') + ' priced more than 25% above the BUHAY-AH all-in rate' + (excess > 0 ? '; about <b class="mono">' + peso(excess) + '</b> above a 10% tolerance' : '') + '.</div>' +
+      '<div class="tablewrap" style="margin-top:10px"><table><thead><tr><th>Item</th><th>Description</th><th class="n">Contractor rate ₱</th><th class="n">BUHAY-AH all-in ₱</th><th class="n">Variance</th><th>Status</th></tr></thead><tbody>' + body + '</tbody></table></div>';
   }
   function exampleBoq() {
     var q = getQuote(), t = q.tiers.standard, abc = t.abc, mk = (1 + abc.ocmRate + abc.profitRate) * (1 + abc.vatRate);
@@ -523,60 +523,184 @@
     $('#boqText').value = lines.join('\n'); compareBoq();
   }
 
-  // ------------------------------------------------------------------ map
-  var map = null;
-  function renderMap(v) {
+  // ------------------------------------------------------------------ design studio
+  var DS = window.BuhayDesign;
+  var USAGE_FILTERS = [['all', 'All'], ['school', 'Schools'], ['health', 'Health'], ['office', 'Civic & offices'], ['evacuation', 'Evacuation & halls'], ['market', 'Markets'], ['dorm', 'Housing'], ['court', 'Courts'], ['bridge', 'Bridges'], ['mine', 'My designs']];
+  var designCache = {};
+  function builtDesign(program) {
+    var key = JSON.stringify([program, plan().province, plan().year]);
+    if (!designCache[key]) designCache[key] = DS.build(program, { province: S.plans.building.province, year: S.plans.building.year });
+    return designCache[key];
+  }
+  function capText(d) {
+    var c = d.capacity, parts = [];
+    if (c.classrooms) parts.push(c.classrooms + ' classrooms (' + c.learners + ' learners)');
+    if (c.beds) parts.push(c.beds + ' beds');
+    if (c.consult && !c.beds) parts.push(c.consult + ' consultation room' + (c.consult > 1 ? 's' : ''));
+    if (c.staff) parts.push(c.staff + ' staff');
+    if (c.persons) parts.push(c.persons + ' persons');
+    if (c.stalls) parts.push(c.stalls + ' stalls');
+    return parts.join(' · ') || DS.USAGE[d.usage].label;
+  }
+  function thumb(d) { return '<div class="thumb">' + DS.planSVG(d, 0, { bare: true }) + '</div>'; }
+  function renderDesign(v) {
     v.innerHTML =
       '<div class="stack">' +
-        '<div class="row" style="justify-content:space-between"><div><h2>Project map</h2><p class="muted small">Bicol Region V · tap a pin to open the project</p></div>' +
-          '<div class="row"><div class="seg" role="group" aria-label="Asset filter">' + [['all', 'All'], ['building', 'Buildings'], ['bridge', 'Bridges']].map(function (o) { return '<button type="button" data-mapkind="' + o[0] + '" aria-pressed="' + (S.mapKind === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div>' +
-          '<div class="field"><div class="in"><select id="mapStatus" aria-label="Risk filter"><option value="all">All risk levels</option><option value="red"' + (S.mapStatus === 'red' ? ' selected' : '') + '>High risk only</option><option value="amber"' + (S.mapStatus === 'amber' ? ' selected' : '') + '>For review only</option><option value="green"' + (S.mapStatus === 'green' ? ' selected' : '') + '>Within range only</option></select></div></div></div></div>' +
-        '<div class="note warn small">Demo pins are the simulated research benchmark (SBD-300), not real DPWH contracts. Your saved checks appear with a dark outline.</div>' +
-        '<div id="map" role="region" aria-label="Map of screened projects"></div>' +
-        '<div class="legend"><span><i style="background:var(--bad)"></i>High risk (BRI ≥ 30)</span><span><i style="background:var(--warn)"></i>For review (20–30)</span><span><i style="background:var(--ok)"></i>Within range</span><span><i style="background:var(--surface);border:2px solid var(--ink)"></i>My checks</span></div>' +
-        '<div class="card stack"><h3>Highest risk index</h3><div class="list" id="riskList"></div></div>' +
-      '</div>';
-    $('#mapStatus').addEventListener('change', function (e) { S.mapStatus = e.target.value; drawMap(); });
-    drawMap();
+        '<div class="row" style="justify-content:space-between;align-items:flex-end"><div><h2>Design studio</h2><p class="muted small">No blueprint yet? Start from a design template, from what the building must hold, or from your budget. Every design can be edited, saved and reused as a wing of another design.</p></div>' +
+          '<div class="seg" role="group" aria-label="Design mode">' + [['templates', 'Templates'], ['needs', 'Requirements'], ['budget', 'Budget'], ['bridge', 'Bridge']].map(function (m) { return '<button type="button" data-dmode="' + m[0] + '" aria-pressed="' + (S.dmode === m[0]) + '">' + m[1] + '</button>'; }).join('') + '</div></div>' +
+        '<div id="dPanel"></div><div id="dEditor"></div></div>';
+    renderDPanel();
+    renderDEditor();
   }
-  function allPins() {
-    var P = ((DATA.projects && DATA.projects.projects) || []).map(function (p) { return Object.assign({ demo: true }, p); });
-    S.checks.forEach(function (c) { if (c.lat && c.lon) P.push({ id: c.cid || c.id, kind: c.plan.kind, label: c.plan.name, province: c.plan.province, year: c.plan.year, lat: +c.lat, lon: +c.lon, plan: c.plan, awarded: c.amount, fair: c.fair, ceiling: c.ceiling, obr: c.obr, bri: c.bri, status: c.status, mine: true, checkId: c.id }); });
-    return P.filter(function (p) { return (S.mapKind === 'all' || p.kind === S.mapKind) && (S.mapStatus === 'all' || p.status === S.mapStatus); });
-  }
-  function drawMap() {
-    var el = $('#map'); if (!el || typeof L === 'undefined') return;
-    if (map) { map.remove(); map = null; }
-    map = L.map(el, { zoomControl: true, attributionControl: true }).setView([13.25, 123.55], 8);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap contributors' }).addTo(map);
-    if (DATA.geo) {
-      L.geoJSON(DATA.geo, { style: { color: '#1f5fad', weight: 1.2, fillColor: '#1f5fad', fillOpacity: 0.06 },
-        onEachFeature: function (f, layer) { layer.bindTooltip(f.properties.name, { sticky: true }); } }).addTo(map);
+  function renderDPanel() {
+    var el = $('#dPanel'); if (!el) return;
+    if (S.dmode === 'templates') {
+      var chips = '<div class="chips" role="group" aria-label="Filter templates">' + USAGE_FILTERS.map(function (f) { return '<button type="button" class="chip" data-dfilter="' + f[0] + '" aria-pressed="' + (S.dfilter === f[0]) + '">' + f[1] + '</button>'; }).join('') + '</div>';
+      var cards = [], bcards = [];
+      if (S.dfilter === 'bridge' || S.dfilter === 'all') DS.BRIDGE_TEMPLATES.forEach(function (b) {
+        var q = getQuote(Object.assign({}, b.plan, { province: S.plans.bridge.province, year: S.plans.bridge.year }));
+        bcards.push('<article class="dcard"><div class="thumb">' + DS.bridgeSVG(b.plan) + '</div><b>' + esc(b.name) + '</b><span class="small muted">' + esc(planSummary(b.plan)) + '</span><span class="small mono">Start ' + pesoM(q.start) + ' · standard ' + pesoM(q.fair) + '</span><button type="button" class="btn sm" data-action="b-tpl" data-id="' + b.id + '">Quote this bridge</button></article>');
+      });
+      var list = S.dfilter === 'mine' ? S.designs.map(function (x) { return Object.assign({ mine: true }, x.program, { id: x.id }); })
+        : DS.TEMPLATES.filter(function (t) { return S.dfilter === 'all' || t.usage === S.dfilter || (S.dfilter === 'office' && t.usage === 'office'); });
+      if (S.dfilter !== 'bridge') list.forEach(function (t) {
+        var d = builtDesign(t), q = getQuote(d.plan);
+        cards.push('<article class="dcard">' + thumb(d) + '<b>' + esc(t.name) + '</b><span class="small muted">' + esc(capText(d)) + '</span><span class="small muted">' + d.N + ' storey' + (d.N > 1 ? 's' : '') + ' · ' + fmt(d.L, 1) + ' × ' + fmt(d.W, 1) + ' m · ' + fmt(d.gfa, 0) + ' m²</span><span class="small mono">Start ' + pesoM(q.start) + ' · standard ' + pesoM(q.fair) + '</span><button type="button" class="btn sm primary" data-action="d-open" data-id="' + esc(t.id) + '" data-mine="' + (t.mine ? 1 : 0) + '">Open design</button></article>');
+      });
+      cards = cards.concat(bcards);
+      el.innerHTML = '<div class="stack">' + chips + (cards.length ? '<div class="dgrid">' + cards.join('') + '</div>' : '<p class="muted">Designs you save appear here.</p>') + '</div>';
+    } else if (S.dmode === 'needs') {
+      var u = S.dreq.usage, U = DS.USAGE[u];
+      el.innerHTML = '<div class="card stack"><h3>Design from requirements</h3><p class="small muted">Say what the facility must hold. BUHAY-AH lays out the spaces using DepEd, DOH, NBC and DSWD space norms and picks the number of storeys with the lowest cost that fits your lot length.</p>' +
+        '<form class="fields" id="reqForm" onsubmit="return false">' +
+          fieldHtml({ k: 'usage', l: 'Facility', t: 'select', o: Object.keys(DS.USAGE).map(function (k) { return [k, DS.USAGE[k].label]; }), wide: true }, u, 'r_') +
+          fieldHtml({ k: 'k', l: 'Required ' + U.capLabel, step: U.range[2], min: U.range[0], max: U.range[1] }, S.dreq.k, 'r_') +
+          fieldHtml({ k: 'N', l: 'Storeys', t: 'select', o: [['auto', 'Automatic (lowest cost)'], [1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5']] }, S.dreq.N, 'r_') +
+          fieldHtml({ k: 'maxL', l: 'Longest building the lot allows', u: 'm', step: 1 }, S.dreq.maxL, 'r_') +
+        '</form><div class="row"><button type="button" class="btn primary" data-action="d-gen">Generate design</button></div></div>';
+      bindForm('#reqForm', S.dreq, function (k) { if (k === 'usage') { S.dreq.k = DS.USAGE[S.dreq.usage].range[0] || DS.USAGE[S.dreq.usage].range[2] * 4; renderDPanel(); } });
+    } else if (S.dmode === 'budget') {
+      el.innerHTML = '<div class="card stack"><h3>Design from a budget</h3><p class="small muted">Enter the money available. BUHAY-AH evaluates every storey count and capacity, prices each design with the quantity take-off, and returns the largest facilities whose quotation fits the budget.</p>' +
+        '<form class="fields" id="budForm" onsubmit="return false">' +
+          fieldHtml({ k: 'usage', l: 'Facility', t: 'select', o: Object.keys(DS.USAGE).map(function (k) { return [k, DS.USAGE[k].label]; }), wide: true }, S.dbud.usage, 'b_') +
+          fieldHtml({ k: 'budget', l: 'Available budget', u: '₱', step: 100000, wide: true }, S.dbud.budget, 'b_') +
+          fieldHtml({ k: 'basis', l: 'Price basis', t: 'select', o: [['start', 'Lean start quotation'], ['standard', 'Standard fair estimate']] }, S.dbud.basis, 'b_') +
+          fieldHtml({ k: 'maxN', l: 'Most storeys', t: 'select', o: [[1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5']] }, S.dbud.maxN, 'b_') +
+          fieldHtml({ k: 'maxL', l: 'Longest building the lot allows', u: 'm', step: 1 }, S.dbud.maxL, 'b_') +
+        '</form><div class="row"><button type="button" class="btn primary" data-action="d-budget">Find designs</button></div><div id="budOut"></div></div>';
+      bindForm('#budForm', S.dbud);
+      runBudget();
+    } else {
+      el.innerHTML = '<div class="card stack"><h3>Design a bridge</h3><p class="small muted">Enter the gap to cross. BUHAY-AH tries culverts, RC deck girders, prestressed girders and steel trusses at every sensible span arrangement and ranks them by cost.</p>' +
+        '<form class="fields" id="brForm" onsubmit="return false">' +
+          fieldHtml({ k: 'gap', l: 'Gap to cross (bridge length)', u: 'm', step: 1 }, S.dbr.gap, 'g_') +
+          fieldHtml({ k: 'lanes', l: 'Traffic', t: 'select', o: [[0, 'Footbridge'], [1, '1 lane'], [2, '2 lanes'], [4, '4 lanes']] }, S.dbr.lanes, 'g_') +
+          fieldHtml({ k: 'pierHeight', l: 'Pier height', u: 'm', step: 0.5 }, S.dbr.pierHeight, 'g_') +
+          fieldHtml({ k: 'abutmentHeight', l: 'Abutment height', u: 'm', step: 0.5 }, S.dbr.abutmentHeight, 'g_') +
+          fieldHtml({ k: 'pileLength', l: 'Pile length', u: 'm', step: 1 }, S.dbr.pileLength, 'g_') +
+          fieldHtml({ k: 'budget', l: 'Budget', u: '₱', step: 100000, hint: 'optional' }, S.dbr.budget, 'g_') +
+        '</form><div class="row"><button type="button" class="btn primary" data-action="d-bridge">Compare bridge designs</button></div><div id="brOut"></div></div>';
+      bindForm('#brForm', S.dbr);
+      runBridge();
     }
-    var css = getComputedStyle(document.documentElement);
-    var COL = { red: css.getPropertyValue('--bad').trim() || '#c22f27', amber: css.getPropertyValue('--warn').trim() || '#b97800', green: css.getPropertyValue('--ok').trim() || '#1d8a4c' };
-    var pins = allPins();
-    pins.forEach(function (p) {
-      var m = L.circleMarker([p.lat, p.lon], { radius: p.mine ? 8 : (p.status === 'red' ? 7 : 5), color: p.mine ? '#13213a' : '#ffffff', weight: p.mine ? 3 : 1, fillColor: COL[p.status] || '#888', fillOpacity: 0.92 });
-      m.bindPopup('<b>' + esc(p.label) + '</b><br><span class="mono small">' + esc(p.id) + '</span> · ' + esc(p.province) + ' · ' + p.year +
-        '<br>Contract ' + pesoM(p.awarded) + ' · BUHAY standard ' + pesoM(p.fair) + '<br>Over-budget ratio <b>' + Number(p.obr).toFixed(2) + '</b> · Risk index <b>' + Number(p.bri).toFixed(0) + '</b>' +
-        (p.demo ? '<br><span class="muted small">Simulated benchmark record</span>' : '') +
-        '<br><button type="button" class="btn sm primary" style="margin-top:8px" data-action="open-pin" data-pin="' + esc(p.id) + '">Open in Check</button>');
-      m.addTo(map);
-    });
-    map.whenReady(function () { setTimeout(function () { map.invalidateSize(); }, 50); });
-    var top = pins.slice().sort(function (a, b) { return b.bri - a.bri; }).slice(0, 8);
-    $('#riskList').innerHTML = top.length ? top.map(function (p) {
-      return '<div class="item"><div><b>' + esc(p.label) + '</b><div class="small muted"><span class="mono">' + esc(p.id) + '</span> · ' + esc(p.province) + ' · ratio ' + Number(p.obr).toFixed(2) + ' · ' + pesoM(p.awarded) + '</div></div><div class="row"><span class="pill ' + p.status + '">BRI ' + Number(p.bri).toFixed(0) + '</span><button type="button" class="btn sm" data-action="open-pin" data-pin="' + esc(p.id) + '">Open</button></div></div>';
-    }).join('') : '<p class="muted">No projects match the filter.</p>';
   }
-  function openPin(id) {
-    var p = allPins().concat(((DATA.projects && DATA.projects.projects) || [])).filter(function (x) { return String(x.id) === String(id); })[0];
-    if (!p) return;
-    var plan2 = Object.assign({}, p.plan, { name: p.label + (p.mine ? '' : ' (' + p.id + ')') });
-    S.kind = p.kind; S.plans[p.kind] = plan2;
-    S.check = { amount: p.awarded, cid: p.id, lat: p.lat, lon: p.lon, edc: '', ocm: '', profit: '', vat: '' };
-    persist(); go('check');
+  function bindForm(sel, obj, after) {
+    var f = $(sel); if (!f) return;
+    var h = function (e) { if (!e.target.dataset.key) return; var kv = readField(e.target); obj[kv[0]] = kv[1]; store.set('dstate', { dreq: S.dreq, dbud: S.dbud, dbr: S.dbr }); if (after) after(kv[0]); };
+    f.addEventListener('change', h); f.addEventListener('input', function (e) { if (e.target.type === 'number') h(e); });
+  }
+  function runBudget() {
+    var out = $('#budOut'); if (!out) return;
+    var B = parseFloat(S.dbud.budget);
+    if (!(B > 0)) { out.innerHTML = ''; return; }
+    var res = DS.fromBudget(S.dbud.usage, B, { basis: S.dbud.basis, maxStoreys: +S.dbud.maxN, maxLength: +S.dbud.maxL || 60, province: S.plans.building.province, year: S.plans.building.year });
+    S.budgetRes = res;
+    var U = DS.USAGE[S.dbud.usage];
+    if (!res.options.length) { out.innerHTML = '<div class="note warn">No ' + esc(U.label.toLowerCase()) + ' design fits ' + peso(B) + ' with these limits. The smallest design needs more; raise the budget, allow a longer building, or switch the price basis to the lean start quotation.</div>'; return; }
+    out.innerHTML = '<p class="small muted">' + res.evaluations + ' designs evaluated. Options shown are Pareto-efficient: no other design gives more ' + U.capLabel + ' for less.</p><div class="dgrid">' + res.options.map(function (o, i) {
+      return '<article class="dcard' + (o.best ? ' best' : '') + '">' + (o.best ? '<span class="tag">Most ' + esc(U.capLabel) + '</span>' : '') + thumb(o.design) + '<b>' + o.k + ' ' + esc(U.capLabel) + ', ' + o.N + ' storey' + (o.N > 1 ? 's' : '') + '</b><span class="small muted">' + fmt(o.design.L, 1) + ' × ' + fmt(o.design.W, 1) + ' m · ' + fmt(o.design.gfa, 0) + ' m² · ' + esc(capText(o.design)) + '</span><span class="small mono">' + (S.dbud.basis === 'standard' ? 'Standard ' : 'Start ') + pesoM(o.cost) + ' · ' + pct(o.cost / B, 0) + ' of budget' + (o.k ? ' · ' + pesoM(o.cost / o.k) + ' per ' + esc(U.unit) : '') + '</span><button type="button" class="btn sm primary" data-action="d-bopt" data-i="' + i + '">Open design</button></article>';
+    }).join('') + '</div>';
+  }
+  function runBridge() {
+    var out = $('#brOut'); if (!out) return;
+    var opts = DS.bridgeOptions(Object.assign({}, S.dbr, { budget: parseFloat(S.dbr.budget) || 0, province: S.plans.bridge.province, year: S.plans.bridge.year }));
+    S.bridgeRes = opts;
+    if (!opts.length) { out.innerHTML = '<div class="note warn">No standard bridge type fits this gap. Check the gap length.</div>'; return; }
+    var B = parseFloat(S.dbr.budget) || 0;
+    out.innerHTML = '<div class="planwrap">' + DS.bridgeSVG(opts[0].plan) + '</div>' +
+      '<div class="tablewrap"><table><thead><tr><th>Design</th><th class="n">Spans</th><th class="n">Start ₱</th><th class="n">Standard ₱</th><th class="n">Per meter ₱</th><th></th></tr></thead><tbody>' +
+      opts.map(function (o, i) { return '<tr><td>' + esc(E.SUPERSTRUCTURES[o.type].label) + (o.recommended ? ' <span class="pill green">Lowest cost</span>' : '') + (B && !o.fits ? ' <span class="pill red">Over budget</span>' : '') + '</td><td class="n">' + o.spans + ' × ' + fmt(o.span, 1) + ' m</td><td class="n">' + fmt(o.quote.start, 0) + '</td><td class="n">' + fmt(o.quote.fair, 0) + '</td><td class="n">' + fmt(o.quote.fair / o.plan.totalLength, 0) + '</td><td><button type="button" class="btn sm" data-action="d-bquote" data-i="' + i + '">Quote</button></td></tr>'; }).join('') +
+      '</tbody></table></div>';
+  }
+  function renderDEditor() {
+    var el = $('#dEditor'); if (!el) return;
+    if (!S.design || S.dmode === 'bridge') { el.innerHTML = ''; return; }
+    var d = builtDesign(S.design), q = getQuote(d.plan), U = DS.USAGE[d.usage];
+    if (S.dlevel >= d.N) S.dlevel = 0;
+    var modRow = function (m, i, list) {
+      var spc = DS.SPACES[m[0]];
+      return '<div class="modrow"><span>' + esc(spc ? spc.name : m[0]) + (list === 'perFloor' ? ' <span class="muted small">(every floor)</span>' : '') + '</span><span class="row" style="gap:6px"><button type="button" class="btn sm" data-action="d-dec" data-list="' + list + '" data-i="' + i + '" aria-label="One less">−</button><b class="mono">' + m[1] + '</b><button type="button" class="btn sm" data-action="d-inc" data-list="' + list + '" data-i="' + i + '" aria-label="One more">+</button></span></div>';
+    };
+    var addable = Object.keys(DS.SPACES).filter(function (k) { var g = DS.SPACES[k].groups; return k !== 'stair' && (g.indexOf(d.usage) >= 0 || g.indexOf('civic') >= 0 || g.indexOf('all') >= 0); });
+    var wings = DS.TEMPLATES.map(function (t) { return ['tpl:' + t.id, t.name]; }).concat(S.designs.map(function (x) { return ['mine:' + x.id, '★ ' + x.program.name]; }));
+    el.innerHTML =
+      '<div class="card stack" id="editorCard">' +
+        '<div class="row" style="justify-content:space-between;align-items:flex-start"><div style="min-width:0;flex:1"><div class="eyebrow">' + esc(U.label) + ' · schematic design</div>' +
+          '<input id="dName" class="titleInput" value="' + esc(S.design.name || d.name) + '" aria-label="Design name"></div>' +
+          '<div class="row"><button type="button" class="btn sign" data-action="d-quote">Quote this design</button><button type="button" class="btn" data-action="d-save">Save design</button><button type="button" class="btn" data-action="d-svg">' + (EMBEDDED ? 'Copy plan SVG' : 'Export plan SVG') + '</button></div></div>' +
+        '<div class="metrics">' +
+          '<div class="metric"><b>' + fmt(d.L, 1) + ' × ' + fmt(d.W, 1) + ' m</b><span>' + d.N + ' storey' + (d.N > 1 ? 's' : '') + ' · ' + fmt(d.gfa, 0) + ' m² gross floor area</span></div>' +
+          '<div class="metric"><b>' + esc(capText(d)) + '</b><span>Capacity</span></div>' +
+          '<div class="metric"><b>' + pesoM(q.start) + '</b><span>Lean start quotation</span></div>' +
+          '<div class="metric"><b>' + pesoM(q.fair) + '</b><span>Standard fair estimate · ceiling ' + pesoM(q.ceiling) + '</span></div>' +
+        '</div>' +
+        (d.N > 1 ? '<div class="subtabs" role="tablist">' + d.floors.map(function (f, i) { return '<button type="button" role="tab" data-dlevel="' + i + '" aria-selected="' + (S.dlevel === i) + '">' + DS.levelName(i).replace(' plan', '') + '</button>'; }).join('') + '</div>' : '') +
+        '<div class="planwrap">' + DS.planSVG(d, S.dlevel).replace('class="planSvg"', 'class="planSvg" style="min-width:' + Math.round(Math.max(560, d.L * 16)) + 'px"') + '</div>' +
+        '<div class="split">' +
+          '<div class="stack"><h3>Spaces</h3>' +
+            S.design.modules.map(function (m, i) { return modRow(m, i, 'modules'); }).join('') +
+            S.design.perFloor.map(function (m, i) { return modRow(m, i, 'perFloor'); }).join('') +
+            '<div class="row"><div class="field" style="flex:1"><div class="in"><select id="dAddMod" aria-label="Space to add">' + addable.map(function (k) { return '<option value="' + k + '">' + esc(DS.SPACES[k].name) + '</option>'; }).join('') + '</select></div></div><button type="button" class="btn sm" data-action="d-add">Add space</button></div>' +
+            '<div class="row"><div class="field" style="flex:1"><div class="in"><select id="dWing" aria-label="Design to add as a wing">' + wings.map(function (w) { return '<option value="' + esc(w[0]) + '">' + esc(w[1]) + '</option>'; }).join('') + '</select></div></div><button type="button" class="btn sm" data-action="d-wing">Add as wing</button></div>' +
+            '<form class="fields" id="dForm" onsubmit="return false">' +
+              fieldHtml({ k: 'storeys', l: 'Storeys', step: 1, min: 1, max: 6 }, S.design.storeys || 1, 'e_') +
+              fieldHtml({ k: 'layout', l: 'Layout', t: 'select', o: [['single', 'Single-loaded corridor'], ['double', 'Double-loaded corridor'], ['open', 'Open plan']] }, S.design.layout || d.layout, 'e_') +
+              fieldHtml({ k: 'corridor', l: 'Corridor width', u: 'm', step: 0.1 }, S.design.corridor != null ? S.design.corridor : d.corridor, 'e_') +
+              fieldHtml({ k: 'roof', l: 'Roof', t: 'select', o: [['steel_truss', 'Steel truss + long-span roofing'], ['rc_deck', 'RC roof deck']] }, d.plan.roof, 'e_') +
+            '</form></div>' +
+          '<div class="stack"><h3>Standards checks</h3>' + d.checks.map(function (c) { return '<div class="note ' + (c.ok ? '' : 'warn') + ' small">' + (c.ok ? '✓ ' : '! ') + esc(c.text) + '</div>'; }).join('') +
+            '<div class="viewer" style="height:240px"><canvas id="dV" aria-label="3D model of the design"></canvas><span class="hint">Drag to rotate</span></div></div>' +
+        '</div>' +
+        '<div class="legend">' + [['learning', 'Learning'], ['health', 'Health'], ['office', 'Office'], ['assembly', 'Assembly'], ['commerce', 'Commerce'], ['living', 'Living'], ['service', 'Service']].map(function (c) { return '<span><i style="background:' + DS.CAT_FILL[c[0]] + ';border:1px solid #13213a;border-radius:3px"></i>' + c[1] + '</span>'; }).join('') + '</div>' +
+      '</div>';
+    $('#dName').addEventListener('change', function (e) { S.design.name = e.target.value; persistDesign(); });
+    var f = $('#dForm');
+    var onF = function (e) {
+      if (!e.target.dataset.key) return;
+      var kv = readField(e.target);
+      S.design[kv[0]] = kv[0] === 'storeys' ? Math.max(1, Math.min(6, Math.round(kv[1] || 1))) : kv[1];
+      persistDesign(); renderDEditor();
+    };
+    f.addEventListener('change', onF);
+    var vw = new Viewer($('#dV')); vw.set(q.tiers.standard.geometry);
+  }
+  function persistDesign() { store.set('design', S.design); }
+  function openDesign(program) {
+    S.design = JSON.parse(JSON.stringify(program));
+    delete S.design.mine;
+    S.dlevel = 0; persistDesign(); renderDEditor();
+    var ed = $('#dEditor'); if (ed) ed.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function autoStoreys(usage, k, maxL) {
+    var best = null;
+    for (var N = 1; N <= (usage === 'court' ? 1 : 5); N++) {
+      if (usage === 'school' && k < N) break;
+      var d = DS.build(Object.assign(DS.programFor(usage, k, N), { name: '' }), { province: S.plans.building.province, year: S.plans.building.year });
+      if (d.L > maxL) continue;
+      var c = getQuote(d.plan).fair;
+      if (!best || c < best.c) best = { N: N, c: c };
+    }
+    return best ? best.N : (usage === 'court' ? 1 : 5);
   }
 
   // ------------------------------------------------------------------ library
@@ -597,17 +721,18 @@
         '<div class="card stack"><h2>Reference plans</h2><p class="small muted">Previous-plan library: typical configurations of DPWH-implemented school buildings, health facilities, offices, evacuation centers, markets, culverts and bridges. Pick one and adjust it to your project.</p>' +
           '<h3>Buildings</h3><div class="list">' + ref('building') + '</div><h3>Bridges</h3><div class="list">' + ref('bridge') + '</div></div>' +
         '<div class="card stack"><h2>My saved plans</h2>' + (S.saved.length ? '<div class="list">' + S.saved.map(savedItem).join('') + '</div>' : '<p class="muted">Plans you save from the Quote screen appear here, stored on this device.</p>') + '</div>' +
+        '<div class="card stack"><h2>My designs</h2>' + (S.designs.length ? '<div class="list">' + S.designs.map(function (x) { var d = builtDesign(x.program); return '<div class="item"><div><b>' + esc(x.program.name) + '</b><div class="small muted">' + esc(capText(d)) + ' · ' + d.N + ' storey' + (d.N > 1 ? 's' : '') + ' · start ' + pesoM(getQuote(d.plan).start) + '</div></div><div class="row"><button type="button" class="btn sm" data-action="d-open" data-id="' + x.id + '" data-mine="1">Open</button><button type="button" class="btn sm ghost" data-action="del-design" data-id="' + x.id + '" aria-label="Delete">✕</button></div></div>'; }).join('') + '</div>' : '<p class="muted">Designs you save in the Design studio appear here and can be added as wings of other designs.</p>') + '</div>' +
         '<div class="card stack"><h2>My checks</h2>' + (S.checks.length ? '<div class="list">' + S.checks.map(function (c) {
           return '<div class="item"><div><b>' + esc(c.cid || c.plan.name) + '</b><div class="small muted">' + esc(c.plan.name) + ' · ' + pesoM(c.amount) + ' · ratio ' + Number(c.obr).toFixed(2) + '</div></div><div class="row"><span class="pill ' + c.status + '">BRI ' + Number(c.bri).toFixed(0) + '</span><button type="button" class="btn sm" data-action="open-check" data-id="' + c.id + '">Open</button><button type="button" class="btn sm ghost" data-action="del-check" data-id="' + c.id + '" aria-label="Delete">✕</button></div></div>';
-        }).join('') + '</div>' : '<p class="muted">Screened contracts you save appear here and on the map.</p>') + '</div>' +
+        }).join('') + '</div>' : '<p class="muted">Screened contracts you save appear here.</p>') + '</div>' +
         '<div class="card stack"><div class="row" style="justify-content:space-between"><h2>Unit price book</h2><button type="button" class="btn sm" data-action="reset-prices">Reset to defaults</button></div>' +
           '<p class="small muted">' + esc(E.PRICE_BASIS) + '. Replace these with your office\'s DUPA or the latest regional price data; every quotation updates.</p>' +
           '<div class="tablewrap" style="max-height:460px"><table><thead><tr><th>Pay item</th><th>Description</th><th>Unit</th><th class="n">Rate ₱</th></tr></thead><tbody>' +
           ids.map(function (k) { var b = E.PRICE_BOOK[k], val = S.prices[k] != null ? S.prices[k] : b[3]; return '<tr><td class="mono small">' + esc(b[0]) + '</td><td>' + esc(b[1]) + '</td><td>' + esc(b[2]) + '</td><td class="n"><input type="number" step="1" min="0" data-price="' + k + '" value="' + val + '" aria-label="Rate for ' + esc(b[1]) + '" style="width:110px;text-align:right;font:inherit;border:1px solid var(--line);border-radius:6px;padding:4px 6px;background:' + (S.prices[k] != null ? 'var(--warn-bg)' : 'var(--surface-2)') + ';color:var(--ink)"></td></tr>'; }).join('') +
           '</tbody></table></div></div>' +
-        '<div class="card stack"><h2>About BUHAY</h2>' +
-          '<p>BUHAY (Buildings-and-Bridges Unit-cost Hybrid Analytics and Yardstick) is the working system of the study <i>BUHAY: A Blueprint-Driven Quantity Take-Off and Hybrid Machine Learning System for Standards-Based Start Quotations and Over-Budget Detection in Public Buildings and Bridges</i>.</p>' +
-          '<p class="small">Method: parametric quantity take-off from the plan → DPWH pay items and unit costs → ABC with D.O. 197 s. 2016 / D.O. 30 s. 2025 indirect costs → lean, standard and ceiling tiers. Screening combines the over-budget ratio with an XGBoost cost model (with SHAP explanations), a Multiple Linear Regression baseline and an Isolation Forest into the BUHAY Risk Index.</p>' +
+        '<div class="card stack"><h2>About BUHAY-AH</h2>' +
+          '<p>BUHAY-AH (Buildings-and-Bridges Unit-cost Hybrid Analytics and Yardstick for Accountable and Honest infrastructure) is the working system of the study <i>BUHAY-AH: A Budget-to-Blueprint Design Generator, Standards-Based Quantity Take-Off and Hybrid Machine Learning System for Start Quotations and Over-Budget Detection in Public Buildings and Bridges</i>.</p>' +
+          '<p class="small">Method: requirement or budget → modular schematic design → parametric quantity take-off → DPWH pay items and unit costs → ABC with D.O. 197 s. 2016 / D.O. 30 s. 2025 indirect costs → lean, standard and ceiling tiers. Screening combines the over-budget ratio with an XGBoost cost model (with SHAP explanations), a Multiple Linear Regression baseline and an Isolation Forest into the BUHAY-AH Risk Index.</p>' +
           '<p class="small">Supports SDG 9.1 (resilient infrastructure), SDG 11.5 (disaster-resilient facilities), SDG 16.5, 16.6 and 16.10 (anti-corruption, accountable institutions, access to information), SDG 12.7 (sustainable public procurement) and SDG 4.a (school facilities).</p>' +
           '<p class="small"><b>Lead researcher:</b> Enrique Miguel C. Buban.</p>' +
           '<p class="small muted">Version ' + E.VERSION + '. Data stays on this device. ' + (DATA.models ? 'Models: ' + esc(DATA.models.generated) + '.' : 'Model files not loaded: quotations work, ML screening is off.') + '</p></div>' +
@@ -624,13 +749,15 @@
 
   // ------------------------------------------------------------------ actions
   document.addEventListener('click', function (e) {
-    var t = e.target.closest('[data-go],[data-action],[data-kind-set],[data-tier],[data-qtab],[data-mapkind]');
+    var t = e.target.closest('[data-go],[data-action],[data-kind-set],[data-tier],[data-qtab],[data-dmode],[data-dfilter],[data-dlevel]');
     if (!t) return;
     if (t.dataset.go) { e.preventDefault(); go(t.dataset.go); return; }
     if (t.dataset.kindSet) { S.kind = t.dataset.kindSet; persist(); go('quote'); return; }
     if (t.dataset.tier) { S.tier = t.dataset.tier; renderQuoteOut(); return; }
     if (t.dataset.qtab) { S.qtab = t.dataset.qtab; renderQuoteOut(); return; }
-    if (t.dataset.mapkind) { S.mapKind = t.dataset.mapkind; document.querySelectorAll('[data-mapkind]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.mapkind === S.mapKind); }); drawMap(); return; }
+    if (t.dataset.dmode) { S.dmode = t.dataset.dmode; renderDesign($('#view')); return; }
+    if (t.dataset.dfilter) { S.dfilter = t.dataset.dfilter; renderDPanel(); return; }
+    if (t.dataset.dlevel) { S.dlevel = +t.dataset.dlevel; renderDEditor(); return; }
     var a = t.dataset.action, p = plan(), q;
     if (a === 'new') { S.kind = t.dataset.kind; persist(); go('quote'); }
     else if (a === 'sample-dxf') {
@@ -651,13 +778,56 @@
       var amt = parseFloat(S.check.amount); if (!(amt > 0)) { toast('Enter a contract amount first'); return; }
       q = getQuote(); var as = E.assess(q, amt), ml = screenFor(p, q, amt);
       var st = ml ? ml.status : as.status; if (as.status === 'red') st = 'red';
-      S.checks.unshift({ id: 'c' + Date.now().toString(36), cid: S.check.cid, lat: S.check.lat, lon: S.check.lon, amount: amt, plan: JSON.parse(JSON.stringify(p)),
+      S.checks.unshift({ id: 'c' + Date.now().toString(36), cid: S.check.cid, amount: amt, plan: JSON.parse(JSON.stringify(p)),
         fair: q.fair, ceiling: q.ceiling, obr: as.obr, bri: ml ? ml.bri : 0, status: st === 'low' ? 'green' : st, saved: new Date().toISOString() });
-      store.set('checks', S.checks); toast('Saved to My checks' + (S.check.lat && S.check.lon ? ' and the map' : ''));
+      store.set('checks', S.checks); toast('Saved to My checks');
     }
     else if (a === 'boq-compare') compareBoq();
     else if (a === 'boq-example') exampleBoq();
-    else if (a === 'open-pin') openPin(t.dataset.pin);
+    else if (a === 'go-budget' || a === 'go-templates') { S.dmode = a === 'go-budget' ? 'budget' : 'templates'; go('design'); }
+    else if (a === 'd-open') {
+      var src = t.dataset.mine === '1' ? (S.designs.filter(function (x) { return x.id === t.dataset.id; })[0] || {}).program : DS.TEMPLATES.filter(function (x) { return x.id === t.dataset.id; })[0];
+      if (S.view !== 'design') { S.dmode = 'templates'; go('design'); }
+      if (src) openDesign(src);
+    }
+    else if (a === 'd-gen') {
+      var U = DS.USAGE[S.dreq.usage], k = Math.max(U.range[0], parseFloat(S.dreq.k) || U.range[2]);
+      var N = S.dreq.N === 'auto' ? autoStoreys(S.dreq.usage, k, +S.dreq.maxL || 60) : +S.dreq.N;
+      openDesign(Object.assign(DS.programFor(S.dreq.usage, k, N), { name: U.label + ' for ' + k + ' ' + U.capLabel }));
+    }
+    else if (a === 'd-budget') runBudget();
+    else if (a === 'd-bopt') { var o = S.budgetRes && S.budgetRes.options[+t.dataset.i]; if (o) openDesign(Object.assign({}, o.design.program, { name: o.design.program.name })); }
+    else if (a === 'd-bridge') runBridge();
+    else if (a === 'd-bquote' || a === 'b-tpl') {
+      var bp = a === 'b-tpl' ? DS.BRIDGE_TEMPLATES.filter(function (x) { return x.id === t.dataset.id; })[0].plan : S.bridgeRes[+t.dataset.i].plan;
+      S.kind = 'bridge'; S.plans.bridge = Object.assign({}, bp, { province: S.plans.bridge.province, year: S.plans.bridge.year }); persist(); go('quote');
+    }
+    else if (a === 'd-inc' || a === 'd-dec') {
+      var lst = S.design[t.dataset.list], it = lst[+t.dataset.i];
+      it[1] += a === 'd-inc' ? 1 : -1;
+      if (it[1] <= 0) lst.splice(+t.dataset.i, 1);
+      persistDesign(); renderDEditor();
+    }
+    else if (a === 'd-add') {
+      var mid2 = $('#dAddMod').value, ex = S.design.modules.filter(function (m) { return m[0] === mid2; })[0];
+      if (ex) ex[1]++; else S.design.modules.push([mid2, 1]);
+      persistDesign(); renderDEditor();
+    }
+    else if (a === 'd-wing') {
+      var wv = $('#dWing').value, other = wv.indexOf('tpl:') === 0 ? DS.TEMPLATES.filter(function (x) { return x.id === wv.slice(4); })[0] : (S.designs.filter(function (x) { return x.id === wv.slice(5); })[0] || {}).program;
+      if (other) { S.design = DS.combine(S.design, other); S.design.name = S.design.name.slice(0, 120); persistDesign(); renderDEditor(); toast('Added as a wing'); }
+    }
+    else if (a === 'd-save') {
+      S.designs.unshift({ id: 'd' + Date.now().toString(36), program: JSON.parse(JSON.stringify(S.design)), saved: new Date().toISOString() });
+      store.set('designs', S.designs); toast('Design saved to My designs');
+    }
+    else if (a === 'd-svg') { var dd = builtDesign(S.design); download((S.design.name || 'design').replace(/[^\w-]+/g, '_') + '_plan_' + (S.dlevel + 1) + '.svg', DS.planSVG(dd, S.dlevel), 'image/svg+xml'); }
+    else if (a === 'd-quote') {
+      var bd = builtDesign(S.design);
+      S.kind = 'building'; S.plans.building = Object.assign({}, bd.plan, { name: S.design.name || bd.name, province: S.plans.building.province, year: S.plans.building.year });
+      persist(); go('quote');
+    }
+    else if (a === 'del-design') { S.designs = S.designs.filter(function (x) { return x.id !== t.dataset.id; }); store.set('designs', S.designs); go(S.view); }
     else if (a === 'use-ref') { var r = fresh(t.dataset.id); S.kind = r.kind; S.plans[r.kind] = r; persist(); go('quote'); }
     else if (a === 'use-saved' || a === 'del-saved') {
       var sv = S.saved.filter(function (s) { return s.id === t.dataset.id; })[0];
@@ -666,7 +836,7 @@
     }
     else if (a === 'open-check' || a === 'del-check') {
       var ck = S.checks.filter(function (c) { return c.id === t.dataset.id; })[0];
-      if (a === 'open-check' && ck) { S.kind = ck.plan.kind; S.plans[ck.plan.kind] = JSON.parse(JSON.stringify(ck.plan)); S.check = { amount: ck.amount, cid: ck.cid, lat: ck.lat, lon: ck.lon, edc: '', ocm: '', profit: '', vat: '' }; persist(); go('check'); }
+      if (a === 'open-check' && ck) { S.kind = ck.plan.kind; S.plans[ck.plan.kind] = JSON.parse(JSON.stringify(ck.plan)); S.check = { amount: ck.amount, cid: ck.cid, edc: '', ocm: '', profit: '', vat: '' }; persist(); go('check'); }
       else { S.checks = S.checks.filter(function (c) { return c.id !== t.dataset.id; }); store.set('checks', S.checks); go(S.view); }
     }
     else if (a === 'reset-prices') { S.prices = {}; store.set('prices', S.prices); quoteCache.key = ''; go('library'); toast('Default rates restored'); }
@@ -677,7 +847,7 @@
   var theme = store.get('theme', 'system'); applyTheme(theme);
   $('#themeBtn').addEventListener('click', function () {
     theme = { system: 'dark', dark: 'light', light: 'system' }[theme]; applyTheme(theme); store.set('theme', theme);
-    toast('Theme: ' + theme); if (S.view === 'map') drawMap();
+    toast('Theme: ' + theme);
   });
 
   // install & offline

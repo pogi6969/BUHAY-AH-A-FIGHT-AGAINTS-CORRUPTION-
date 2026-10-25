@@ -1,7 +1,7 @@
 /*
- * BUHAY in-browser inference for the hybrid ML layer exported by research/pipeline/train.py:
+ * BUHAY-AH in-browser inference for the hybrid ML layer exported by research/pipeline/train.py:
  * Multiple Linear Regression, XGBoost (log cost) with exact TreeSHAP, Isolation Forest,
- * and the BUHAY Risk Index. Works in the browser (window.BuhayML) and in Node.
+ * and the BUHAY-AH Risk Index. Works in the browser (window.BuhayML) and in Node.
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
@@ -119,7 +119,7 @@
     return { value: 100 * (w.obr * s1 + w.ml * s2 + w.iso * s3), parts: { obr: 100 * w.obr * s1, ml: 100 * w.ml * s2, iso: 100 * w.iso * s3 } };
   }
 
-  // Full screening of one project: features (object), awarded amount, BUHAY standard estimate
+  // Full screening of one project: features (object), awarded amount, BUHAY-AH standard estimate
   function screen(models, kind, feat, amount, fair) {
     var m = models[kind], x = m.features.map(function (f) { return feat[f]; });
     var mlr = m.mlr.intercept; m.mlr.features.forEach(function (f) { mlr += m.mlr.coef[f] * feat[f]; });
@@ -138,7 +138,7 @@
       for (var i = 1; i < iso.z.length; i++) if (Math.abs(iso.z[i]) > Math.abs(iso.z[zi])) zi = i;
       var r = bri(models.bri, obr, mlRatio, iso.score);
       out.mlRatio = mlRatio; out.obr = obr; out.iso = iso.score; out.isoAnomalous = iso.anomalous;
-      out.driver = { feature: names[zi], label: (m.labels[names[zi]] || { LogMLRatio: 'XGBoost cost residual', LogOBR: 'Over-budget ratio vs. BUHAY estimate' }[names[zi]]), z: iso.z[zi] };
+      out.driver = { feature: names[zi], label: (m.labels[names[zi]] || { LogMLRatio: 'XGBoost cost residual', LogOBR: 'Over-budget ratio vs. BUHAY-AH estimate' }[names[zi]]), z: iso.z[zi] };
       out.bri = r.value; out.briParts = r.parts;
       out.status = r.value >= models.bri.flag ? 'red' : r.value >= models.bri.review ? 'amber' : 'green';
     }

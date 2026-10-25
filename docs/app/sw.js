@@ -1,10 +1,9 @@
-/* BUHAY offline cache: app shell + data, network-first for map tiles. */
-var CACHE = 'buhay-v1.0.0';
+/* BUHAY-AH offline cache: app shell + data, network-first for map tiles. */
+var CACHE = 'buhay-ah-v1.1.0';
 var SHELL = [
   './', './index.html', './app.css', './manifest.webmanifest',
-  './js/engine.js', './js/ml.js', './js/plan-import.js', './js/viewer3d.js', './js/app.js',
+  './js/engine.js', './js/ml.js', './js/plan-import.js', './js/viewer3d.js', './js/designs.js', './js/app.js',
   './data/bundle.js', './data/sample-plan.dxf',
-  './vendor/leaflet/leaflet.js', './vendor/leaflet/leaflet.css',
   './icons/icon-192.png', './icons/icon-512.png'
 ];
 self.addEventListener('install', function (e) {

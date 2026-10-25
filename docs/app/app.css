@@ -218,3 +218,20 @@ tr.sum td { font-weight: 700; border-top: 2px solid var(--ink); }
   body { background: #fff; color: #000; }
   .card { box-shadow: none; border: 0; }
 }
+
+/* ---- design studio */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 0.86rem; font-weight: 600; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.dgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.dcard { position: relative; display: flex; flex-direction: column; gap: 5px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); padding: 10px; box-shadow: var(--shadow); min-width: 0; }
+.dcard.best { border-color: var(--sign); box-shadow: 0 0 0 2px var(--sign) inset; }
+.dcard .tag { position: absolute; top: 8px; right: 8px; background: var(--sign); color: var(--sign-ink); font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 6px; border-radius: 4px; }
+.dcard .btn { align-self: flex-start; margin-top: 4px; }
+.thumb { background: #fff; border-radius: 6px; border: 1px solid var(--line); height: 130px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.thumb svg { width: 100%; height: 100%; }
+.planwrap { background: #fff; border: 1px solid var(--line); border-radius: var(--r); overflow-x: auto; }
+.planwrap .planSvg { display: block; width: 100%; min-width: 560px; height: auto; }
+.modrow { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 1px solid var(--line); padding: 5px 0; font-size: 0.92rem; }
+.titleInput { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; border: 0; border-bottom: 1px dashed var(--line); background: transparent; color: var(--ink); width: 100%; padding: 2px 0; }
+.titleInput:focus { outline: none; border-bottom-color: var(--accent); }
