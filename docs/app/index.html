@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BUHAY App</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="BUHAY turns a building or bridge plan into a standards-based start quotation and flags over-budgeted public infrastructure.">
+<meta name="theme-color" content="#13213a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <a class="brand" href="#home" data-go="home" aria-label="BUHAY home">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#13213a"/><path d="M6 40h9l5-14 6 14h5l4-9 4 9h3c2-9 7-14 9-14s7 5 9 14" fill="none" stroke="#f2b200" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 46h48" stroke="#6aa5ff" stroke-width="3" stroke-linecap="round"/></svg>
+      <span><b>BUHAY</b><small>Buildings &amp; bridges fair-cost checker</small></span>
+    </a>
+    <nav class="tabs-top" id="tabsTop" aria-label="Main"></nav>
+    <span class="spacer"></span>
+    <button class="iconbtn" id="themeBtn" type="button" aria-label="Switch light or dark theme"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 4a8 8 0 0 1 0 16Z" fill="currentColor"/></svg></button>
+  </header>
+  <main id="view" tabindex="-1"></main>
+  <div class="footer">BUHAY v1.0 · Enrique Miguel C. Buban · Screening tool: a flag is a signal for review, not proof of wrongdoing.</div>
+  <nav class="tabbar" id="tabsBottom" aria-label="Main"></nav>
+</div>
+<script src="vendor/leaflet/leaflet.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/ml.js"></script>
+<script src="js/plan-import.js"></script>
+<script src="js/viewer3d.js"></script>
+<script src="data/bundle.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

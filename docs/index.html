@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BUHAY</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="BUHAY prices public buildings and bridges from their plans using DPWH and international standards, gives a lean start quotation, and flags over-budgeted contracts. Download the app.">
+<meta name="theme-color" content="#13213a">
+<link rel="icon" href="app/icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;600&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="app/vendor/leaflet/leaflet.css">
+<style>
+/* Layout: long-scroll download page. Full-bleed bands, content in a 1120px column.
+   Identity: blueprint navy ink + survey grid paper, DPWH-sign yellow reserved for the download actions. */
+:root {
+  --paper: #eef1f4; --sheet: #ffffff; --sheet-2: #f6f8fa; --ink: #13213a; --muted: #5a6577; --line: #d5dbe3;
+  --blue: #1f5fad; --blue-ink: #ffffff; --sign: #f2b200; --sign-ink: #1b1600; --navy: #13213a; --navy-ink: #e6edf7; --navy-muted: #9fb0c8;
+  --ok: #1d8a4c; --warn: #b97800; --bad: #c22f27; --grid: rgba(31, 95, 173, 0.07);
+  --f-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --f-body: "Source Sans 3", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0b1424; --sheet: #111e33; --sheet-2: #0e192c; --ink: #e6edf7; --muted: #98a6bb; --line: #22324d;
+    --blue: #6aa5ff; --blue-ink: #08162b; --sign: #ffc83a; --navy: #070e1a; --navy-ink: #e6edf7; --navy-muted: #8fa1bb;
+    --ok: #4cc584; --warn: #f0b440; --bad: #ff6b5f; --grid: rgba(106, 165, 255, 0.06); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0b1424; --sheet: #111e33; --sheet-2: #0e192c; --ink: #e6edf7; --muted: #98a6bb; --line: #22324d;
+  --blue: #6aa5ff; --blue-ink: #08162b; --sign: #ffc83a; --navy: #070e1a; --navy-ink: #e6edf7; --navy-muted: #8fa1bb;
+  --ok: #4cc584; --warn: #f0b440; --bad: #ff6b5f; --grid: rgba(106, 165, 255, 0.06); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 17px; line-height: 1.55;
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 28px 28px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--sheet); }
+h1, h2, h3 { font-family: var(--f-display); line-height: 1.02; margin: 0; text-wrap: balance; }
+h2 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; text-transform: uppercase; letter-spacing: 0.01em; }
+h3 { font-size: 1.35rem; font-weight: 700; letter-spacing: 0.01em; }
+p { margin: 0; }
+a { color: var(--blue); }
+:focus-visible { outline: 2px solid var(--sign); outline-offset: 3px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(18px, env(safe-area-inset-left, 0px)); padding-right: max(18px, env(safe-area-inset-right, 0px)); }
+.band { padding-block: 72px; }
+.eyebrow { font-family: var(--f-display); text-transform: uppercase; letter-spacing: 0.16em; font-size: 0.85rem; font-weight: 600; color: var(--muted); }
+.lede { font-size: 1.15rem; max-width: 62ch; color: var(--ink); }
+.muted { color: var(--muted); }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+/* nav */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--sheet); border-bottom: 1px solid var(--line); }
+.nav .wrap { display: flex; align-items: center; gap: 18px; padding-block: 10px; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
+.brand svg { width: 36px; height: 36px; }
+.brand b { font-family: var(--f-display); font-size: 1.6rem; letter-spacing: 0.08em; }
+.nav nav { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; }
+.nav nav a { color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.95rem; padding: 6px 10px; border-radius: 6px; }
+.nav nav a:hover { color: var(--ink); background: var(--sheet-2); }
+.nav .get { background: var(--sign); color: var(--sign-ink) !important; }
+@media (max-width: 760px) { .nav nav a:not(.get) { display: none; } }
+
+/* buttons */
+.btn { display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; padding: 12px 18px; font-weight: 700; text-decoration: none; border: 1px solid var(--line); color: var(--ink); background: var(--sheet); font-size: 1rem; line-height: 1.1; cursor: pointer; font-family: inherit; }
+.btn svg { width: 20px; height: 20px; flex: none; }
+.btn.sign { background: var(--sign); border-color: var(--sign); color: var(--sign-ink); }
+.btn.blue { background: var(--blue); border-color: var(--blue); color: var(--blue-ink); }
+.btn:hover { transform: translateY(-1px); }
+.btns { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* hero */
+.hero { padding-block: 56px 40px; }
+.hero .wrap { display: grid; grid-template-columns: 1fr; gap: 36px; align-items: center; }
+@media (min-width: 940px) { .hero .wrap { grid-template-columns: 1.1fr 0.9fr; } }
+.hero h1 { font-size: clamp(4.2rem, 15vw, 9rem); font-weight: 800; letter-spacing: 0.04em; line-height: 0.86; }
+.hero h1 span { display: block; font-size: 0.205em; letter-spacing: 0.02em; font-weight: 600; color: var(--blue); margin-top: 12px; line-height: 1.15; }
+.hero .stack { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.phones { position: relative; display: flex; justify-content: center; gap: 14px; min-width: 0; }
+.phone { width: min(46%, 230px); aspect-ratio: 390 / 780; border-radius: 30px; border: 8px solid var(--navy); background: var(--navy); overflow: hidden; box-shadow: 0 24px 50px rgba(19, 33, 58, 0.28); flex: none; max-width: 100%; }
+.phone img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+.phone.up { transform: translateY(-26px); }
+
+/* numbers band */
+.dark { background: var(--navy); color: var(--navy-ink); }
+.dark .eyebrow { color: var(--navy-muted); }
+.figures { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 28px; margin-top: 30px; }
+.fig b { font-family: var(--f-display); font-size: clamp(2.6rem, 6vw, 3.6rem); font-weight: 800; color: var(--sign); display: block; line-height: 1; letter-spacing: 0.01em; }
+.fig p { color: var(--navy-ink); margin-top: 8px; font-size: 0.98rem; }
+.fig small { display: block; color: var(--navy-muted); margin-top: 6px; font-size: 0.8rem; }
+
+/* steps */
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0; margin-top: 34px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--sheet); }
+.step { padding: 22px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); min-width: 0; }
+.step .n { font-family: var(--f-mono); font-size: 0.85rem; color: var(--blue); font-weight: 600; }
+.step h3 { margin: 6px 0 8px; }
+.step p { color: var(--muted); font-size: 0.97rem; }
+
+/* tiers demo */
+.tiersdemo { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 26px; }
+@media (max-width: 700px) { .tiersdemo { grid-template-columns: 1fr; } }
+.t { background: var(--sheet); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+.t.start { box-shadow: 0 0 0 2px var(--blue) inset; }
+.t .tag { display: inline-block; background: var(--sign); color: var(--sign-ink); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-bottom: 8px; }
+.t b { display: block; font-family: var(--f-mono); font-size: 1.6rem; }
+.t p { color: var(--muted); font-size: 0.92rem; margin-top: 6px; }
+
+/* map */
+#map { height: 520px; border-radius: 12px; border: 1px solid var(--line); background: var(--sheet-2); margin-top: 22px; }
+.leaflet-container { font-family: var(--f-body); background: var(--sheet-2); }
+.mapbar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: end; }
+.seg { display: inline-flex; background: var(--sheet); border: 1px solid var(--line); border-radius: 9px; padding: 3px; gap: 3px; }
+.seg button { border: 0; background: none; font: inherit; font-weight: 600; color: var(--muted); padding: 7px 14px; border-radius: 7px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--navy); color: var(--navy-ink); }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; font-size: 0.88rem; color: var(--muted); }
+.legend i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.mapstats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-top: 16px; }
+.mapstats div { background: var(--sheet); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.mapstats b { display: block; font-family: var(--f-mono); font-size: 1.4rem; }
+.mapstats span { color: var(--muted); font-size: 0.86rem; }
+
+/* sdg */
+.sdgs { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 28px; }
+.sdg { border-radius: 12px; padding: 18px; color: #fff; min-height: 170px; display: flex; flex-direction: column; gap: 8px; }
+.sdg b { font-family: var(--f-display); font-size: 2.4rem; line-height: 1; }
+.sdg h3 { font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.sdg p { font-size: 0.92rem; opacity: 0.95; }
+
+/* downloads */
+.dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; margin-top: 28px; }
+.card { background: var(--sheet); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.card.feature { border: 2px solid var(--sign); }
+.card ol { margin: 0; padding-left: 20px; color: var(--muted); font-size: 0.95rem; }
+.card .btn { align-self: flex-start; }
+.paper { display: grid; grid-template-columns: 1fr; gap: 28px; align-items: start; }
+@media (min-width: 900px) { .paper { grid-template-columns: 1.2fr 0.8fr; } }
+.abstract { background: var(--sheet); border: 1px solid var(--line); border-left: 4px solid var(--blue); border-radius: 0 12px 12px 0; padding: 20px 22px; font-size: 0.98rem; }
+.results { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.results div { background: var(--sheet); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+.results b { display: block; font-family: var(--f-mono); font-size: 1.5rem; }
+.results span { color: var(--muted); font-size: 0.86rem; }
+footer { border-top: 1px solid var(--line); background: var(--sheet); padding-block: 30px; font-size: 0.9rem; color: var(--muted); }
+footer .wrap { display: flex; flex-direction: column; gap: 10px; }
+.team { display: flex; align-items: center; gap: 16px; margin-top: 24px; }
+.avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--navy); color: var(--sign); display: grid; place-items: center; font-family: var(--f-display); font-size: 1.6rem; font-weight: 800; flex: none; }
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="BUHAY home">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#13213a"/><path d="M6 40h9l5-14 6 14h5l4-9 4 9h3c2-9 7-14 9-14s7 5 9 14" fill="none" stroke="#f2b200" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 46h48" stroke="#6aa5ff" stroke-width="3" stroke-linecap="round"/></svg>
+      <b>BUHAY</b>
+    </a>
+    <nav aria-label="Sections">
+      <a href="#how">How it works</a><a href="#map-section">Map</a><a href="#sdg">SDGs</a><a href="#research">Research</a><a class="get" href="#download">Download</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero" id="top">
+  <div class="wrap">
+    <div class="stack">
+      <div class="eyebrow">Public buildings &amp; bridges · DPWH &amp; international standards</div>
+      <h1>BUHAY<span>Buildings-and-Bridges Unit-cost Hybrid Analytics and Yardstick</span></h1>
+      <p class="lede">Give it the plan of a school building, health station, evacuation center or bridge. BUHAY takes off the quantities, prices them with DPWH pay items and gives you a <b>lean start quotation</b>, a fair estimate and a ceiling. Give it the contract amount and it tells you whether the project is over-budgeted.</p>
+      <div class="btns">
+        <a class="btn sign" id="apkBtn" href="https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/releases/download/apk-latest/BUHAY.apk"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-4.5-4.5M12 15l4.5-4.5M4.5 19.5h15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Download for Android</a>
+        <a class="btn blue" href="app/index.html#home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m0 0-5-5m5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Open the web app</a>
+        <a class="btn" href="#download">Install on iPhone or PC</a>
+      </div>
+      <p class="muted" style="font-size:0.92rem">Free · works offline after first load · your plans stay on your device</p>
+    </div>
+    <div class="phones" aria-label="App screens">
+      <div class="phone up"><img src="assets/screen-quote.png" alt="BUHAY quotation screen showing lean, standard and ceiling estimates for a 2-storey school building"></div>
+      <div class="phone"><img src="assets/screen-check.png" alt="BUHAY check screen flagging a padded contract with risk index 83"></div>
+    </div>
+  </div>
+</section>
+
+<section class="band dark" aria-labelledby="why">
+  <div class="wrap">
+    <div class="eyebrow">Why it matters</div>
+    <h2 id="why">Padding hides in the price</h2>
+    <div class="figures">
+      <div class="fig"><b>10–30%</b><p>of the value of publicly funded construction can be lost to corruption, mismanagement and inefficiency.</p><small>CoST Infrastructure Transparency Initiative, 2016</small></div>
+      <div class="fig"><b>32/100</b><p>Philippine score in the 2025 Corruption Perceptions Index, 120th of 182 countries and the lowest on record.</p><small>Transparency International, Feb 2026</small></div>
+      <div class="fig"><b>₱545.6B</b><p>flood-control projects from July 2022 to May 2025; about 20% went to just 15 contractors.</p><small>Office of the President, Aug 2025</small></div>
+      <div class="fig"><b>₱1.225B</b><p>Cabagan–Santa Maria Bridge, Isabela: officially completed 1 Feb 2025, a span collapsed on 27 Feb 2025.</p><small>DPWH; national news reports, 2025</small></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="how" aria-labelledby="how-h">
+  <div class="wrap">
+    <div class="eyebrow">How it works</div>
+    <h2 id="how-h">From plan to fair price in four steps</h2>
+    <div class="steps">
+      <div class="step"><span class="n">01</span><h3>Provide the plan</h3><p>Start from a reference plan, import a DXF floor plan, or type the dimensions: storeys, spans, widths, foundation.</p></div>
+      <div class="step"><span class="n">02</span><h3>Quantity take-off</h3><p>Concrete, rebar, formwork, masonry, roofing, piles and girders are computed with NSCP 2015, DPWH Blue Book and AASHTO rules.</p></div>
+      <div class="step"><span class="n">03</span><h3>Quotation</h3><p>DPWH pay items and Bicol unit costs build the ABC with D.O. 197 s. 2016 / D.O. 30 s. 2025 markups, in lean, standard and ceiling tiers.</p></div>
+      <div class="step"><span class="n">04</span><h3>Over-budget check</h3><p>The over-budget ratio, an XGBoost cost model, and an Isolation Forest combine into the BUHAY Risk Index. SHAP explains every result.</p></div>
+    </div>
+    <div class="tiersdemo" id="tiersDemo" aria-live="polite"></div>
+    <p class="muted" style="margin-top:10px;font-size:0.92rem" id="tiersNote"></p>
+  </div>
+</section>
+
+<section class="band" id="map-section" aria-labelledby="map-h" style="padding-top:20px">
+  <div class="wrap">
+    <div class="mapbar">
+      <div><div class="eyebrow">BUHAY Map · Bicol Region V</div><h2 id="map-h">Where the risk sits</h2></div>
+      <div class="seg" role="group" aria-label="Filter projects"><button type="button" data-k="all" aria-pressed="true">All</button><button type="button" data-k="building" aria-pressed="false">Buildings</button><button type="button" data-k="bridge" aria-pressed="false">Bridges</button></div>
+    </div>
+    <div id="map" role="region" aria-label="Map of screened projects in Bicol"></div>
+    <div class="legend"><span><i style="background:var(--bad)"></i>High risk (BRI ≥ 30)</span><span><i style="background:var(--warn)"></i>For review</span><span><i style="background:var(--ok)"></i>Within fair range</span></div>
+    <div class="mapstats" id="mapStats"></div>
+    <p class="muted" style="margin-top:12px;font-size:0.9rem">Pins show the 300-project simulated benchmark used in the research (SBD-300). They are not real DPWH contracts. In the app, your own screened contracts appear on the same map.</p>
+  </div>
+</section>
+
+<section class="band" id="sdg" aria-labelledby="sdg-h" style="padding-top:20px">
+  <div class="wrap">
+    <div class="eyebrow">Sustainable Development Goals</div>
+    <h2 id="sdg-h">Built for honest infrastructure</h2>
+    <div class="sdgs">
+      <div class="sdg" style="background:#00689d"><b>16</b><h3>Peace, justice &amp; strong institutions</h3><p>16.5 reduce corruption and bribery · 16.6 accountable, transparent institutions · 16.10 public access to information.</p></div>
+      <div class="sdg" style="background:#dd3d23"><b>9</b><h3>Industry, innovation &amp; infrastructure</h3><p>9.1 quality, reliable and resilient infrastructure at a fair cost.</p></div>
+      <div class="sdg" style="background:#f99d26"><b>11</b><h3>Sustainable cities &amp; communities</h3><p>11.5 evacuation centers, bridges and schools that survive typhoons and earthquakes.</p></div>
+      <div class="sdg" style="background:#bf8b2e"><b>12</b><h3>Responsible consumption</h3><p>12.7 sustainable public procurement under RA 12009.</p></div>
+      <div class="sdg" style="background:#c5192d"><b>4</b><h3>Quality education</h3><p>4.a more classrooms per peso through lean, code-compliant school building quotations.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band dark" id="download" aria-labelledby="dl-h">
+  <div class="wrap">
+    <div class="eyebrow">Download</div>
+    <h2 id="dl-h">Get BUHAY</h2>
+    <div class="dl">
+      <div class="card feature" style="color:var(--ink)"><h3>Android app (APK)</h3><ol><li>Tap the button to download <span class="mono">BUHAY.apk</span>.</li><li>Open it and allow “Install unknown apps” for your browser.</li><li>Open BUHAY from your home screen.</li></ol><a class="btn sign" href="https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/releases/download/apk-latest/BUHAY.apk">Download APK</a></div>
+      <div class="card" style="color:var(--ink)"><h3>Install on any phone or PC</h3><ol><li>Open the web app in Chrome, Edge or Safari.</li><li>Android/PC: tap <b>Install app</b> or the install icon in the address bar.</li><li>iPhone: Share → <b>Add to Home Screen</b>.</li></ol><a class="btn blue" href="app/index.html#home">Open the web app</a></div>
+      <div class="card" style="color:var(--ink)"><h3>Offline package</h3><ol><li>Download the ZIP and extract it.</li><li>Open <span class="mono">index.html</span> in any browser.</li><li>Quotations, checks and the map work without a server.</li></ol><a class="btn" href="downloads/BUHAY-App-Offline.zip">Download ZIP</a></div>
+      <div class="card" style="color:var(--ink)"><h3>Sample plan</h3><ol><li>Download the sample DXF floor plan (2-classroom school).</li><li>In the app: Quote → Import plan file.</li><li>Set storeys and spacing, read the quotation.</li></ol><a class="btn" href="app/data/sample-plan.dxf">Download DXF</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="research" aria-labelledby="res-h">
+  <div class="wrap paper">
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      <div class="eyebrow">The research</div>
+      <h2 id="res-h" style="font-size:clamp(1.7rem,4vw,2.4rem)">BUHAY: A blueprint-driven quantity take-off and hybrid machine-learning system for standards-based start quotations and over-budget detection in public buildings and bridges</h2>
+      <div class="abstract">The study builds a standards-based quantity take-off engine for public buildings and bridges in Bicol Region V and couples it with Multiple Linear Regression, XGBoost, Isolation Forest and SHAP. On a 300-project simulated benchmark with known overpricing, the standard estimate came within 5.2% (buildings) and 7.7% (bridges) mean absolute percentage error of fair awarded costs, and the BUHAY Risk Index caught 94.4% of padded contracts (AUC 0.987) where an Isolation Forest alone caught 27.8%.</div>
+      <div class="btns"><a class="btn blue" href="downloads/BUHAY-Research-Paper.pdf">Read the paper (PDF)</a><a class="btn" href="downloads/BUHAY-Research-Paper.docx">Word version (DOCX)</a></div>
+      <div class="team"><div class="avatar" aria-hidden="true">EB</div><div><b>Enrique Miguel C. Buban</b><div class="muted">Lead researcher</div></div></div>
+    </div>
+    <div class="results" id="results">
+      <div><b>94.4%</b><span>of injected overpricing flagged (recall)</span></div>
+      <div><b>0.987</b><span>ROC AUC of the BUHAY Risk Index</span></div>
+      <div><b>5.2%</b><span>MAPE, standard estimate vs. fair awarded cost, buildings</span></div>
+      <div><b>7.7%</b><span>MAPE, standard estimate vs. fair awarded cost, bridges</span></div>
+      <div><b>14.4%</b><span>average saving of the lean start quotation vs. the standard estimate, buildings</span></div>
+      <div><b>0.863</b><span>XGBoost R² on bridges (LOOCV), MAPE 19.2% vs. 65.7% for MLR</span></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p><b>BUHAY</b> is a screening tool. A flag means a contract deserves a closer look by the implementing office, the Commission on Audit, the Office of the Ombudsman or the Independent Commission for Infrastructure. It is not proof of irregularity.</p>
+    <p>Unit costs are indicative 2025 Bicol rates and can be edited in the app. Map boundaries: OCHA/PSA via faeldon/philippines-json-maps. Map tiles © OpenStreetMap contributors.</p>
+    <p>© 2026 Enrique Miguel C. Buban · <a href="https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-">Source code</a></p>
+  </div>
+</footer>
+
+<script src="app/vendor/leaflet/leaflet.js"></script>
+<script src="app/js/engine.js"></script>
+<script>
+(function () {
+  'use strict';
+  var E = window.BuhayEngine;
+  function pesoM(n) { return '₱' + (n / 1e6).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + 'M'; }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+  // live quotation of a reference plan, computed by the same engine as the app
+  var ref = E.ARCHETYPES.filter(function (a) { return a.id === 'sb-2s4c'; })[0];
+  var q = E.quote(Object.assign({ province: 'Albay', year: 2025 }, ref));
+  document.getElementById('tiersDemo').innerHTML =
+    '<div class="t start"><span class="tag">Start quotation</span><span class="eyebrow">Lean</span><b>' + pesoM(q.start) + '</b><p>Code-minimum reinforcement, basic finishes, every NSCP and PD 1096 requirement kept.</p></div>' +
+    '<div class="t"><span class="eyebrow">Standard fair estimate</span><b>' + pesoM(q.fair) + '</b><p>Typical DPWH design intensities and finishes.</p></div>' +
+    '<div class="t"><span class="eyebrow">Ceiling</span><b>' + pesoM(q.ceiling) + '</b><p>Highest defensible price. A contract above it is flagged.</p></div>';
+  document.getElementById('tiersNote').textContent = 'Live example: ' + ref.name + ', Albay, 2025 prices, computed in your browser by the BUHAY engine.';
+
+  // map
+  var map = null, projects = [], kind = 'all';
+  var css = getComputedStyle(document.documentElement);
+  function col(s) { return (css.getPropertyValue({ red: '--bad', amber: '--warn', green: '--ok' }[s]) || '#888').trim(); }
+  function draw(geo) {
+    if (typeof L === 'undefined') return;
+    if (!map) {
+      map = L.map('map', { scrollWheelZoom: false }).setView([13.25, 123.55], 8);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap contributors' }).addTo(map);
+      if (geo) L.geoJSON(geo, { style: { color: '#1f5fad', weight: 1.2, fillColor: '#1f5fad', fillOpacity: 0.06 }, onEachFeature: function (f, l) { l.bindTooltip(f.properties.name, { sticky: true }); } }).addTo(map);
+      map.pins = L.layerGroup().addTo(map);
+    }
+    map.pins.clearLayers();
+    var shown = projects.filter(function (p) { return kind === 'all' || p.kind === kind; });
+    shown.forEach(function (p) {
+      L.circleMarker([p.lat, p.lon], { radius: p.status === 'red' ? 7 : 5, color: '#fff', weight: 1, fillColor: col(p.status), fillOpacity: 0.92 })
+        .bindPopup('<b>' + esc(p.label) + '</b><br><span style="font-family:monospace">' + esc(p.id) + '</span> · ' + esc(p.province) + ' · ' + p.year +
+          '<br>Contract ' + pesoM(p.awarded) + ' · BUHAY standard ' + pesoM(p.fair) + '<br>Over-budget ratio <b>' + p.obr.toFixed(2) + '</b> · Risk index <b>' + p.bri.toFixed(0) + '</b><br><i>Simulated benchmark record</i>')
+        .addTo(map.pins);
+    });
+    var red = shown.filter(function (p) { return p.status === 'red'; });
+    var excess = red.reduce(function (s, p) { return s + Math.max(0, p.awarded - p.ceiling); }, 0);
+    document.getElementById('mapStats').innerHTML =
+      '<div><b>' + shown.length + '</b><span>projects screened</span></div>' +
+      '<div><b>' + red.length + '</b><span>high-risk flags</span></div>' +
+      '<div><b>' + pesoM(excess) + '</b><span>above the ceiling in flagged projects</span></div>' +
+      '<div><b>' + pesoM(shown.reduce(function (s, p) { return s + p.awarded; }, 0)) + '</b><span>total contract value</span></div>';
+  }
+  document.querySelectorAll('.seg button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      kind = b.dataset.k;
+      document.querySelectorAll('.seg button').forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
+      draw();
+    });
+  });
+  Promise.all([
+    fetch('app/data/projects.json').then(function (r) { return r.json(); }),
+    fetch('app/data/bicol.geojson').then(function (r) { return r.json(); })
+  ]).then(function (res) { projects = res[0].projects; draw(res[1]); })
+    .catch(function () { document.getElementById('mapStats').innerHTML = '<div><span>The map data could not be loaded. Open the web app to see the map.</span></div>'; draw(null); });
+}());
+</script>
+</body>
+</html>

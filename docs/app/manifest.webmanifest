@@ -1,0 +1,17 @@
+{
+  "name": "BUHAY — Buildings & Bridges Fair-Cost Checker",
+  "short_name": "BUHAY",
+  "description": "Turn a building or bridge plan into a standards-based start quotation and flag over-budgeted public infrastructure.",
+  "start_url": "./index.html#home",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b1424",
+  "theme_color": "#13213a",
+  "categories": ["productivity", "utilities", "business"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

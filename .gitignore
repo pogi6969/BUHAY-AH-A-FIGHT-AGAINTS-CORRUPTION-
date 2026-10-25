@@ -1,0 +1,6 @@
+node_modules/
+android/
+__pycache__/
+*.pyc
+research/outputs/_paper/
+.DS_Store
