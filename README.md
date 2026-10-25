@@ -1,1 +1,24 @@
-# BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-
+# BUHAY-AH — A Fight Against Corruption
+
+Design, price and check public buildings, hospitals, airport, seaport and jeepney / UV Express / bus terminals, bridges, runways and piers.
+
+Lead researcher: **Enrique Miguel C. Buban**
+
+## Links
+
+| | |
+| --- | --- |
+| 🌐 **Website** | https://pogi6969.github.io/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/ |
+| 📱 **Web app** | https://pogi6969.github.io/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/app/ |
+| 🤖 **Android app (APK)** | https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/releases/download/apk-latest/BUHAY-AH.apk |
+| 💻 **Offline app (ZIP)** | https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/raw/claude/buhay-buildings-bridges/docs/downloads/BUHAY-AH-App-Offline.zip |
+| 📄 **Research paper (PDF)** | https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/blob/claude/buhay-buildings-bridges/docs/downloads/BUHAY-AH-Research-Paper.pdf |
+| 📝 **Research paper (Word)** | https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/raw/claude/buhay-buildings-bridges/docs/downloads/BUHAY-AH-Research-Paper.docx |
+| 🎤 **Rationale script (PDF)** | https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/blob/claude/buhay-buildings-bridges/docs/downloads/BUHAY-AH-Rationale-Script.pdf |
+| 📊 **PR2 deck — Introduction & Methodology** | https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/raw/claude/buhay-buildings-bridges/docs/downloads/BUHAY-AH-PR2-Introduction-Methodology.pptx |
+| 📊 **PR2 deck — Full research** | https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/raw/claude/buhay-buildings-bridges/docs/downloads/BUHAY-AH-PR2-Full-Research.pptx |
+| 🗂️ **Source code** | https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/tree/claude/buhay-buildings-bridges |
+
+The website and web app go live once GitHub Pages is on (Settings → Pages → Deploy from a branch → `claude/buhay-buildings-bridges`, folder `/docs`).
+
+All files and code are on the [`claude/buhay-buildings-bridges`](https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/tree/claude/buhay-buildings-bridges) branch.
