@@ -38,12 +38,15 @@
   }
 
   // ------------------------------------------------------------------ state
-  function archetype(id) { return E.ARCHETYPES.filter(function (a) { return a.id === id; })[0]; }
+  var ALL_ARCH = E.ARCHETYPES.concat(E.EXT_ARCHETYPES || []);
+  function archetype(id) { return ALL_ARCH.filter(function (a) { return a.id === id; })[0]; }
   function fresh(id) { var a = archetype(id); var p = Object.assign({}, a, { province: 'Albay', year: 2025 }); delete p.id; return p; }
+  var KINDS = [['building', 'Building'], ['bridge', 'Bridge'], ['airfield', 'Airfield'], ['port', 'Port']];
+  var KIND_LABEL = { building: 'Building', bridge: 'Bridge', airfield: 'Airfield pavement', port: 'Port structure' };
   var S = {
     view: 'home',
     kind: store.get('kind', 'building'),
-    plans: store.get('plans', { building: fresh('sb-2s4c'), bridge: fresh('rcdg-60') }),
+    plans: Object.assign({ building: fresh('sb-2s4c'), bridge: fresh('rcdg-60'), airfield: fresh('af-rwy-1200'), port: fresh('pt-pier-60') }, store.get('plans', {})),
     tier: 'lean', qtab: 'boq',
     check: store.get('check', { amount: '', cid: '', lat: '', lon: '', edc: '', ocm: '', profit: '', vat: '' }),
     prices: store.get('prices', {}),
@@ -69,16 +72,26 @@
     return q;
   }
   function screenFor(p, q, amount) {
-    if (!DATA.models) return null;
+    if (!DATA.models || !E.mlSupported(p)) return null;
     return ML.screen(DATA.models, p.kind === 'bridge' ? 'bridge' : 'building', E.features(p), amount, q.fair);
   }
+  // risk index from the over-budget signal alone, for facility types outside the ML training data
+  function obrIndex(obr) { return 100 * Math.min(1, Math.max(0, (obr - 1) / 0.5)); }
   function planSummary(p) {
     if (p.kind === 'bridge') {
       var b = E.normalizeBridge(p);
       return E.SUPERSTRUCTURES[b.superstructure].label + ' · ' + fmt(b.totalLength, 1) + ' m · ' + b.spans + ' span' + (b.spans > 1 ? 's' : '') + ' · ' + fmt(b.carriageway) + ' m carriageway · ' + b.province;
     }
+    if (p.kind === 'airfield') {
+      var a = E.normalizeAirfield(p);
+      return E.AIRFIELD_FACILITIES[a.facility].label + ' · ' + fmt(a.length, 0) + ' × ' + fmt(a.width, 1) + ' m · ' + Math.round(a.pcc * 1000) + ' mm PCC · ' + E.AIRCRAFT[a.aircraft].label.split(' (')[0] + ' · ' + a.province;
+    }
+    if (p.kind === 'port') {
+      var o = E.normalizePort(p);
+      return (o.facility === 'pier' ? 'Pier' : 'Wharf') + ' · ' + fmt(o.length, 0) + ' × ' + fmt(o.width, 1) + ' m deck · ' + fmt(o.waterDepth, 1) + ' m water depth · ' + E.PORT_PILES[o.pileType].label + (o.causeway ? ' · ' + fmt(o.causeway, 0) + ' m causeway' : '') + ' · ' + o.province;
+    }
     var n = E.normalizeBuilding(p);
-    return E.BUILDING_TYPES[n.type].label + ' · ' + n.storeys + ' storey' + (n.storeys > 1 ? 's' : '') + ' · ' + fmt(n.footprintArea * n.storeys, 0) + ' m² GFA · ' + n.province;
+    return E.BUILDING_TYPES[n.type].label + ' · ' + n.storeys + ' storey' + (n.storeys > 1 ? 's' : '') + ' · ' + fmt(n.footprintArea * n.storeys, 0) + ' m² GFA' + (n.bays ? ' · ' + n.bays + ' loading bays' : '') + ' · ' + n.province;
   }
 
   // ------------------------------------------------------------------ icons & nav
@@ -128,7 +141,42 @@
       { k: 'seismicZone', l: 'NSCP seismic zone', t: 'select', o: [[4, 'Zone 4 (Bicol)'], [2, 'Zone 2']] },
       { k: 'interiorWallLength', l: 'Interior walls per floor', u: 'm', step: 0.5, hint: 'optional' },
       { k: 'footprintArea', l: 'Footprint from plan', u: 'm²', step: 0.1, hint: 'optional' },
-      { k: 'perimeter', l: 'Perimeter from plan', u: 'm', step: 0.1, hint: 'optional' }
+      { k: 'perimeter', l: 'Perimeter from plan', u: 'm', step: 0.1, hint: 'optional' },
+      { k: 'sitePavement', l: 'Driveways, bays & parking (PCCP)', u: 'm²', step: 10, hint: 'optional' },
+      { k: 'canopyArea', l: 'Loading / curbside canopy', u: 'm²', step: 10, hint: 'optional' },
+      { k: 'bays', l: 'Loading bays (terminals)', step: 1, min: 0, hint: 'optional' }
+    ],
+    airfield: [
+      { k: 'name', l: 'Project name', t: 'text', wide: true },
+      { k: 'facility', l: 'Facility', t: 'select', o: opts(E.AIRFIELD_FACILITIES) },
+      { k: 'aircraft', l: 'Design aircraft', t: 'select', o: opts(E.AIRCRAFT) },
+      { k: 'province', l: 'Province', t: 'select', o: PROV },
+      { k: 'year', l: 'Price year', t: 'select', o: YEARS.map(function (y) { return [y, y]; }) },
+      { k: 'length', l: 'Length', u: 'm', step: 10 },
+      { k: 'width', l: 'Width', u: 'm', step: 0.5 },
+      { k: 'shoulder', l: 'Shoulder (each side)', u: 'm', step: 0.5 },
+      { k: 'stripWidth', l: 'Graded strip width', u: 'm', step: 5 },
+      { k: 'pcc', l: 'PCC slab thickness', u: 'mm', step: 10 },
+      { k: 'base', l: 'Base course', u: 'mm', step: 10 },
+      { k: 'subbase', l: 'Subbase course', u: 'mm', step: 10 },
+      { k: 'lighting', l: 'Airfield lighting', t: 'select', o: [['true', 'Included'], ['false', 'None']] },
+      { k: 'fence', l: 'Security fence', u: 'm', step: 10, hint: 'optional' }
+    ],
+    port: [
+      { k: 'name', l: 'Project name', t: 'text', wide: true },
+      { k: 'facility', l: 'Structure', t: 'select', o: opts(E.PORT_FACILITIES), wide: true },
+      { k: 'province', l: 'Province', t: 'select', o: PROV },
+      { k: 'year', l: 'Price year', t: 'select', o: YEARS.map(function (y) { return [y, y]; }) },
+      { k: 'length', l: 'Berth / deck length', u: 'm', step: 1 },
+      { k: 'width', l: 'Deck width', u: 'm', step: 0.5 },
+      { k: 'waterDepth', l: 'Water depth at berth', u: 'm', step: 0.5 },
+      { k: 'deckLevel', l: 'Deck level above MLLW', u: 'm', step: 0.1 },
+      { k: 'pileType', l: 'Piles', t: 'select', o: opts(E.PORT_PILES) },
+      { k: 'embedment', l: 'Pile embedment', u: 'm', step: 1 },
+      { k: 'bentSpacing', l: 'Bent spacing', u: 'm', step: 0.5 },
+      { k: 'roro', l: 'RoRo ramp', t: 'select', o: [['false', 'None'], ['true', 'Included']] },
+      { k: 'causeway', l: 'Causeway length', u: 'm', step: 5, hint: 'optional' },
+      { k: 'dredging', l: 'Dredging', u: 'm³', step: 100, hint: 'optional' }
     ],
     bridge: [
       { k: 'name', l: 'Project name', t: 'text', wide: true },
@@ -164,20 +212,20 @@
     var k = el.dataset.key, v = el.value;
     if (el.type === 'number') v = v === '' ? '' : parseFloat(v);
     if (k === 'year' || k === 'seismicZone') v = parseInt(v, 10);
-    if (k === 'waterway') v = v === 'true';
+    if (k === 'waterway' || k === 'lighting' || k === 'roro') v = v === 'true';
     return [k, v];
   }
 
   // ------------------------------------------------------------------ home
   function renderHome(v) {
     var q = getQuote();
-    var picks = ['sch-2s6', 'bhs-birthing', 'evac-200', 'mun-hall'].map(function (id) { return DS.TEMPLATES.filter(function (t) { return t.id === id; })[0]; });
+    var picks = ['sch-2s6', 'hosp-l1-50', 'jt-20', 'ap-150'].map(function (id) { return DS.TEMPLATES.filter(function (t) { return t.id === id; })[0]; });
     v.innerHTML =
       '<section class="hero">' +
         '<div class="stack">' +
-          '<div class="eyebrow">Public buildings · bridges · DPWH & international standards</div>' +
+          '<div class="eyebrow">Schools · hospitals · terminals · bridges · airports · seaports</div>' +
           '<h1>Design it. Price it.<br><em>Keep it honest.</em></h1>' +
-          '<p style="max-width:60ch">BUHAY-AH designs public buildings and bridges from what they must hold or from the budget you have, takes off every quantity under NSCP, DPWH and AASHTO rules, and returns a lean <b>start quotation</b>, a standard fair estimate and a ceiling. Enter a contract amount and it flags over-budgeting with a hybrid machine-learning check.</p>' +
+          '<p style="max-width:60ch">BUHAY-AH designs public buildings, hospitals, airport, seaport and jeepney / UV / bus terminals, bridges, runways and piers from what they must hold or from the budget you have, takes off every quantity under NSCP, DPWH, AASHTO, ICAO and port standards, and returns a lean <b>start quotation</b>, a standard fair estimate and a ceiling. Enter a contract amount and it flags over-budgeting with a hybrid machine-learning check.</p>' +
           '<div class="row"><button class="btn sign" data-action="go-budget">' + icon('design') + ' Design from a budget</button><button class="btn primary" data-go="quote">' + icon('quote') + ' Quote a plan</button><button class="btn" id="installBtn" hidden>Install app</button></div>' +
         '</div>' +
         '<div class="card stack">' +
@@ -189,8 +237,8 @@
       '</section>' +
       '<div style="height:18px"></div>' +
       '<div class="actions">' +
-        '<button class="action" data-action="go-budget">' + icon('design') + '<b>Design from a budget</b><span>The largest school, clinic, hall or market your money can build</span></button>' +
-        '<button class="action" data-action="go-templates">' + icon('building') + '<b>Design templates</b><span>' + DS.TEMPLATES.length + ' building and ' + DS.BRIDGE_TEMPLATES.length + ' bridge designs to customize and combine</span></button>' +
+        '<button class="action" data-action="go-budget">' + icon('design') + '<b>Design from a budget</b><span>The largest school, hospital, terminal, hall or market your money can build</span></button>' +
+        '<button class="action" data-action="go-templates">' + icon('building') + '<b>Design templates</b><span>' + DS.TEMPLATES.length + ' building, ' + DS.BRIDGE_TEMPLATES.length + ' bridge, ' + DS.AIRFIELD_TEMPLATES.length + ' airfield and ' + DS.PORT_TEMPLATES.length + ' port designs to customize and combine</span></button>' +
         '<button class="action" data-go="quote">' + icon('quote') + '<b>Quote a plan</b><span>Type the dimensions or import a DXF floor plan for a full bill of quantities</span></button>' +
         '<button class="action" data-go="check">' + icon('check') + '<b>Check a contract</b><span>Over-budget ratio, ML expectation, anomaly score, risk index</span></button>' +
       '</div>' +
@@ -205,13 +253,13 @@
 
   // ------------------------------------------------------------------ quote
   function renderQuote(v) {
-    var refs = E.ARCHETYPES.filter(function (a) { return a.kind === S.kind; });
+    var refs = ALL_ARCH.filter(function (a) { return a.kind === S.kind; });
     var savedOf = S.saved.filter(function (s) { return s.plan.kind === S.kind; });
     v.innerHTML =
       '<div class="grid2">' +
         '<div class="card stack no-print" id="planCard">' +
           '<div class="row" style="justify-content:space-between"><h2>Plan</h2>' +
-            '<div class="seg" role="group" aria-label="Asset type"><button type="button" data-kind-set="building" aria-pressed="' + (S.kind === 'building') + '">Building</button><button type="button" data-kind-set="bridge" aria-pressed="' + (S.kind === 'bridge') + '">Bridge</button></div></div>' +
+            '<div class="seg" role="group" aria-label="Asset type">' + KINDS.map(function (k) { return '<button type="button" data-kind-set="' + k[0] + '" aria-pressed="' + (S.kind === k[0]) + '">' + k[1] + '</button>'; }).join('') + '</div></div>' +
           '<div class="field wide"><label for="refPlan">Start from a reference or saved plan</label><div class="in"><select id="refPlan"><option value="">Choose a plan…</option>' +
             '<optgroup label="Reference plans">' + refs.map(function (a) { return '<option value="ref:' + a.id + '">' + esc(a.name) + '</option>'; }).join('') + '</optgroup>' +
             (savedOf.length ? '<optgroup label="My saved plans">' + savedOf.map(function (s) { return '<option value="saved:' + s.id + '">' + esc(s.plan.name) + '</option>'; }).join('') + '</optgroup>' : '') +
@@ -240,10 +288,12 @@
   // show the engine's default for fields the plan leaves empty (optional take-off fields stay blank)
   function displayValue(f) {
     var v = plan()[f.k];
+    if (typeof v === 'number') return Math.round(v * 100) / 100;
     if (v !== undefined && v !== null && v !== '') return v;
     if (f.hint === 'optional') return '';
-    var n = S.kind === 'bridge' ? E.normalizeBridge(plan()) : E.normalizeBuilding(plan());
-    return f.k === 'waterway' ? String(n.waterway) : n[f.k];
+    var n = E.normalize(Object.assign({ kind: S.kind }, plan()));
+    if (S.kind === 'airfield' && (f.k === 'pcc' || f.k === 'base' || f.k === 'subbase')) return Math.round(n[f.k] * 1000);
+    return f.k === 'waterway' || f.k === 'lighting' || f.k === 'roro' ? String(n[f.k]) : typeof n[f.k] === 'number' ? Math.round(n[f.k] * 100) / 100 : n[f.k];
   }
   var inputTimer = null;
   function onPlanInput(e) {
@@ -293,9 +343,9 @@
     var abc = t.abc;
     out.innerHTML =
       '<div class="card stack">' +
-        '<div><div class="eyebrow">' + (q.kind === 'bridge' ? 'Bridge' : 'Building') + ' quotation · ' + esc(E.PROVINCES[q.plan.province] ? q.plan.province : '') + ' · ' + q.plan.year + ' prices</div><h2>' + esc(p.name || 'Untitled plan') + '</h2><p class="small muted">' + esc(planSummary(p)) + '</p></div>' +
+        '<div><div class="eyebrow">' + KIND_LABEL[q.kind] + ' quotation · ' + esc(E.PROVINCES[q.plan.province] ? q.plan.province : '') + ' · ' + q.plan.year + ' prices</div><h2>' + esc(p.name || 'Untitled plan') + '</h2><p class="small muted">' + esc(planSummary(p)) + '</p></div>' +
         '<div class="tiers">' + tierBtn('lean', 'Lean', 'Start quotation') + tierBtn('standard', 'Standard fair estimate') + tierBtn('ceiling', 'Ceiling') + '</div>' +
-        '<p class="small muted">The start quotation is ' + pct(q.savingsVsStandard) + ' below the standard estimate and keeps ' + (q.kind === 'bridge' ? 'code-minimum reinforcement and the DPWH / AASHTO design proportions' : 'NSCP minimum reinforcement and PD 1096 light requirements') + '. A contract above the ceiling (' + pct(q.ceiling / q.fair - 1) + ' over standard) is flagged.</p>' +
+        '<p class="small muted">The start quotation is ' + pct(q.savingsVsStandard) + ' below the standard estimate and keeps ' + ({ bridge: 'code-minimum reinforcement and the DPWH / AASHTO design proportions', airfield: 'the ICAO / CAAP pavement widths and the FAA rigid-pavement section', port: 'the OCDI / BS 6349 pile layout and PIANC fender spacing', building: 'NSCP minimum reinforcement and PD 1096 light requirements' }[q.kind]) + '. A contract above the ceiling (' + pct(q.ceiling / q.fair - 1) + ' over standard) is flagged.</p>' +
       '</div>' +
       '<div class="split">' +
         '<div class="card"><div class="viewer"><canvas id="v3d" aria-label="3D model of the plan"></canvas><span class="hint">Drag to rotate · scroll to zoom · double-click to reset</span></div></div>' +
@@ -306,6 +356,7 @@
           '<dt>VAT ' + pct(abc.vatRate, 0) + ' of (EDC + OCM + profit)</dt><dd>' + peso(abc.vat) + '</dd>' +
           '<dt class="total">Total ABC</dt><dd class="total">' + peso(abc.total) + '</dd></dl>' +
           '<p class="small muted">Indirect costs follow DPWH D.O. 197 s. 2016, kept in D.O. 30 s. 2025.</p>' +
+          (!q.mlSupported ? '<div class="note small">This facility type is outside the machine-learning training data (SBD-300 buildings and bridges). Screening uses the standards-based over-budget ratio.</div>' : '') +
           (ml ? '<div class="note small">Historical model (XGBoost) expects about <b class="mono">' + pesoM(ml.xgb) + '</b> for a project like this (80% band ' + pesoM(ml.band[0]) + ' – ' + pesoM(ml.band[1]) + ').</div>' : '') +
         '</div>' +
       '</div>' +
@@ -324,7 +375,9 @@
       var Q = t.quantities, items = [];
       var lab = { concrete_m3: ['Concrete', 'm³'], rebar_kg: ['Reinforcing steel', 'kg'], formwork_m2: ['Formwork', 'm²'], chb_m2: ['CHB masonry', 'm²'], roof_m2: ['Roof area', 'm²'],
         steel_kg: ['Structural steel', 'kg'], excavation_m3: ['Excavation', 'm³'], columns: ['Column segments', 'pcs'], footings: ['Footings', 'pcs'], doors: ['Doors', 'sets'],
-        windows_m2: ['Windows', 'm²'], girder_m: ['PSC girders', 'm'], pile_m: ['Piling', 'm'], piles: ['Piles', 'pcs'] };
+        windows_m2: ['Windows & glazing', 'm²'], girder_m: ['PSC girders', 'm'], pile_m: ['Piling', 'm'], piles: ['Piles', 'pcs'],
+        elevators: ['Elevators', 'units'], pavement_m2: ['Pavement', 'm²'], canopy_m2: ['Canopy', 'm²'], base_m3: ['Base course', 'm³'], subbase_m3: ['Subbase course', 'm³'],
+        shoulder_m2: ['Shoulders', 'm²'], lights: ['Lights / masts', 'pcs'], fenders: ['Fenders', 'pcs'], rock_m3: ['Rock fill & armor', 'm³'], deck_m2: ['Deck area', 'm²'] };
       Object.keys(Q).forEach(function (k) { if (Q[k] > 0 && lab[k]) items.push('<div class="q"><b>' + fmt(Q[k], k.indexOf('kg') > 0 ? 0 : 1) + '</b><span>' + lab[k][0] + ' (' + lab[k][1] + ')</span></div>'); });
       return '<div class="qgrid" style="margin-top:12px">' + items.join('') + '</div>';
     }
@@ -422,7 +475,7 @@
       out.innerHTML = '<div class="card stack"><h3>Enter a contract amount</h3><p class="muted">BUHAY-AH compares it with the lean, standard and ceiling estimates of this plan (' + pesoM(q.start) + ' · ' + pesoM(q.fair) + ' · ' + pesoM(q.ceiling) + '), with the historical-model expectation and with the anomaly detector. Use an example button to see a result.</p></div>';
       return;
     }
-    var a = E.assess(q, amount), ml = screenFor(p, q, amount);
+    var a = E.assess(q, amount), ml = screenFor(p, q, amount), obrBri = obrIndex(a.obr);
     var status = ml ? ml.status : (a.status === 'red' ? 'red' : a.status === 'amber' ? 'amber' : 'green');
     if (a.status === 'red') status = 'red';
     var title = { red: 'Over-budget flag', amber: 'For review', green: 'Within the fair range' }[status];
@@ -445,13 +498,15 @@
         }).join('') + '</div>';
     }
     out.innerHTML =
-      '<div class="verdict ' + status + '">' + gauge(ml ? ml.bri : Math.min(100, Math.max(0, (a.obr - 1) * 100)), status) +
+      '<div class="verdict ' + status + '">' + gauge(ml ? ml.bri : obrBri, status) +
         '<div class="stack" style="gap:6px"><span class="pill ' + status + '">' + title + '</span><h3>' + esc(S.check.cid || p.name || 'Contract') + '</h3><p>' + lines.join(' ') + '</p></div></div>' +
       '<div class="card stack"><svg style="display:none"></svg>' + strip(q, ml, amount) +
         '<div class="metrics">' +
           '<div class="metric"><b>' + a.obr.toFixed(3) + '</b><span>Over-budget ratio (vs. standard)</span></div>' +
           (ml ? '<div class="metric"><b>' + ml.mlRatio.toFixed(3) + '</b><span>Actual ÷ ML expected</span></div><div class="metric"><b>' + ml.iso.toFixed(3) + '</b><span>Isolation Forest score' + (ml.isoAnomalous ? ' (unusual)' : '') + '</span></div><div class="metric"><b>' + ml.bri.toFixed(1) + '</b><span>BUHAY-AH Risk Index (flag ≥ 30)</span></div>' : '') +
+          (!ml && !q.mlSupported ? '<div class="metric"><b>' + obrBri.toFixed(1) + '</b><span>Risk index from the over-budget signal (100 × S<sub>OBR</sub>)</span></div>' : '') +
         '</div>' +
+        (!ml && !q.mlSupported ? '<p class="small muted">The XGBoost and Isolation Forest signals are trained on SBD-300 buildings and bridges only, so this ' + esc(KIND_LABEL[q.kind].toLowerCase()) + ' is screened against its own standards-based estimate and ceiling.</p>' : '') +
         (ml ? '<p class="small muted">Primary anomaly driver: <b>' + esc(ml.driver.label) + '</b> (z = ' + ml.driver.z.toFixed(2) + '). Risk index parts: over-budget ' + ml.briParts.obr.toFixed(1) + ' + model residual ' + ml.briParts.ml.toFixed(1) + ' + isolation ' + ml.briParts.iso.toFixed(1) + '.</p>' : '') +
       '</div>' +
       (mk ? '<div class="card stack"><h3>ABC markup check</h3>' + (mk.ok ? '<div class="note">Markups are within the DPWH caps for this EDC bracket (OCM ' + pct(mk.caps.ocm, 0) + ', profit ' + pct(mk.caps.profit, 0) + ', VAT 5%).</div>' : mk.issues.map(function (i) { return '<div class="note bad">' + esc(i) + '</div>'; }).join('')) + '</div>' : '') +
@@ -470,7 +525,9 @@
     [/150 ?mm chb|chb.*150|6" ?chb|chb.*6"/i, ['chb150']], [/chb|hollow block/i, ['chb100']], [/plaster/i, ['plaster']], [/paint/i, ['paint']],
     [/excavat/i, ['excav', 'sexc']], [/backfill|embankment/i, ['backfill', 'sbackfill']], [/gravel/i, ['gravel']],
     [/truss|purlin/i, ['truss']], [/roofing|metal sheet|long.?span/i, ['roofing']], [/ceiling/i, ['ceiling']], [/tile/i, ['floortile']],
-    [/door/i, ['door']], [/window/i, ['window']], [/structural steel/i, ['steel_b', 'truss']], [/termite|soil poison/i, ['termite']], [/clearing/i, ['clear', 'clear_b']]
+    [/door/i, ['door']], [/curtain wall|storefront/i, ['curtain']], [/window/i, ['window']], [/structural steel/i, ['steel_b', 'truss']], [/termite|soil poison/i, ['termite']], [/clearing/i, ['clear', 'clear_b']],
+    [/steel pipe pile/i, ['pile_steel']], [/spun pile/i, ['pile_spun']], [/fender/i, ['fender']], [/bollard/i, ['bollard']], [/armou?r rock/i, ['armor_rock']], [/core|rubble/i, ['core_rock']], [/dredg/i, ['dredge']],
+    [/subbase/i, ['subbase']], [/aggregate base/i, ['base_air']], [/elevator|lift/i, ['elevator']], [/generator|genset/i, ['genset']], [/medical gas/i, ['medgas']], [/canopy/i, ['canopy']]
   ];
   function matchPrice(code, desc, kind) {
     var c = String(code || '').replace(/^item\s*/i, '').replace(/\s+/g, '').toLowerCase();
@@ -482,7 +539,7 @@
     var text = code + ' ' + desc;
     for (var j = 0; j < MATCH.length; j++) if (MATCH[j][0].test(text)) {
       var cand = MATCH[j][1];
-      if (cand.length > 1 && kind === 'bridge') return cand[1];
+      if (cand.length > 1 && kind !== 'building') return cand[1];
       return cand[0];
     }
     return null;
@@ -525,7 +582,8 @@
 
   // ------------------------------------------------------------------ design studio
   var DS = window.BuhayDesign;
-  var USAGE_FILTERS = [['all', 'All'], ['school', 'Schools'], ['health', 'Health'], ['office', 'Civic & offices'], ['evacuation', 'Evacuation & halls'], ['market', 'Markets'], ['dorm', 'Housing'], ['court', 'Courts'], ['bridge', 'Bridges'], ['mine', 'My designs']];
+  var USAGE_FILTERS = [['all', 'All'], ['school', 'Schools'], ['health', 'Health'], ['hospital', 'Hospitals'], ['transport', 'Transport terminals'], ['office', 'Civic & offices'], ['evacuation', 'Evacuation & halls'], ['market', 'Markets'], ['dorm', 'Housing'], ['court', 'Courts'], ['bridge', 'Bridges'], ['airfield', 'Airfields'], ['port', 'Ports'], ['mine', 'My designs']];
+  var TRANSPORT = ['airport', 'seaport', 'jeepterm', 'uvterm', 'busterm'];
   var designCache = {};
   function builtDesign(program) {
     var key = JSON.stringify([program, plan().province, plan().year]);
@@ -540,6 +598,8 @@
     if (c.staff) parts.push(c.staff + ' staff');
     if (c.persons) parts.push(c.persons + ' persons');
     if (c.stalls) parts.push(c.stalls + ' stalls');
+    if (c.pax) parts.push(c.pax + (d.usage === 'airport' ? ' peak-hour passengers' : ' passengers'));
+    if (c.bays) parts.push(c.bays + ' loading bays');
     return parts.join(' · ') || DS.USAGE[d.usage].label;
   }
   function thumb(d) { return '<div class="thumb">' + DS.planSVG(d, 0, { bare: true }) + '</div>'; }
@@ -557,13 +617,22 @@
     if (S.dmode === 'templates') {
       var chips = '<div class="chips" role="group" aria-label="Filter templates">' + USAGE_FILTERS.map(function (f) { return '<button type="button" class="chip" data-dfilter="' + f[0] + '" aria-pressed="' + (S.dfilter === f[0]) + '">' + f[1] + '</button>'; }).join('') + '</div>';
       var cards = [], bcards = [];
+      var civil = function (list, kind, svg, label) {
+        if (S.dfilter !== kind && S.dfilter !== 'all') return;
+        list.forEach(function (b) {
+          var q = getQuote(Object.assign({}, b.plan, { province: S.plans[kind].province, year: S.plans[kind].year }));
+          bcards.push('<article class="dcard"><div class="thumb">' + svg(b.plan) + '</div><b>' + esc(b.name) + '</b><span class="small muted">' + esc(planSummary(b.plan)) + '</span><span class="small mono">Start ' + pesoM(q.start) + ' · standard ' + pesoM(q.fair) + '</span><button type="button" class="btn sm" data-action="c-tpl" data-kind="' + kind + '" data-id="' + b.id + '">' + label + '</button></article>');
+        });
+      };
+      civil(DS.AIRFIELD_TEMPLATES, 'airfield', DS.airfieldSVG, 'Quote this airfield work');
+      civil(DS.PORT_TEMPLATES, 'port', DS.portSVG, 'Quote this port work');
       if (S.dfilter === 'bridge' || S.dfilter === 'all') DS.BRIDGE_TEMPLATES.forEach(function (b) {
         var q = getQuote(Object.assign({}, b.plan, { province: S.plans.bridge.province, year: S.plans.bridge.year }));
         bcards.push('<article class="dcard"><div class="thumb">' + DS.bridgeSVG(b.plan) + '</div><b>' + esc(b.name) + '</b><span class="small muted">' + esc(planSummary(b.plan)) + '</span><span class="small mono">Start ' + pesoM(q.start) + ' · standard ' + pesoM(q.fair) + '</span><button type="button" class="btn sm" data-action="b-tpl" data-id="' + b.id + '">Quote this bridge</button></article>');
       });
       var list = S.dfilter === 'mine' ? S.designs.map(function (x) { return Object.assign({ mine: true }, x.program, { id: x.id }); })
-        : DS.TEMPLATES.filter(function (t) { return S.dfilter === 'all' || t.usage === S.dfilter || (S.dfilter === 'office' && t.usage === 'office'); });
-      if (S.dfilter !== 'bridge') list.forEach(function (t) {
+        : DS.TEMPLATES.filter(function (t) { return S.dfilter === 'all' || t.usage === S.dfilter || (S.dfilter === 'transport' && TRANSPORT.indexOf(t.usage) >= 0); });
+      if (['bridge', 'airfield', 'port'].indexOf(S.dfilter) < 0) list.forEach(function (t) {
         var d = builtDesign(t), q = getQuote(d.plan);
         cards.push('<article class="dcard">' + thumb(d) + '<b>' + esc(t.name) + '</b><span class="small muted">' + esc(capText(d)) + '</span><span class="small muted">' + d.N + ' storey' + (d.N > 1 ? 's' : '') + ' · ' + fmt(d.L, 1) + ' × ' + fmt(d.W, 1) + ' m · ' + fmt(d.gfa, 0) + ' m²</span><span class="small mono">Start ' + pesoM(q.start) + ' · standard ' + pesoM(q.fair) + '</span><button type="button" class="btn sm primary" data-action="d-open" data-id="' + esc(t.id) + '" data-mine="' + (t.mine ? 1 : 0) + '">Open design</button></article>');
       });
@@ -571,14 +640,14 @@
       el.innerHTML = '<div class="stack">' + chips + (cards.length ? '<div class="dgrid">' + cards.join('') + '</div>' : '<p class="muted">Designs you save appear here.</p>') + '</div>';
     } else if (S.dmode === 'needs') {
       var u = S.dreq.usage, U = DS.USAGE[u];
-      el.innerHTML = '<div class="card stack"><h3>Design from requirements</h3><p class="small muted">Say what the facility must hold. BUHAY-AH lays out the spaces using DepEd, DOH, NBC and DSWD space norms and picks the number of storeys with the lowest cost that fits your lot length.</p>' +
+      el.innerHTML = '<div class="card stack"><h3>Design from requirements</h3><p class="small muted">Say what the facility must hold: classrooms, hospital beds, peak-hour air passengers, sea passengers or jeepney, UV Express and bus bays. BUHAY-AH lays out the spaces using DepEd, DOH, NBC, DSWD, IATA and AASHTO norms and picks the number of storeys with the lowest cost that fits your lot length.</p>' +
         '<form class="fields" id="reqForm" onsubmit="return false">' +
           fieldHtml({ k: 'usage', l: 'Facility', t: 'select', o: Object.keys(DS.USAGE).map(function (k) { return [k, DS.USAGE[k].label]; }), wide: true }, u, 'r_') +
           fieldHtml({ k: 'k', l: 'Required ' + U.capLabel, step: U.range[2], min: U.range[0], max: U.range[1] }, S.dreq.k, 'r_') +
           fieldHtml({ k: 'N', l: 'Storeys', t: 'select', o: [['auto', 'Automatic (lowest cost)'], [1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5']] }, S.dreq.N, 'r_') +
           fieldHtml({ k: 'maxL', l: 'Longest building the lot allows', u: 'm', step: 1 }, S.dreq.maxL, 'r_') +
         '</form><div class="row"><button type="button" class="btn primary" data-action="d-gen">Generate design</button></div></div>';
-      bindForm('#reqForm', S.dreq, function (k) { if (k === 'usage') { S.dreq.k = DS.USAGE[S.dreq.usage].range[0] || DS.USAGE[S.dreq.usage].range[2] * 4; renderDPanel(); } });
+      bindForm('#reqForm', S.dreq, function (k) { if (k === 'usage') { S.dreq.k = DS.USAGE[S.dreq.usage].range[0] || DS.USAGE[S.dreq.usage].range[2] * 4; S.dreq.maxL = DS.USAGE[S.dreq.usage].lot || 60; renderDPanel(); } });
     } else if (S.dmode === 'budget') {
       el.innerHTML = '<div class="card stack"><h3>Design from a budget</h3><p class="small muted">Enter the money available. BUHAY-AH evaluates every storey count and capacity, prices each design with the quantity take-off, and returns the largest facilities whose quotation fits the budget.</p>' +
         '<form class="fields" id="budForm" onsubmit="return false">' +
@@ -588,7 +657,7 @@
           fieldHtml({ k: 'maxN', l: 'Most storeys', t: 'select', o: [[1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5']] }, S.dbud.maxN, 'b_') +
           fieldHtml({ k: 'maxL', l: 'Longest building the lot allows', u: 'm', step: 1 }, S.dbud.maxL, 'b_') +
         '</form><div class="row"><button type="button" class="btn primary" data-action="d-budget">Find designs</button></div><div id="budOut"></div></div>';
-      bindForm('#budForm', S.dbud);
+      bindForm('#budForm', S.dbud, function (k) { if (k === 'usage') { S.dbud.maxL = DS.USAGE[S.dbud.usage].lot || 60; renderDPanel(); } });
       runBudget();
     } else {
       el.innerHTML = '<div class="card stack"><h3>Design a bridge</h3><p class="small muted">Enter the gap to cross. BUHAY-AH tries culverts, RC deck girders, prestressed girders and steel trusses at every sensible span arrangement and ranks them by cost.</p>' +
@@ -693,7 +762,7 @@
   }
   function autoStoreys(usage, k, maxL) {
     var best = null;
-    for (var N = 1; N <= (usage === 'court' ? 1 : 5); N++) {
+    for (var N = 1; N <= (usage === 'court' ? 1 : usage === 'hospital' ? 6 : 5); N++) {
       if (usage === 'school' && k < N) break;
       var d = DS.build(Object.assign(DS.programFor(usage, k, N), { name: '' }), { province: S.plans.building.province, year: S.plans.building.year });
       if (d.L > maxL) continue;
@@ -710,7 +779,7 @@
   }
   function renderLibrary(v) {
     var ref = function (kind) {
-      return E.ARCHETYPES.filter(function (a) { return a.kind === kind; }).map(function (a) {
+      return ALL_ARCH.filter(function (a) { return a.kind === kind; }).map(function (a) {
         var p = fresh(a.id), q = getQuote(p);
         return '<div class="item"><div><b>' + esc(a.name) + '</b><div class="small muted">' + esc(planSummary(p)) + '</div><div class="small mono">Start ' + pesoM(q.start) + ' · standard ' + pesoM(q.fair) + ' · ceiling ' + pesoM(q.ceiling) + '</div></div><button type="button" class="btn sm" data-action="use-ref" data-id="' + a.id + '">Use</button></div>';
       }).join('');
@@ -718,8 +787,8 @@
     var ids = Object.keys(E.PRICE_BOOK).filter(function (k) { return E.PRICE_BOOK[k][3] > 0; });
     v.innerHTML =
       '<div class="stack">' +
-        '<div class="card stack"><h2>Reference plans</h2><p class="small muted">Previous-plan library: typical configurations of DPWH-implemented school buildings, health facilities, offices, evacuation centers, markets, culverts and bridges. Pick one and adjust it to your project.</p>' +
-          '<h3>Buildings</h3><div class="list">' + ref('building') + '</div><h3>Bridges</h3><div class="list">' + ref('bridge') + '</div></div>' +
+        '<div class="card stack"><h2>Reference plans</h2><p class="small muted">Previous-plan library: typical configurations of public school buildings, health facilities and hospitals, offices, evacuation centers, markets, airport, seaport and land transport terminals, culverts, bridges, runways, aprons, piers and wharves. Pick one and adjust it to your project.</p>' +
+          '<h3>Buildings</h3><div class="list">' + ref('building') + '</div><h3>Bridges</h3><div class="list">' + ref('bridge') + '</div><h3>Airfields</h3><div class="list">' + ref('airfield') + '</div><h3>Ports</h3><div class="list">' + ref('port') + '</div></div>' +
         '<div class="card stack"><h2>My saved plans</h2>' + (S.saved.length ? '<div class="list">' + S.saved.map(savedItem).join('') + '</div>' : '<p class="muted">Plans you save from the Quote screen appear here, stored on this device.</p>') + '</div>' +
         '<div class="card stack"><h2>My designs</h2>' + (S.designs.length ? '<div class="list">' + S.designs.map(function (x) { var d = builtDesign(x.program); return '<div class="item"><div><b>' + esc(x.program.name) + '</b><div class="small muted">' + esc(capText(d)) + ' · ' + d.N + ' storey' + (d.N > 1 ? 's' : '') + ' · start ' + pesoM(getQuote(d.plan).start) + '</div></div><div class="row"><button type="button" class="btn sm" data-action="d-open" data-id="' + x.id + '" data-mine="1">Open</button><button type="button" class="btn sm ghost" data-action="del-design" data-id="' + x.id + '" aria-label="Delete">✕</button></div></div>'; }).join('') + '</div>' : '<p class="muted">Designs you save in the Design studio appear here and can be added as wings of other designs.</p>') + '</div>' +
         '<div class="card stack"><h2>My checks</h2>' + (S.checks.length ? '<div class="list">' + S.checks.map(function (c) {
@@ -731,8 +800,8 @@
           ids.map(function (k) { var b = E.PRICE_BOOK[k], val = S.prices[k] != null ? S.prices[k] : b[3]; return '<tr><td class="mono small">' + esc(b[0]) + '</td><td>' + esc(b[1]) + '</td><td>' + esc(b[2]) + '</td><td class="n"><input type="number" step="1" min="0" data-price="' + k + '" value="' + val + '" aria-label="Rate for ' + esc(b[1]) + '" style="width:110px;text-align:right;font:inherit;border:1px solid var(--line);border-radius:6px;padding:4px 6px;background:' + (S.prices[k] != null ? 'var(--warn-bg)' : 'var(--surface-2)') + ';color:var(--ink)"></td></tr>'; }).join('') +
           '</tbody></table></div></div>' +
         '<div class="card stack"><h2>About BUHAY-AH</h2>' +
-          '<p>BUHAY-AH (Buildings-and-Bridges Unit-cost Hybrid Analytics and Yardstick for Accountable and Honest infrastructure) is the working system of the study <i>BUHAY-AH: A Budget-to-Blueprint Design Generator, Standards-Based Quantity Take-Off and Hybrid Machine Learning System for Start Quotations and Over-Budget Detection in Public Buildings and Bridges</i>.</p>' +
-          '<p class="small">Method: requirement or budget → modular schematic design → parametric quantity take-off → DPWH pay items and unit costs → ABC with D.O. 197 s. 2016 / D.O. 30 s. 2025 indirect costs → lean, standard and ceiling tiers. Screening combines the over-budget ratio with an XGBoost cost model (with SHAP explanations), a Multiple Linear Regression baseline and an Isolation Forest into the BUHAY-AH Risk Index.</p>' +
+          '<p>BUHAY-AH (Buildings-and-Bridges Unit-cost Hybrid Analytics and Yardstick for Accountable and Honest infrastructure) is the working system of the study <i>BUHAY-AH: A Budget-to-Blueprint Design Generator, Standards-Based Quantity Take-Off and Hybrid Machine Learning System for Start Quotations and Over-Budget Detection in Public Buildings, Bridges, Airports and Seaports</i>.</p>' +
+          '<p class="small">Method: requirement or budget → modular schematic design → parametric quantity take-off → DPWH pay items and unit costs → ABC with D.O. 197 s. 2016 / D.O. 30 s. 2025 indirect costs → lean, standard and ceiling tiers. Screening combines the over-budget ratio with an XGBoost cost model (with SHAP explanations), a Multiple Linear Regression baseline and an Isolation Forest into the BUHAY-AH Risk Index. Hospitals, airport, seaport and land transport terminals, airfield pavements and port structures are priced by the same take-off and screened by the over-budget ratio until enough contracts exist to train the models.</p>' +
           '<p class="small">Supports SDG 9.1 (resilient infrastructure), SDG 11.5 (disaster-resilient facilities), SDG 16.5, 16.6 and 16.10 (anti-corruption, accountable institutions, access to information), SDG 12.7 (sustainable public procurement) and SDG 4.a (school facilities).</p>' +
           '<p class="small"><b>Lead researcher:</b> Enrique Miguel C. Buban.</p>' +
           '<p class="small muted">Version ' + E.VERSION + '. Data stays on this device. ' + (DATA.models ? 'Models: ' + esc(DATA.models.generated) + '.' : 'Model files not loaded: quotations work, ML screening is off.') + '</p></div>' +
@@ -779,7 +848,7 @@
       q = getQuote(); var as = E.assess(q, amt), ml = screenFor(p, q, amt);
       var st = ml ? ml.status : as.status; if (as.status === 'red') st = 'red';
       S.checks.unshift({ id: 'c' + Date.now().toString(36), cid: S.check.cid, amount: amt, plan: JSON.parse(JSON.stringify(p)),
-        fair: q.fair, ceiling: q.ceiling, obr: as.obr, bri: ml ? ml.bri : 0, status: st === 'low' ? 'green' : st, saved: new Date().toISOString() });
+        fair: q.fair, ceiling: q.ceiling, obr: as.obr, bri: ml ? ml.bri : obrIndex(as.obr), status: st === 'low' ? 'green' : st, saved: new Date().toISOString() });
       store.set('checks', S.checks); toast('Saved to My checks');
     }
     else if (a === 'boq-compare') compareBoq();
@@ -801,6 +870,10 @@
     else if (a === 'd-bquote' || a === 'b-tpl') {
       var bp = a === 'b-tpl' ? DS.BRIDGE_TEMPLATES.filter(function (x) { return x.id === t.dataset.id; })[0].plan : S.bridgeRes[+t.dataset.i].plan;
       S.kind = 'bridge'; S.plans.bridge = Object.assign({}, bp, { province: S.plans.bridge.province, year: S.plans.bridge.year }); persist(); go('quote');
+    }
+    else if (a === 'c-tpl') {
+      var kd = t.dataset.kind, cl = (kd === 'airfield' ? DS.AIRFIELD_TEMPLATES : DS.PORT_TEMPLATES).filter(function (x) { return x.id === t.dataset.id; })[0];
+      if (cl) { S.kind = kd; S.plans[kd] = Object.assign({}, cl.plan, { province: S.plans[kd].province, year: S.plans[kd].year }); persist(); go('quote'); }
     }
     else if (a === 'd-inc' || a === 'd-dec') {
       var lst = S.design[t.dataset.list], it = lst[+t.dataset.i];

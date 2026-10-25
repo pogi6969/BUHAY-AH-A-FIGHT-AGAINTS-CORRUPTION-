@@ -1,6 +1,7 @@
 /*
- * BUHAY-AH design generator: turns a usage, a requirement (classrooms, beds, staff, persons, stalls)
- * or a budget into a schematic building or bridge design that the cost engine can price.
+ * BUHAY-AH design generator: turns a usage, a requirement (classrooms, beds, staff, persons, stalls,
+ * passengers, loading bays) or a budget into a schematic building, bridge, airfield or port design
+ * that the cost engine can price.
  *
  * Buildings are composed from reusable space modules (DepEd 7 × 9 m classroom, wards, offices,
  * hall bays, stall bays, toilets, stairs) laid out as single-loaded, double-loaded or open plans.
@@ -80,8 +81,83 @@
   // courts
   sp('court_floor', 'Playing court 28 × 15 m with run-off', 32.0, 20.0, 'assembly', ['court'], { persons: 300 });
   sp('bleachers', 'Bleachers', 4.0, 20.0, 'assembly', ['court'], { persons: 120 });
+  // hospitals (double-loaded, row depth 6 m, DOH A.O. 2016-0042 patient corridor 2.44 m)
+  sp('hosp_lobby', 'Lobby, admitting & cashier', 9.0, 6.0, 'assembly', ['hospital'], {}, true);
+  sp('hosp_er', 'Emergency room (6 bays)', 12.0, 6.0, 'health', ['hospital'], {}, true);
+  sp('hosp_opd', 'Outpatient clinics (4 rooms)', 12.0, 6.0, 'health', ['hospital'], { consult: 4 }, true);
+  sp('hosp_ward', 'Ward (6 beds)', 7.5, 6.0, 'health', ['hospital'], { beds: 6 });
+  sp('hosp_private', 'Private room (1 bed, toilet)', 4.0, 6.0, 'health', ['hospital'], { beds: 1 });
+  sp('hosp_isolation', 'Isolation room with anteroom (1 bed)', 4.5, 6.0, 'health', ['hospital'], { beds: 1 });
+  sp('hosp_icu', 'Intensive care unit (4 beds)', 12.0, 6.0, 'health', ['hospital'], { beds: 4 });
+  sp('hosp_or', 'Operating room suite (OR, scrub, recovery)', 12.0, 6.0, 'health', ['hospital'], {});
+  sp('hosp_dr', 'Delivery suite (DR + 2 labor beds)', 9.0, 6.0, 'health', ['hospital'], { beds: 2 });
+  sp('hosp_nicu', 'Nursery / NICU', 6.0, 6.0, 'health', ['hospital'], {});
+  sp('hosp_lab', 'Clinical laboratory', 9.0, 6.0, 'health', ['hospital'], {}, true);
+  sp('hosp_xray', 'Radiology (X-ray, ultrasound)', 9.0, 6.0, 'health', ['hospital'], {}, true);
+  sp('hosp_pharm', 'Pharmacy', 6.0, 6.0, 'health', ['hospital'], {}, true);
+  sp('hosp_dialysis', 'Dialysis unit (6 stations)', 12.0, 6.0, 'health', ['hospital'], {});
+  sp('hosp_cssd', 'Central sterile supply', 6.0, 6.0, 'service', ['hospital'], {});
+  sp('hosp_dietary', 'Dietary / kitchen', 9.0, 6.0, 'service', ['hospital'], {}, true);
+  sp('hosp_laundry', 'Laundry & linen', 6.0, 6.0, 'service', ['hospital'], {}, true);
+  sp('hosp_admin', 'Administration & medical records', 9.0, 6.0, 'office', ['hospital'], {});
+  sp('hosp_morgue', 'Morgue', 4.0, 6.0, 'service', ['hospital'], {}, true);
+  sp('hosp_waste', 'Health-care waste holding & MRF', 4.0, 6.0, 'service', ['hospital'], {}, true);
+  sp('hosp_nurse', 'Nurse station & treatment', 6.0, 6.0, 'health', ['hospital'], {});
+  sp('hosp_toilet', 'Public toilets (M / F / PWD)', 4.0, 6.0, 'service', ['hospital'], {});
+  // airport passenger terminals (open plan, row depth 20 m; IATA ADRM space per peak-hour passenger)
+  sp('ap_curb', 'Departure curbside & entrance hall', 12.0, 20.0, 'assembly', ['airport'], {}, true);
+  sp('ap_checkin', 'Check-in hall (8 counters)', 12.0, 20.0, 'office', ['airport'], {}, true);
+  sp('ap_security', 'Security screening (2 lanes)', 8.0, 20.0, 'service', ['airport'], {}, true);
+  sp('ap_hold', 'Departure holdroom (80 passengers)', 12.0, 20.0, 'assembly', ['airport'], { pax: 80 });
+  sp('ap_concourse', 'Concourse & circulation', 12.0, 20.0, 'assembly', ['airport'], {});
+  sp('ap_claim', 'Baggage claim hall (1 carousel)', 12.0, 20.0, 'assembly', ['airport'], {}, true);
+  sp('ap_makeup', 'Baggage make-up area', 8.0, 20.0, 'service', ['airport'], {}, true);
+  sp('ap_arrival', 'Arrival hall & greeters', 12.0, 20.0, 'assembly', ['airport'], {}, true);
+  sp('ap_admin', 'Terminal administration & CAAP offices', 8.0, 20.0, 'office', ['airport'], {});
+  sp('ap_food', 'Concessions & food court', 8.0, 20.0, 'commerce', ['airport'], {});
+  sp('ap_vip', 'VIP & PWD lounge', 6.0, 20.0, 'assembly', ['airport'], {});
+  sp('ap_plant', 'Utility, AC plant & generator room', 8.0, 20.0, 'service', ['airport'], {}, true);
+  sp('ap_toilet', 'Toilets (M / F / PWD)', 5.0, 20.0, 'service', ['airport'], {});
+  // seaport passenger terminals (open plan, row depth 15 m)
+  sp('sp_lobby', 'Entrance lobby & ticketing', 9.0, 15.0, 'assembly', ['seaport'], {}, true);
+  sp('sp_wait', 'Passenger waiting lounge (120 seats)', 12.0, 15.0, 'assembly', ['seaport'], { pax: 120 });
+  sp('sp_predep', 'Pre-departure area & security check', 9.0, 15.0, 'service', ['seaport'], {}, true);
+  sp('sp_bag', 'Baggage & cargo check-in', 6.0, 15.0, 'service', ['seaport'], {}, true);
+  sp('sp_admin', 'PPA, Coast Guard & port police offices', 9.0, 15.0, 'office', ['seaport'], {});
+  sp('sp_food', 'Concessions', 6.0, 15.0, 'commerce', ['seaport'], {});
+  sp('sp_clinic', 'First aid, PWD & senior lounge', 5.0, 15.0, 'health', ['seaport'], {});
+  sp('sp_toilet', 'Toilets (M / F / PWD)', 5.0, 15.0, 'service', ['seaport'], {});
+  // land transport terminals: passenger concourse (open plan, row depth 10 m); loading bays are site works
+  var TERM = ['jeepterm', 'uvterm', 'busterm'];
+  sp('tr_waiting', 'Passenger waiting area (60 seats)', 9.0, 10.0, 'assembly', TERM, {});
+  sp('tr_ticket', 'Ticketing & dispatch booths', 4.0, 10.0, 'office', TERM, {}, true);
+  sp('tr_office', 'Terminal office & LGU / LTFRB desk', 6.0, 10.0, 'office', TERM, {});
+  sp('tr_food', 'Food stalls (4)', 8.0, 10.0, 'commerce', TERM, {});
+  sp('tr_lounge', 'PWD, senior & breastfeeding lounge', 4.0, 10.0, 'assembly', TERM, {}, true);
+  sp('tr_driver', 'Drivers\' lounge & dispatch', 5.0, 10.0, 'service', TERM, {}, true);
+  sp('tr_parcel', 'Parcel & baggage counter', 4.0, 10.0, 'service', TERM, {}, true);
+  sp('tr_toilet', 'Toilets (M / F / PWD)', 5.0, 10.0, 'service', TERM, {});
   // circulation (any usage)
   sp('stair', 'Stair', 3.5, 0, 'circulation', ['all'], {});
+
+  // loading bays by design vehicle (AASHTO 2018: bus 12 m; modern jeepney 9 m; UV Express van 5.4 m):
+  // w bay width, d stall depth, drive aisle share, hold = queueing / holding area share, canopy depth over the loading lane
+  var BAYS = {
+    jeep: { label: 'jeepney', w: 3.5, d: 10.0, drive: 7.0, hold: 0.40, canopy: 6.0 },
+    uv:   { label: 'UV Express', w: 3.0, d: 6.5, drive: 6.0, hold: 0.40, canopy: 4.5 },
+    bus:  { label: 'bus', w: 4.5, d: 15.0, drive: 12.0, hold: 0.25, canopy: 6.0 }
+  };
+  function siteOf(bays) {
+    var out = { bays: 0, pave: 0, canopy: 0, list: [] };
+    Object.keys(BAYS).forEach(function (m) {
+      var n = (bays && bays[m]) || 0, b = BAYS[m];
+      if (!n) return;
+      out.bays += n; out.pave += n * b.w * (b.d + b.drive) * (1 + b.hold); out.canopy += n * b.w * b.canopy;
+      out.list.push({ mode: m, n: n });
+    });
+    out.pave = Math.round(out.pave); out.canopy = Math.round(out.canopy);
+    return out;
+  }
 
   // ------------------------------------------------------------------ usages
   var USAGE = {
@@ -91,7 +167,13 @@
     evacuation: { label: 'Evacuation center / multi-purpose hall', costType: 'evacuation', layout: 'open', depth: 12.0, corridor: 0, fh: 5.0, bay: 6.0, cap: 'persons', capLabel: 'persons', unit: 'person', range: [40, 1500, 20] },
     market:     { label: 'Public market', costType: 'market', layout: 'open', depth: 12.0, corridor: 0, fh: 4.5, bay: 6.0, cap: 'stalls', capLabel: 'stalls', unit: 'stall', range: [20, 500, 10] },
     dorm:       { label: 'Dormitory / quarters', costType: 'dorm', layout: 'double', depth: 5.0, corridor: 2.0, fh: 3.0, bay: 4.5, cap: 'beds', capLabel: 'beds', unit: 'bed', range: [8, 480, 8] },
-    court:      { label: 'Covered court', costType: 'court', layout: 'open', depth: 20.0, corridor: 0, fh: 8.0, bay: 6.0, cap: 'persons', capLabel: 'persons', unit: 'person', range: [300, 900, 120] }
+    court:      { label: 'Covered court', costType: 'court', layout: 'open', depth: 20.0, corridor: 0, fh: 8.0, bay: 6.0, cap: 'persons', capLabel: 'persons', unit: 'person', range: [300, 900, 120] },
+    hospital:   { label: 'Hospital (DOH Level 1–3)', costType: 'hospital', layout: 'double', depth: 6.0, corridor: 2.44, fh: 3.8, bay: 6.0, cap: 'beds', capLabel: 'beds', unit: 'bed', range: [10, 300, 5], lot: 100 },
+    airport:    { label: 'Airport passenger terminal', costType: 'airport', layout: 'open', depth: 20.0, corridor: 0, fh: 7.0, bay: 9.0, cap: 'pax', capLabel: 'peak-hour passengers', unit: 'passenger', range: [50, 1500, 50], maxRows: 4, lot: 150 },
+    seaport:    { label: 'Seaport passenger terminal', costType: 'seaport', layout: 'open', depth: 15.0, corridor: 0, fh: 5.0, bay: 7.5, cap: 'pax', capLabel: 'passengers', unit: 'passenger', range: [60, 1800, 60], lot: 100 },
+    jeepterm:   { label: 'Jeepney terminal', costType: 'terminal', layout: 'open', depth: 10.0, corridor: 0, fh: 4.5, bay: 6.0, cap: 'bays', capLabel: 'jeepney bays', unit: 'bay', range: [4, 80, 2], maxRows: 2, mode: 'jeep', lot: 80 },
+    uvterm:     { label: 'UV Express terminal', costType: 'terminal', layout: 'open', depth: 10.0, corridor: 0, fh: 4.5, bay: 6.0, cap: 'bays', capLabel: 'UV Express bays', unit: 'bay', range: [4, 60, 2], maxRows: 2, mode: 'uv', lot: 80 },
+    busterm:    { label: 'Bus terminal', costType: 'terminal', layout: 'open', depth: 10.0, corridor: 0, fh: 4.5, bay: 6.0, cap: 'bays', capLabel: 'bus bays', unit: 'bay', range: [2, 40, 1], maxRows: 2, mode: 'bus', lot: 80 }
   };
 
   // requirement → program (rules follow DepEd, DOH, NBC and DSWD space norms used in the study)
@@ -125,6 +207,35 @@
       add('dorm_room', Math.ceil(k / 8)); add('lounge', 1); add('warden', 1); add('laundry', 1); per('bath', Math.max(1, Math.ceil(k / (8 * N) / 3)));
     } else if (usage === 'court') {
       add('court_floor', 1); add('stage', 1); add('showers', 1); add('bleachers', Math.max(0, Math.round((k - 300) / 120)));
+    } else if (usage === 'hospital') {
+      // service level grows with size (DOH A.O. 2012-0012): Level 2 adds ICU and NICU, Level 3 adds dialysis and more ORs
+      var level = k >= 150 ? 3 : k >= 75 ? 2 : 1;
+      var icu = level >= 2 ? Math.max(1, Math.round(k * 0.06 / 4)) : 0, dr = Math.max(1, Math.ceil(k / 60));
+      var iso2 = Math.max(1, Math.round(k * 0.04)), priv = Math.round(k * 0.12);
+      var rest2 = Math.max(0, k - 4 * icu - 2 * dr - iso2 - priv), wards2 = Math.floor(rest2 / 6);
+      priv += rest2 - 6 * wards2; // leftover beds go to private rooms so the program meets the bed count exactly
+      add('hosp_lobby', 1); add('hosp_er', level >= 2 ? 2 : 1); add('hosp_opd', Math.max(1, Math.ceil(k / 50)));
+      add('hosp_ward', wards2); add('hosp_private', priv); add('hosp_isolation', iso2); add('hosp_icu', icu);
+      add('hosp_or', level === 1 ? 1 : level === 2 ? 2 : Math.ceil(k / 50)); add('hosp_dr', dr); add('hosp_nicu', level >= 2 ? 1 : 0);
+      add('hosp_lab', 1); add('hosp_xray', 1); add('hosp_pharm', 1); add('hosp_cssd', 1); add('hosp_dietary', 1); add('hosp_laundry', 1);
+      add('hosp_admin', level === 3 ? 2 : 1); add('hosp_morgue', 1); add('hosp_waste', 1); add('hosp_dialysis', level === 3 ? 1 : 0);
+      per('hosp_nurse', 1); per('hosp_toilet', 1);
+      p.level = level;
+    } else if (usage === 'airport') {
+      add('ap_hold', Math.ceil(k / 80)); add('ap_checkin', Math.ceil(k / 120)); add('ap_security', Math.ceil(k / 200));
+      add('ap_claim', Math.ceil(k / 250)); add('ap_makeup', Math.ceil(k / 300)); add('ap_arrival', Math.ceil(k / 250));
+      add('ap_curb', 1 + Math.floor(k / 600)); add('ap_concourse', Math.ceil(k / 90)); add('ap_admin', 1 + Math.floor(k / 800));
+      add('ap_food', Math.ceil(k / 200)); add('ap_vip', 1); add('ap_plant', 1); per('ap_toilet', Math.ceil(k / 400));
+    } else if (usage === 'seaport') {
+      add('sp_wait', Math.ceil(k / 120)); add('sp_lobby', 1 + Math.floor(k / 600)); add('sp_predep', Math.ceil(k / 300));
+      add('sp_bag', 1 + Math.floor(k / 500)); add('sp_admin', 1); add('sp_food', Math.ceil(k / 400)); add('sp_clinic', 1);
+      per('sp_toilet', Math.ceil(k / 400));
+    } else if (usage === 'jeepterm' || usage === 'uvterm' || usage === 'busterm') {
+      var mode = USAGE[usage].mode, perWait = { jeep: 5, uv: 6, bus: 2 }[mode];
+      add('tr_waiting', Math.ceil(k / perWait)); add('tr_ticket', mode === 'bus' ? Math.ceil(k / 6) : 1); add('tr_office', 1);
+      add('tr_food', Math.ceil(k / ({ jeep: 20, uv: 25, bus: 6 }[mode]))); add('tr_lounge', 1); add('tr_driver', 1);
+      add('tr_parcel', mode === 'bus' ? 1 : 0); per('tr_toilet', 1 + Math.floor(k / ({ jeep: 40, uv: 40, bus: 12 }[mode])));
+      p.bays = {}; p.bays[mode] = k;
     }
     if (extra) extra.forEach(function (m) { p.modules.push(m.slice()); });
     return p;
@@ -145,7 +256,7 @@
 
     // open plans fold into 2–3 parallel rows when one row would exceed 48 m (compact halls and markets)
     var totalW = rooms.reduce(function (s, r) { return s + r.w; }, 0) / N;
-    var nRows = layout === 'double' ? 2 : layout === 'open' && program.usage !== 'court' ? Math.min(3, Math.max(1, Math.ceil(totalW / 48))) : 1;
+    var nRows = layout === 'double' ? 2 : layout === 'open' && program.usage !== 'court' ? Math.min(U.maxRows || 3, Math.max(1, Math.ceil(totalW / 48))) : 1;
     var floors = [];
     for (var f = 0; f < N; f++) floors.push({ level: f, list: perFloor.slice() });
     var len = function (fl) { return fl.list.reduce(function (s, r) { return s + r.w; }, 0) / nRows; };
@@ -207,12 +318,19 @@
       kind: 'building', name: program.name || (U.label + ' design'), type: U.costType,
       length: L, width: W, storeys: N, floorHeight: program.floorHeight || U.fh,
       bayX: L / Math.max(1, Math.round(L / U.bay)), bayY: W / nb,
-      roof: program.roof || (N >= 3 && (program.usage === 'office' || program.usage === 'health') ? 'rc_deck' : 'steel_truss'),
+      roof: program.roof || (N >= 3 && (program.usage === 'office' || program.usage === 'health' || program.usage === 'hospital') ? 'rc_deck' : 'steel_truss'),
       footprintArea: footprint, perimeter: 2 * (L + W), interiorWallLength: Math.round(partitions / N * 10) / 10,
       province: opt.province || program.province || 'Albay', year: opt.year || program.year || 2025
     };
+    // site works: loading bays for land transport terminals, curbside and parking for air and sea terminals
+    var site = siteOf(program.bays);
+    if (site.bays) { cap.bays = site.bays; plan.bays = site.bays; }
+    if (cap.pax && program.usage === 'airport') { site.pave += Math.round(6 * cap.pax); site.canopy += Math.round(0.6 * cap.pax); }
+    if (cap.pax && program.usage === 'seaport') { site.pave += Math.round(2.5 * cap.pax); site.canopy += Math.round(0.3 * cap.pax); }
+    if (site.pave) plan.sitePavement = site.pave;
+    if (site.canopy) plan.canopyArea = site.canopy;
     var d = { program: program, usage: program.usage, usageLabel: U.label, name: plan.name, layout: layout, depth: D, corridor: C,
-      L: L, W: W, N: N, floors: floors, rooms: placed, footprint: footprint, gfa: gfa, capacity: cap, plan: plan };
+      L: L, W: W, N: N, floors: floors, rooms: placed, footprint: footprint, gfa: gfa, capacity: cap, plan: plan, site: site };
     d.checks = checks(d);
     return d;
   }
@@ -222,18 +340,35 @@
     var out = [], c = d.capacity;
     var count = function (id) { return d.rooms.filter(function (r) { return r.id === id; }).length; };
     if (c.classrooms) out.push({ ok: true, text: c.classrooms + ' classrooms at 63 m² each (DepEd standard 7 × 9 m), about ' + (c.learners || 0) + ' learners per shift.' });
-    if (d.corridor) out.push({ ok: d.corridor >= 1.12, text: 'Corridor ' + d.corridor.toFixed(2) + ' m wide (PD 1096 minimum 1.12 m).' });
+    if (d.corridor && d.usage === 'hospital') out.push({ ok: d.corridor >= 2.44, text: 'Patient corridor ' + d.corridor.toFixed(2) + ' m wide (DOH A.O. 2016-0042 minimum 2.44 m for stretcher and bed traffic).' });
+    else if (d.corridor) out.push({ ok: d.corridor >= 1.12, text: 'Corridor ' + d.corridor.toFixed(2) + ' m wide (PD 1096 minimum 1.12 m).' });
     if (d.N > 1) {
       var st = count('stair') / d.N;
       out.push({ ok: st >= (d.L > 30 ? 2 : 1), text: st + ' stair' + (st > 1 ? 's' : '') + ' per floor for a ' + d.L.toFixed(1) + ' m long plan' + (d.L > 30 ? ' (two exits required beyond 30 m).' : '.') });
     }
-    var toilets = d.rooms.filter(function (r) { return /^toilet|showers|bath/.test(r.id); }).length;
+    var toilets = d.rooms.filter(function (r) { return /toilet|showers|bath/.test(r.id); }).length;
     out.push({ ok: toilets >= (d.usage === 'court' ? 1 : d.N), text: toilets + ' toilet block' + (toilets === 1 ? '' : 's') + ' with PWD cubicles (BP 344); ramp included in the quotation.' });
     if (c.persons && d.usage === 'evacuation') {
       var hall = d.rooms.filter(function (r) { return r.id === 'hall_bay'; }).reduce(function (s, r) { return s + r.w * r.d; }, 0);
       out.push({ ok: hall / c.persons >= 3.5, text: 'Living space ' + (hall / c.persons).toFixed(1) + ' m² per person (Sphere / DSWD minimum 3.5 m²).' });
     }
     if (c.beds && d.usage === 'health') out.push({ ok: true, text: c.beds + ' beds in wards, labor and isolation rooms; delivery room and laboratory included.' });
+    if (d.usage === 'hospital') {
+      var lv = d.program.level || (c.beds >= 150 ? 3 : c.beds >= 75 ? 2 : 1);
+      var need = ['hosp_er', 'hosp_or', 'hosp_dr', 'hosp_lab', 'hosp_xray', 'hosp_pharm'].concat(lv >= 2 ? ['hosp_icu', 'hosp_nicu'] : []);
+      var miss = need.filter(function (id) { return !count(id); });
+      out.push({ ok: !miss.length, text: 'Level ' + lv + ' hospital, ' + (c.beds || 0) + ' beds: ' + (miss.length ? 'missing ' + miss.map(function (id) { return S[id].name; }).join(', ') : 'emergency, surgery, delivery, laboratory, imaging and pharmacy' + (lv >= 2 ? ', ICU and NICU' : '') + ' present') + ' (DOH A.O. 2012-0012).' });
+      if (d.N > 1) out.push({ ok: true, text: 'Bed elevator included in the quotation for a ' + d.N + '-storey hospital (DOH A.O. 2016-0042).' });
+    }
+    if (c.pax && d.usage === 'airport') {
+      var perPax = d.gfa / c.pax;
+      out.push({ ok: perPax >= 14, text: 'Terminal area ' + perPax.toFixed(1) + ' m² per peak-hour passenger (IATA ADRM planning range about 14–25 m²).' });
+    }
+    if (c.pax && d.usage === 'seaport') {
+      var wait = d.rooms.filter(function (r) { return r.id === 'sp_wait'; }).reduce(function (s2, r) { return s2 + r.w * r.d; }, 0);
+      out.push({ ok: wait / c.pax >= 1.2, text: 'Waiting lounge ' + (wait / c.pax).toFixed(2) + ' m² per seated passenger (at least 1.2 m²).' });
+    }
+    if (d.site && d.site.bays) out.push({ ok: true, text: d.site.list.map(function (x) { return x.n + ' ' + BAYS[x.mode].label + ' bay' + (x.n > 1 ? 's' : ''); }).join(' + ') + ' on ' + d.site.pave.toLocaleString('en-PH') + ' m² of PCCP with ' + d.site.canopy.toLocaleString('en-PH') + ' m² of loading canopy (design vehicles per AASHTO 2018).' });
     out.push({ ok: true, text: 'Windows sized to at least 10% of floor area for natural light (PD 1096), computed in the quotation.' });
     return out;
   }
@@ -245,6 +380,7 @@
       if (!p.perFloor.some(function (x) { return x[0] === m[0]; })) p.perFloor.push(m.slice());
     });
     p.storeys = Math.max(p.storeys || 1, other.storeys || 1);
+    if (other.bays) { p.bays = p.bays || {}; Object.keys(other.bays).forEach(function (m) { p.bays[m] = (p.bays[m] || 0) + other.bays[m]; }); }
     p.name = (program.name || 'Design') + ' + ' + (other.name || 'wing');
     return p;
   }
@@ -255,8 +391,8 @@
   // For each storey count, binary-search the largest capacity whose quotation fits the budget.
   function fromBudget(usage, budget, opt) {
     opt = opt || {};
-    var U = USAGE[usage], maxN = opt.maxStoreys || (usage === 'court' || usage === 'market' || usage === 'evacuation' ? 2 : 4);
-    var basis = opt.basis || 'start', maxL = opt.maxLength || 60;
+    var U = USAGE[usage], maxN = opt.maxStoreys || (usage === 'hospital' ? 5 : usage === 'court' || usage === 'market' || usage === 'evacuation' || usage === 'airport' || usage === 'seaport' || U.mode ? 2 : 4);
+    var basis = opt.basis || 'start', maxL = opt.maxLength || U.lot || 60;
     var cost = function (q) { return basis === 'standard' ? q.fair : q.start; };
     var make = function (k, N) {
       var d = build(Object.assign(programFor(usage, k, N), { name: U.label + ', ' + k + ' ' + U.capLabel + ', ' + N + '-storey' }), opt);
@@ -365,6 +501,27 @@
   // courts
   tpl('court-brgy', 'Barangay covered court', 'court', [['court_floor', 1], ['stage', 1], ['showers', 1]], []);
   tpl('court-std', 'Covered court with bleachers and showers', 'court', [['court_floor', 1], ['stage', 1], ['bleachers', 2], ['showers', 1]], []);
+  // hospitals
+  function ptpl(id, name, usage, k, N) { var pr = programFor(usage, k, N); tpl(id, name, usage, pr.modules, pr.perFloor, N, pr.bays ? { bays: pr.bays, level: pr.level } : (pr.level ? { level: pr.level } : null)); }
+  ptpl('hosp-l1-25', 'Level 1 hospital, 25 beds (2-storey)', 'hospital', 25, 2);
+  ptpl('hosp-l1-50', 'Level 1 hospital, 50 beds (3-storey)', 'hospital', 50, 3);
+  ptpl('hosp-l2-100', 'Level 2 hospital, 100 beds (4-storey)', 'hospital', 100, 4);
+  ptpl('hosp-l3-200', 'Level 3 hospital, 200 beds (5-storey)', 'hospital', 200, 5);
+  // airport and seaport passenger terminals
+  ptpl('ap-150', 'Community airport terminal, 150 peak-hour passengers', 'airport', 150, 1);
+  ptpl('ap-400-2s', 'Principal airport terminal, 400 peak-hour passengers (2-storey)', 'airport', 400, 2);
+  ptpl('ap-1000-2s', 'International airport terminal, 1,000 peak-hour passengers (2-storey)', 'airport', 1000, 2);
+  ptpl('sp-120', 'Seaport passenger terminal, 120 passengers', 'seaport', 120, 1);
+  ptpl('sp-360', 'Seaport passenger terminal, 360 passengers', 'seaport', 360, 1);
+  ptpl('sp-900-2s', 'Seaport passenger terminal, 900 passengers (2-storey)', 'seaport', 900, 2);
+  // land transport terminals (jeepney, UV Express, bus)
+  ptpl('jt-20', 'Jeepney terminal, 20 loading bays', 'jeepterm', 20, 1);
+  ptpl('uv-15', 'UV Express terminal, 15 loading bays', 'uvterm', 15, 1);
+  ptpl('bus-12', 'Bus terminal, 12 sawtooth bays', 'busterm', 12, 1);
+  (function () {
+    var itt = combine(combine(programFor('busterm', 8, 2), programFor('jeepterm', 16, 2)), programFor('uvterm', 12, 2));
+    tpl('itt-36', 'Integrated land transport terminal: 8 bus + 16 jeepney + 12 UV Express bays (2-storey)', 'busterm', itt.modules, itt.perFloor, 2, { bays: itt.bays });
+  }());
 
   var BRIDGE_TEMPLATES = [
     { id: 'br-foot', name: 'Pedestrian footbridge 1 × 15 m', plan: { superstructure: 'rcdg', totalLength: 15, spans: 1, carriageway: 2.0, sidewalk: 0, abutmentHeight: 3.5, foundation: 'spread', approachLength: 5 } },
@@ -383,6 +540,25 @@
   ];
   BRIDGE_TEMPLATES.forEach(function (b) { b.plan.kind = 'bridge'; b.plan.name = b.name; });
 
+  var AIRFIELD_TEMPLATES = [
+    { id: 'af-rwy-b', name: 'Runway 800 × 23 m (small aircraft, PCC)', plan: { facility: 'runway', aircraft: 'code_b', length: 800, width: 23 } },
+    { id: 'af-rwy-c', name: 'Runway 1,200 × 30 m (turboprop, PCC)', plan: { facility: 'runway', aircraft: 'turboprop', length: 1200, width: 30 } },
+    { id: 'af-rwy-ext', name: 'Runway extension 400 × 30 m (turboprop)', plan: { facility: 'runway', aircraft: 'turboprop', length: 400, width: 30 } },
+    { id: 'af-rwy-jet', name: 'Runway 2,100 × 45 m (A320 / B737, PCC)', plan: { facility: 'runway', aircraft: 'jet', length: 2100, width: 45 } },
+    { id: 'af-twy', name: 'Parallel taxiway 600 × 15 m (turboprop)', plan: { facility: 'taxiway', aircraft: 'turboprop', length: 600, width: 15 } },
+    { id: 'af-apron4', name: 'Apron, 4 turboprop stands (120 × 80 m)', plan: { facility: 'apron', aircraft: 'turboprop', length: 120, width: 80 } },
+    { id: 'af-apron-jet', name: 'Apron, 3 jet stands (150 × 90 m)', plan: { facility: 'apron', aircraft: 'jet', length: 150, width: 90 } }
+  ];
+  AIRFIELD_TEMPLATES.forEach(function (b) { b.plan.kind = 'airfield'; b.plan.name = b.name; });
+  var PORT_TEMPLATES = [
+    { id: 'pt-jetty', name: 'Passenger jetty 30 × 6 m (PC spun piles)', plan: { facility: 'pier', length: 30, width: 6, waterDepth: 3, deckLevel: 3.0, pileType: 'pc_spun' } },
+    { id: 'pt-fish', name: 'Fishport pier 40 × 8 m with 80 m causeway', plan: { facility: 'pier', length: 40, width: 8, waterDepth: 4, pileType: 'pc_spun', causeway: 80 } },
+    { id: 'pt-roro', name: 'RoRo pier 60 × 15 m with ramp (PC spun piles)', plan: { facility: 'pier', length: 60, width: 15, waterDepth: 6, pileType: 'pc_spun', roro: true } },
+    { id: 'pt-wharf', name: 'Marginal wharf 100 × 20 m (steel pipe piles)', plan: { facility: 'wharf', length: 100, width: 20, waterDepth: 9, pileType: 'steel_pipe' } },
+    { id: 'pt-wharf-ext', name: 'Wharf extension 50 × 20 m (steel pipe piles)', plan: { facility: 'wharf', length: 50, width: 20, waterDepth: 9, pileType: 'steel_pipe' } }
+  ];
+  PORT_TEMPLATES.forEach(function (b) { b.plan.kind = 'port'; b.plan.name = b.name; });
+
   // ------------------------------------------------------------------ drawings (SVG)
   var FILL = { learning: '#dce9f8', health: '#d9f0e2', office: '#e9e3f5', assembly: '#fdeec9', service: '#e3e7ed', commerce: '#fbe1d5', living: '#f4e2ee', circulation: '#ffffff', void: '#ffffff' };
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -390,7 +566,24 @@
   function planSVG(d, level, o) {
     o = o || {};
     var fl = d.floors[level || 0], k = 20, m = 70;                 // 20 px per metre, margins
-    var Wp = d.L * k + 2 * m, Hp = d.W * k + 2 * m + 30;
+    var showSite = d.site && d.site.bays && (level || 0) === 0;
+    var siteRows = [], siteLen = 0, siteH = 0;
+    if (showSite) {
+      // loading bays in rows along the building front: canopy band, then stalls of each vehicle type
+      var rowMax = Math.max(d.L, 30), cur = { x: 0, items: [] };
+      d.site.list.forEach(function (x) {
+        var b = BAYS[x.mode];
+        for (var i = 0; i < x.n; i++) {
+          if (cur.x + b.w > rowMax + 1e-6) { siteRows.push(cur); cur = { x: 0, items: [] }; }
+          cur.items.push({ mode: x.mode, x: cur.x, w: b.w, d: b.d, no: i + 1 }); cur.x += b.w;
+        }
+      });
+      if (cur.items.length) siteRows.push(cur);
+      siteLen = rowMax;
+      siteRows.forEach(function (r) { r.depth = Math.max.apply(null, r.items.map(function (it) { return it.d; })); siteH += r.depth + 7; });
+      siteH += 6;
+    }
+    var Wp = Math.max(d.L, siteLen) * k + 2 * m, Hp = (d.W + siteH) * k + 2 * m + 30;
     var s = [];
     s.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + Wp + ' ' + Hp + '" class="planSvg" role="img" aria-label="Schematic floor plan, ' + esc(levelName(level || 0)) + '" font-family="Arial, Helvetica, sans-serif">');
     s.push('<rect width="' + Wp + '" height="' + Hp + '" fill="#ffffff"/>');
@@ -430,6 +623,20 @@
       }
     });
     s.push('<rect x="' + X(0) + '" y="' + Y(0) + '" width="' + d.L * k + '" height="' + d.W * k + '" fill="none" stroke="#13213a" stroke-width="3.5"/>');
+    if (showSite) {
+      var sy0 = d.W + 3, ini = { jeep: 'J', uv: 'UV', bus: 'B' };
+      s.push('<rect x="' + X(0) + '" y="' + Y(sy0 - 3) + '" width="' + siteLen * k + '" height="' + 3 * k + '" fill="#e8ecf2" stroke="#9aa6b8" stroke-dasharray="6 4"/>');
+      s.push('<text x="' + X(siteLen / 2) + '" y="' + (Y(sy0 - 1.5) + 4) + '" font-size="11" text-anchor="middle" fill="#55627a" letter-spacing="2">CANOPY-COVERED LOADING PLATFORM</text>');
+      siteRows.forEach(function (r) {
+        r.items.forEach(function (it) {
+          s.push('<rect x="' + X(it.x) + '" y="' + Y(sy0) + '" width="' + it.w * k + '" height="' + it.d * k + '" fill="#f1f3f6" stroke="#13213a" stroke-width="1.2"/>');
+          if (it.w * k > 30) s.push('<text x="' + X(it.x + it.w / 2) + '" y="' + (Y(sy0 + it.d / 2) + 4) + '" font-size="10" text-anchor="middle" fill="#13213a">' + ini[it.mode] + it.no + '</text>');
+        });
+        s.push('<rect x="' + X(0) + '" y="' + Y(sy0 + r.depth) + '" width="' + siteLen * k + '" height="' + 7 * k + '" fill="#d7dbe2"/>');
+        s.push('<text x="' + X(siteLen / 2) + '" y="' + (Y(sy0 + r.depth + 3.5) + 4) + '" font-size="11" text-anchor="middle" fill="#3b4250" letter-spacing="2">DRIVE AISLE →</text>');
+        sy0 += r.depth + 7;
+      });
+    }
     // dimensions
     var dy = Y(d.W) + 26;
     s.push('<line x1="' + X(0) + '" y1="' + dy + '" x2="' + X(d.L) + '" y2="' + dy + '" stroke="#13213a" stroke-width="1"/><line x1="' + X(0) + '" y1="' + (dy - 6) + '" x2="' + X(0) + '" y2="' + (dy + 6) + '" stroke="#13213a"/><line x1="' + X(d.L) + '" y1="' + (dy - 6) + '" x2="' + X(d.L) + '" y2="' + (dy + 6) + '" stroke="#13213a"/>');
@@ -441,7 +648,68 @@
     s.push('</svg>');
     return s.join('');
   }
-  function levelName(i) { return i === 0 ? 'Ground floor plan' : ['Second', 'Third', 'Fourth', 'Fifth', 'Sixth'][i - 1] + ' floor plan'; }
+  // runway / taxiway / apron plan (length compressed to fit; widths exaggerated and labelled)
+  function airfieldSVG(plan) {
+    var a = E.normalizeAirfield(plan), Wp = 900, m = 40, apron = a.facility === 'apron';
+    var kx = (Wp - 2 * m) / a.length, ky = apron ? kx : Math.min(3, 120 / Math.max(a.width + 2 * a.shoulder, 1));
+    var pw = a.width * ky, sw = a.shoulder * ky, stripH = apron ? 0 : Math.min(200, Math.max(pw + 2 * sw + 40, a.stripWidth * ky * 0.6));
+    var Hp = (apron ? a.width * ky : stripH) + 2 * m + 40, cy = m + (apron ? a.width * ky : stripH) / 2;
+    var s = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + Wp + ' ' + Hp + '" class="planSvg" role="img" aria-label="Schematic airfield plan" font-family="Arial, Helvetica, sans-serif"><rect width="' + Wp + '" height="' + Hp + '" fill="#ffffff"/>'];
+    if (!apron) s.push('<rect x="' + m + '" y="' + (cy - stripH / 2) + '" width="' + (Wp - 2 * m) + '" height="' + stripH + '" fill="#dbe8cf"/>');
+    s.push('<rect x="' + m + '" y="' + (cy - pw / 2 - sw) + '" width="' + (Wp - 2 * m) + '" height="' + (pw + 2 * sw) + '" fill="#9aa1ab"/>');
+    s.push('<rect x="' + m + '" y="' + (cy - pw / 2) + '" width="' + (Wp - 2 * m) + '" height="' + pw + '" fill="#6f7682" stroke="#13213a"/>');
+    if (a.facility === 'runway') {
+      for (var x = m + 40; x < Wp - m - 40; x += 26) s.push('<rect x="' + x + '" y="' + (cy - 1) + '" width="14" height="2" fill="#ffffff"/>');
+      [m + 4, Wp - m - 22].forEach(function (x0) { for (var i = 0; i < 6; i++) { var yy = cy - pw / 2 + pw * (i + 0.5) / 6 - 1.5; s.push('<rect x="' + x0 + '" y="' + yy + '" width="18" height="3" fill="#ffffff"/>'); } });
+      if (a.lighting) for (var xl = m; xl <= Wp - m; xl += Math.max(6, 60 * kx)) { s.push('<circle cx="' + xl + '" cy="' + (cy - pw / 2) + '" r="2" fill="#e3a51a"/><circle cx="' + xl + '" cy="' + (cy + pw / 2) + '" r="2" fill="#e3a51a"/>'); }
+    } else if (a.facility === 'taxiway') {
+      s.push('<line x1="' + m + '" y1="' + cy + '" x2="' + (Wp - m) + '" y2="' + cy + '" stroke="#f2c230" stroke-width="2"/>');
+      if (a.lighting) for (var xt = m; xt <= Wp - m; xt += Math.max(5, 30 * kx)) s.push('<circle cx="' + xt + '" cy="' + (cy - pw / 2) + '" r="2" fill="#2f6fd0"/><circle cx="' + xt + '" cy="' + (cy + pw / 2) + '" r="2" fill="#2f6fd0"/>');
+    } else {
+      var stand = a.aircraft === 'jet' ? 45 : 30, nSt = Math.max(1, Math.floor(a.length / stand));
+      for (var st = 0; st < nSt; st++) {
+        var x1 = m + (st + 0.5) * a.length / nSt * kx;
+        s.push('<line x1="' + x1 + '" y1="' + (cy - pw / 2 + 6) + '" x2="' + x1 + '" y2="' + (cy + pw / 2 - 6) + '" stroke="#f2c230" stroke-width="2"/>');
+        s.push('<text x="' + x1 + '" y="' + (cy - pw / 2 + 20) + '" font-size="12" text-anchor="middle" fill="#ffffff">Stand ' + (st + 1) + '</text>');
+      }
+    }
+    s.push('<text x="' + (Wp / 2) + '" y="' + (Hp - 14) + '" font-size="13" text-anchor="middle" fill="#13213a">' + esc(E.AIRFIELD_FACILITIES[a.facility].label) + ' ' + a.length.toFixed(0) + ' × ' + a.width.toFixed(1) + ' m · ' + Math.round(a.pcc * 1000) + ' mm PCC · ' + esc(E.AIRCRAFT[a.aircraft].label) + (apron ? '' : ' · widths exaggerated') + ' · BUHAY-AH schematic</text>');
+    s.push('</svg>');
+    return s.join('');
+  }
+
+  // pier / wharf longitudinal section: deck on piles, water and seabed, fenders and causeway
+  function portSVG(plan) {
+    var p = E.normalizePort(plan), m = 40, Wp = 900, cw = Math.min(p.causeway, p.length * 1.2);
+    var total = p.length + cw + 10, k = (Wp - 2 * m) / total;
+    var kz = Math.min(12, 300 / (p.deckLevel + p.waterDepth + p.embedment + 2));
+    var Hp = (p.deckLevel + p.waterDepth + p.embedment + 3) * kz + 2 * m + 30;
+    var Z = function (z) { return m + (p.deckLevel + 1.5 - z) * kz; }, X = function (x) { return m + (x + cw + 5) * k; };
+    var s = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + Wp + ' ' + Hp + '" class="planSvg" role="img" aria-label="Schematic pier section" font-family="Arial, Helvetica, sans-serif"><rect width="' + Wp + '" height="' + Hp + '" fill="#ffffff"/>'];
+    s.push('<rect x="' + m + '" y="' + Z(0) + '" width="' + (Wp - 2 * m) + '" height="' + p.waterDepth * kz + '" fill="#9cc3ea" opacity="0.8"/>');
+    s.push('<rect x="' + m + '" y="' + Z(-p.waterDepth) + '" width="' + (Wp - 2 * m) + '" height="' + (p.embedment + 1.5) * kz + '" fill="#cdb894"/>');
+    if (cw > 0) {
+      var hc = 0.6 * p.waterDepth;
+      s.push('<path d="M' + m + ' ' + Z(p.deckLevel - 0.3) + ' L' + X(-5) + ' ' + Z(p.deckLevel - 0.3) + ' L' + X(0) + ' ' + Z(-hc) + ' L' + m + ' ' + Z(-hc) + ' Z" fill="#a39a8c" stroke="#6b6355"/>');
+      s.push('<text x="' + (m + (X(-5) - m) / 2) + '" y="' + (Z(p.deckLevel) - 6) + '" font-size="11" text-anchor="middle" fill="#13213a">Causeway ' + p.causeway.toFixed(0) + ' m</text>');
+    } else s.push('<path d="M' + m + ' ' + Z(p.deckLevel - 0.3) + ' L' + X(-2) + ' ' + Z(p.deckLevel - 0.3) + ' L' + X(4) + ' ' + Z(-p.waterDepth) + ' L' + m + ' ' + Z(-p.waterDepth) + ' Z" fill="#cdb894" stroke="#8a744f"/>');
+    var nB = Math.floor(p.length / p.bentSpacing) + 1;
+    for (var i = 0; i < nB; i++) {
+      var xb = X(i * p.length / Math.max(1, nB - 1));
+      s.push('<rect x="' + (xb - 2) + '" y="' + Z(p.deckLevel - 1.6) + '" width="4" height="' + (p.deckLevel - 1.6 + p.waterDepth + p.embedment) * kz + '" fill="' + (p.pileType === 'steel_pipe' ? '#6f7682' : '#a7aeb8') + '" stroke="#13213a" stroke-width="0.6"/>');
+    }
+    s.push('<rect x="' + X(0) + '" y="' + Z(p.deckLevel) + '" width="' + p.length * k + '" height="' + 1.6 * kz + '" fill="#c9ced6" stroke="#13213a" stroke-width="1.5"/>');
+    var nF = Math.max(2, Math.ceil(p.length / 12));
+    for (var f = 0; f < nF; f++) s.push('<rect x="' + (X((f + 0.5) * p.length / nF) - 4) + '" y="' + Z(p.deckLevel - 1.6) + '" width="8" height="' + 1.6 * kz + '" fill="#222"/>');
+    if (p.roro) s.push('<path d="M' + X(p.length) + ' ' + Z(p.deckLevel) + ' L' + X(p.length + 6) + ' ' + Z(0.5) + '" stroke="#13213a" stroke-width="4"/>');
+    s.push('<text x="' + (X(p.length) + 6) + '" y="' + (Z(0) - 4) + '" font-size="11" fill="#13213a">MLLW ±0.00</text>');
+    s.push('<text x="' + X(p.length / 2) + '" y="' + (Z(p.deckLevel) - 6) + '" font-size="11" text-anchor="middle" fill="#13213a">Deck +' + p.deckLevel.toFixed(1) + ' m · ' + p.length.toFixed(0) + ' × ' + p.width.toFixed(1) + ' m</text>');
+    s.push('<text x="' + (Wp / 2) + '" y="' + (Hp - 12) + '" font-size="13" text-anchor="middle" fill="#13213a">' + esc(E.PORT_FACILITIES[p.facility].label) + ' · ' + esc(E.PORT_PILES[p.pileType].label) + ', ' + (p.waterDepth + p.deckLevel + p.embedment).toFixed(1) + ' m · water depth ' + p.waterDepth.toFixed(1) + ' m · BUHAY-AH schematic</text>');
+    s.push('</svg>');
+    return s.join('');
+  }
+
+  function levelName(i) { return i === 0 ? 'Ground floor plan' : ['Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh'][i - 1] + ' floor plan'; }
 
   function bridgeSVG(plan) {
     var b = E.normalizeBridge(plan), k = Math.min(9, 900 / (b.totalLength + 30)), m = 40;
@@ -485,8 +753,9 @@
   }
 
   return {
-    SPACES: S, USAGE: USAGE, TEMPLATES: T, BRIDGE_TEMPLATES: BRIDGE_TEMPLATES, CAT_FILL: FILL,
+    SPACES: S, USAGE: USAGE, TEMPLATES: T, BRIDGE_TEMPLATES: BRIDGE_TEMPLATES, CAT_FILL: FILL, BAYS: BAYS,
+    AIRFIELD_TEMPLATES: AIRFIELD_TEMPLATES, PORT_TEMPLATES: PORT_TEMPLATES,
     programFor: programFor, build: build, combine: combine, quote: quote, fromBudget: fromBudget,
-    bridgeOptions: bridgeOptions, planSVG: planSVG, bridgeSVG: bridgeSVG, levelName: levelName
+    bridgeOptions: bridgeOptions, planSVG: planSVG, bridgeSVG: bridgeSVG, airfieldSVG: airfieldSVG, portSVG: portSVG, levelName: levelName
   };
 }));

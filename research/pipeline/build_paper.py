@@ -33,9 +33,11 @@ for _d in (B['detection'], R['detection'], P):
     if _old in _d:
         _d['BUHAY-AH hybrid (BRI >= 30)'] = _d.pop(_old)
 DR = json.load(open(os.path.join(OUT, 'design_results.json')))
+X = json.load(open(os.path.join(OUT, 'extension_results.json')))
+XB = X['benchmark']
 
 TITLE = ('BUHAY-AH: A Budget-to-Blueprint Design Generator, Standards-Based Quantity Take-Off, and Hybrid Machine '
-         'Learning System for Start Quotations and Over-Budget Detection in Public Buildings and Bridges')
+         'Learning System for Start Quotations and Over-Budget Detection in Public Buildings, Bridges, Airports and Seaports')
 AUTHOR = 'Enrique Miguel C. Buban'
 
 
@@ -129,6 +131,8 @@ class Paper:
             p = self.para(text, indent=False, align='left', bold=True, italic=True, keep=True)
         if toc:
             self.toc.append((level, text))
+        if level in (2, 3):
+            self.cur_sec = text
         return p
 
     def bullets(self, items, numbered=False, spacing=2.0, start=1):
@@ -163,20 +167,28 @@ class Paper:
 
     def equation(self, key, height=None):
         self.ne += 1
-        self.eqs.append((self.ne, EQ_TITLES[key]))
-        p = self.para(f'Eq. {self.ne}.', indent=False, align='right', italic=True, spacing=1.0, keep=True)
+        self.eqs.append((self.ne, EQ_TITLES[key], key, getattr(self, 'cur_sec', '')))
+        self.eq_line(key, self.ne)
+        return self.ne
+
+    def eq_line(self, key, n, height=None):
         p = self.doc.add_paragraph()
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p.paragraph_format.line_spacing = 1.0
+        p.paragraph_format.space_before = Pt(4)
         p.paragraph_format.space_after = Pt(10)
+        p.paragraph_format.tab_stops.add_tab_stop(Inches(3.13), WD_TAB_ALIGNMENT.CENTER)
+        p.paragraph_format.tab_stops.add_tab_stop(Inches(6.27), WD_TAB_ALIGNMENT.RIGHT)
+        p.add_run('\t')
         from PIL import Image
         im = Image.open(os.path.join(EQ, key + '.png'))
         h = height or im.size[1] / 300 * 0.80
         w = im.size[0] / im.size[1] * h
         if w > 6.3:
             w, h = 6.3, 6.3 * im.size[1] / im.size[0]
+        if w > 5.4:
+            h = h * 5.4 / w
         p.add_run().add_picture(os.path.join(EQ, key + '.png'), height=Inches(h))
-        return self.ne
+        p.add_run(f'\tEq. {n}')
 
     def table(self, header, rows, title, widths=None, size=10, first_italic=True, align=None):
         self.nt += 1
@@ -300,6 +312,36 @@ EQ_TITLES = {
     'rmse': 'Root Mean Square Error', 'r2': 'Coefficient of Determination', 'mape': 'Mean Absolute Percentage Error',
     'prf': 'Precision, Recall and F1-Score', 'pack': 'Building Footprint from Space Modules', 'cap': 'Design Capacity',
     'opt': 'Budget-to-Design Integer Program', 'pareto': 'Pareto Dominance', 'bridge': 'Bridge Type and Span Selection',
+    'bays': 'Terminal Site Pavement and Canopy', 'airfield': 'Airfield Pavement Quantities and Lights', 'piles': 'Pier Piles, Pile Length and Fenders',
+    'bri_ext': 'Over-Budget Risk Index for Extension Types',
+}
+EQ_USE = {
+    'pack': 'Gives the length, width and floor area of a generated design from its space modules; used by the design studio and the budget search.',
+    'cap': 'Counts classrooms, beds, staff, persons, stalls, passengers or bays of a design; the objective of budget-to-design.',
+    'opt': 'Chooses the largest capacity whose quotation fits the budget, lot and storey limits; solved by exhaustive enumeration.',
+    'pareto': 'Removes designs beaten on both capacity and cost, so the app shows only efficient options.',
+    'bridge': 'Picks the cheapest superstructure and span count for a gap; used by the bridge designer.',
+    'footing': 'Sizes each footing from the column load and soil bearing; feeds the concrete, rebar and excavation items.',
+    'rebar': 'Turns concrete volumes into kilograms of reinforcing steel by element and tier.',
+    'edc': 'Sums every pay-item quantity times its unit cost, location factor and year index; the direct cost of the plan.',
+    'abc': 'Adds OCM, profit and 5% VAT to the direct cost; gives the lean, standard and ceiling quotations.',
+    'bays': 'Gives the PCCP area and loading canopy of a jeepney, UV Express or bus terminal from its bays.',
+    'airfield': 'Gives the PCC, base and subbase volumes and the number of edge, threshold and end lights of a runway or taxiway.',
+    'piles': 'Gives the pile length, number of piles and number of fenders of an open-type pier or wharf.',
+    'obr': 'Divides the contract amount by the standard estimate; the main over-budget signal.',
+    'sim': 'Generates the awarded amounts of the simulated benchmarks with bid noise and injected overpricing.',
+    'mlr': 'The interpretable cost model fitted on SBD-300 buildings and bridges.',
+    'vif': 'Screens predictors for multicollinearity before the regression is fitted.',
+    'xgb': 'The gradient-boosted cost model and its regularized training objective.',
+    'iforest': 'Scores how unusual a contract is from its features, residual and over-budget ratio.',
+    'shap': 'Splits each XGBoost prediction into feature contributions shown in the Check screen.',
+    'bri': 'Combines the three signals into the BUHAY-AH Risk Index; 30 or more is flagged.',
+    'bri_s': 'Scales and clips the over-budget, model and isolation signals to 0–1.',
+    'bri_ext': 'Risk index used for hospitals, terminals, airfields and ports, where only the standards-based signal is available.',
+    'rmse': 'Typical prediction error in pesos under LOOCV.',
+    'r2': 'Share of cost variance explained by a model or estimate.',
+    'mape': 'Average percentage error; compares small and large projects fairly.',
+    'prf': 'Detection metrics against the injected overpricing labels.',
 }
 
 
@@ -316,7 +358,7 @@ def front_matter(pp):
     pp.para('Lead Researcher', indent=False, align='center')
     for _ in range(3):
         pp.para('', indent=False)
-    pp.para('Mathematical and Computational Sciences', indent=False, align='center')
+    pp.para('Mathematics and Computational Science', indent=False, align='center')
     pp.para('2026', indent=False, align='center')
 
     pp.new_section('lowerRoman')
@@ -337,15 +379,15 @@ def front_matter(pp):
     p2 = c.add_paragraph()
     p2.paragraph_format.line_spacing = 1.5
     p2.paragraph_format.space_before = Pt(10)
-    pp._runs(p2, '***Keywords:*** **Construction Cost Estimation, Generative Design, Budget Optimization, Quantity Take-Off, Over-Budget Detection, XGBoost, Isolation Forest, SHAP, Public Procurement Transparency**', size=11)
+    pp._runs(p2, '***Keywords:*** **Construction Cost Estimation, Generative Design, Budget Optimization, Quantity Take-Off, Over-Budget Detection, XGBoost, SHAP, Airports, Seaports, Hospitals, Transport Terminals**', size=11)
     pp.toc_entries_key = 'abstract'
 
 
 def abstract_text():
     h = P['BUHAY-AH hybrid (BRI >= 30)']
     return (
-        'Padded prices in public buildings and bridges cost communities classrooms, clinic beds and safe crossings, while '
-        'existing machine-learning screens learn only from past contract prices and cannot say what a project should cost. '
+        'Padded prices in public infrastructure cost communities classrooms, clinic beds and safe crossings, while '
+        'machine-learning screens learn only from past prices and cannot say what a project should cost. '
         'This study developed BUHAY-AH, a system that designs a public building or bridge from a requirement or a budget, '
         'performs a standards-based quantity take-off under NSCP 2015, DPWH specifications and AASHTO LRFD, and prices it '
         'with DPWH pay items into a lean start quotation, a standard fair estimate and a ceiling. A design generator composes '
@@ -359,8 +401,10 @@ def abstract_text():
         f'{pct(h["Recall"], 1)} of padded contracts (AUC = {h["AUC"]:.3f}) against {pct(P["Isolation Forest (CORA-style)"]["Recall"], 1)} '
         f'for an Isolation Forest alone. Budget-to-design searches finished in a median of {DR["medianMs"]:.1f} ms, all '
         f'{sum(t["checks"] for t in DR["templates"])} space-standard checks passed, and allowing multi-storey designs added '
-        f'up to {DR["maxGain"]} classrooms for the same school budget. BUHAY-AH runs as a mobile application, an Android '
-        'package and a download website.'
+        f'up to {DR["maxGain"]} classrooms per school budget. Extended to hospitals, airport, seaport and jeepney, UV Express '
+        f'and bus terminals, runways and piers on a {XB["overall"]["n"]}-project benchmark, the standard estimate reached '
+        f'{XB["overall"]["accuracy"]["mape"]:.2f}% error and the standards rule caught {pct(XB["overall"]["rule"]["recall"], 1)} '
+        'of padded contracts. BUHAY-AH runs as a mobile application and website.'
     )
 
 
@@ -382,8 +426,12 @@ def lists(pp):
         pp.toc_line(f'Table {n}. {t}', f't:{n}')
     pp.page_break()
     pp.para('LIST OF EQUATIONS', indent=False, align='center', bold=True)
-    for n, t in EQS:
-        pp.toc_line(f'Equation {n}. {t}', f'e:{n}')
+    pp.para('This section lists the numbered equations of the study in the order they appear. Each entry gives the name '
+            'of the formula, the section where it is defined, and how it is used in the model or in the BUHAY-AH application.')
+    for n, t, key, sec in EQS:
+        pp.para(f'**Equation {n}. {t}** ({sec})', indent=False, align='left', spacing=1.5, keep=True)
+        pp.eq_line(key, n)
+        pp.para(EQ_USE.get(key, ''), spacing=1.5, after=8)
     pp.page_break()
     pp.para('LIST OF APPENDICES', indent=False, align='center', bold=True)
     for k, t in APPS:
@@ -435,6 +483,12 @@ def body(pp):
          '₱13 billion with lapses, and a 2025 Senate hearing that questioned farm-to-market road projects priced 68% above '
          'benchmark (Buban, 2026). These findings show that cost checks against an independent estimate are needed, but that '
          'they currently happen late, one project at a time, and mostly after funds have been released.')
+    para('The same need reaches beyond schools and bridges. Hospitals funded under the Universal Health Care Act '
+         '(Republic Act No. 11223), airport passenger terminals and runways, seaport terminals, piers and RoRo ramps, and the '
+         'jeepney, UV Express and bus terminals required by the Public Utility Vehicle Modernization Program (Department of '
+         'Transportation [DOTr], 2017) are among the largest facilities a region builds. Bicol has a new international airport '
+         'in Daraga, RoRo ports such as Matnog that link Luzon to the Visayas, and growing provincial hospitals, yet no open '
+         'tool prices them from their plans.')
     para('Machine learning has opened a way to screen many contracts at once. Regression has long been used for early cost '
          'estimates of construction projects (Mahamid, 2011), and recent reviews show tree ensembles and other parametric '
          'models becoming the standard tools for construction cost prediction (Elmousalami, 2020). Larocque et al. (2025) '
@@ -487,7 +541,8 @@ def body(pp):
     para('Fifth, there is an **access gap**. Most models stay in notebooks or desktop dashboards. The people closest to a '
          'project, such as barangay and municipal officials, school heads, auditors and reporters, need a tool on their phones '
          'that works with a need, a budget, a plan or a contract amount and that explains its answer in plain terms.')
-    para('BUHAY-AH addresses these gaps by (1) covering public buildings and bridges, (2) pairing a standards-based yardstick '
+    para('BUHAY-AH addresses these gaps by (1) covering public buildings, hospitals, transport terminals, bridges, airfield '
+         'pavements and port structures, (2) pairing a standards-based yardstick '
          'with machine learning so that each checks the other, (3) validating detection on a benchmark in which overpricing '
          'was injected deliberately and is therefore known, (4) generating designs from requirements and budgets through '
          'exhaustive constrained search, and (5) delivering the system as an installable mobile application, an Android '
@@ -495,7 +550,7 @@ def body(pp):
 
     H('Objective of the Study', 2)
     para('This study aimed to develop BUHAY-AH, a budget-to-blueprint design generator, standards-based quantity take-off and '
-         'hybrid machine-learning system that produces start quotations and detects over-budgeted public buildings and bridges '
+         'hybrid machine-learning system that produces start quotations and detects over-budgeted public buildings, bridges, airports and seaports '
          'in Bicol Region V. Specifically, it sought to answer the following research questions:')
     pp.bullets([
         'What plan variables and derived indicators can be extracted from building and bridge plans and engineering standards '
@@ -512,6 +567,10 @@ def body(pp):
         'How effectively do (a) the over-budget ratio, (b) the XGBoost cost residual, (c) the Isolation Forest, and (d) the '
         'hybrid BUHAY-AH Risk Index detect over-budgeted contracts, in terms of precision, recall, F1-score and area under the '
         'ROC curve?',
+        'How can the design generator and the standards-based engine be extended to hospitals, airport and seaport '
+        'passenger terminals, jeepney, UV Express and bus terminals, airfield pavements and port structures, in terms of: '
+        '(a) design templates and space standards; (b) accuracy of the standard estimate; and (c) detection of over-budgeted '
+        'contracts by the standards-based rule?',
         'How can the system be deployed as (a) a mobile application with a design studio, (b) a download website, and '
         '(c) an explainable interface with floor plans, parametric 3D models and SHAP explanations?'], numbered=True)
 
@@ -529,6 +588,8 @@ def body(pp):
         ('Local Government Units, DepEd and DOH Facility Owners.', 'Offices that request school buildings, health stations '
          'and evacuation centers obtain a starting design and quotation from their requirement or budget, plan their '
          'requests, and question estimates that exceed the ceiling.'),
+        ('DOH, DOTr, CAAP, PPA and Transport Cooperatives.', 'Agencies and cooperatives that build hospitals, airports, '
+         'seaports and PUV terminals get a design, a price and a ceiling for each project.'),
         ('Contractors.', 'Honest contractors gain a public reference that rewards fair bids and helps them defend their '
          'pricing.'),
         ('Filipino Taxpayers, Civil Society and Media.', 'Citizens and journalists can check a project on their phones, see '
@@ -552,8 +613,11 @@ def body(pp):
          'markets and covered courts built as reinforced-concrete frames of up to six storeys; taller buildings are priced '
          'indicatively. Bridges '
          'include reinforced-concrete box culverts, reinforced-concrete deck girder (RCDG), prestressed concrete girder (PSCG) '
-         'and steel truss bridges on spread footings, driven precast piles or bored piles.')
-    para('Roads (covered by CORA), flood-control structures, water supply systems, ports, land acquisition, right-of-way, '
+         'and steel truss bridges on spread footings, driven precast piles or bored piles. The extension covers DOH Level 1 to 3 '
+         'hospitals, airport and seaport passenger terminals, land transport terminals for jeepneys, UV Express vans and buses, '
+         'rigid runway, taxiway and apron pavements, and open-type piers and wharves on piles with causeways and RoRo ramps.')
+    para('Air-traffic, navigation, medical and baggage equipment beyond the allowances, breakwater design, '
+         'roads (covered by CORA), flood-control structures, water supply systems, land acquisition, right-of-way, '
          'design and supervision fees, furniture and equipment are excluded. Unit costs are indicative direct costs for 2025 '
          'based in Albay, adjusted by province location factors and a yearly cost index, and are meant to be replaced by the '
          'implementing office\'s current Detailed Unit Price Analysis or regional price data. Plan input accepts dimensions, '
@@ -565,7 +629,8 @@ def body(pp):
          'benchmark (SBD-300). Each simulated project carries hidden site and market variation that the plan-level estimate '
          'cannot see, and 12% of projects carry injected overpricing whose size is known. The reported accuracy and detection '
          'figures therefore describe performance under the stated simulation assumptions and must be re-validated on actual '
-         'contracts before operational use. Lastly, BUHAY-AH is a screening tool: it does not replace the Commission on Audit, '
+         'contracts before operational use. The extension types are outside the training data of the models and are screened '
+         'by the standards-based rule on a separate 180-project benchmark (SBD-EXT). Lastly, BUHAY-AH is a screening tool: it does not replace the Commission on Audit, '
          'the Office of the Ombudsman, the Independent Commission for Infrastructure or any official audit procedure, and a '
          'flag is not evidence of irregularity, error or fraud.')
 
@@ -638,7 +703,7 @@ def body(pp):
 
     H('Mathematical Framework', 2)
     para('This study used a quantitative developmental research design combined with a simulation-based computational '
-         'experiment, the approach of the Mathematical and Computational Sciences: the problem was expressed as mathematical '
+         'experiment, the approach of the Mathematics and Computational Science: the problem was expressed as mathematical '
          'models and solved with algorithms whose accuracy was measured. Four kinds of mathematics carry the study: a '
          'deterministic parametric cost model (quantity take-off and ABC), combinatorial optimization (budget-to-design), '
          'statistical and machine-learning models (regression, gradient boosting, isolation and Shapley values), and Monte Carlo '
@@ -835,6 +900,28 @@ for each element e ∈ {footings, columns, beams, slabs, stairs, walls, roof, fi
 EDC ← Σ Q_i · r_i · λ_loc · λ_yr                              ▹ estimated direct cost
 (o, π) ← BRACKET(EDC);  ABC ← EDC · (1 + o + π) · (1 + v)       ▹ D.O. 197 / D.O. 30 markups
 return BOQ, EDC, ABC""")
+
+    H('Extension to Hospitals, Transport Terminals, Airfields and Ports', 3)
+    para(f'The design generator was extended with {X["counts"]["spaces"] - DR["spaces"]} new space modules and six usages: '
+         'hospitals whose service level grows with size under DOH A.O. 2012-0012 (Level 2 adds ICU and NICU; Level 3 adds '
+         'dialysis and more operating rooms) on 2.44 m patient corridors (Department of Health, 2016); airport terminals sized by '
+         'peak-hour passengers (PHP) to at least 14 m² per PHP (International Air Transport Association [IATA], 2019); seaport '
+         'terminals with 1.5 m² per seated passenger; and jeepney, UV Express and bus terminals whose loading bays follow the '
+         'design vehicles of AASHTO (2018). Hospitals add medical gases, standby power and bed elevators; terminals add curtain '
+         'walls, baggage handling and site works. The terminal site area is:')
+    eq('bays')
+    para('where *n_{m}* bays of mode *m* have width *w_{m}*, stall depth *d_{m}*, aisle share *a_{m}*, holding share *h_{m}* '
+         'and canopy depth *c_{m}*. Runways, taxiways and aprons follow ICAO Annex 14 widths (International Civil Aviation '
+         'Organization [ICAO], 2022) with rigid sections from FAA AC 150/5320-6G (Federal Aviation Administration [FAA], 2021):')
+    eq('airfield')
+    para('Open-type piers and wharves stand on bents of piles every *b* m, with pile length from water depth *D*, deck level '
+         '*z_{d}* and embedment *e*, and fenders every 12 m of berth face *f* (Overseas Coastal Area Development Institute of '
+         'Japan [OCDI], 2009; PIANC, 2002):')
+    eq('piles')
+    para('Because the models were trained only on SBD-300, the extension types are screened by the standards-based signal:')
+    eq('bri_ext')
+    para(f'SBD-EXT, a {XB["overall"]["n"]}-project benchmark built with the same hidden variation, bid noise and 12% injected '
+         f'overpricing as SBD-300 ({XB["overall"]["injected"]} injected cases), measures accuracy and detection for the six classes.')
 
     H('Simulated Benchmark Dataset (SBD-300)', 3)
     para('To measure accuracy and detection against a known truth, a benchmark of 160 buildings and 140 bridges was '
@@ -1309,9 +1396,54 @@ return BRI, status, φ, primary driver = argmax_j |z_j|""")
          f'{pm(B["injected_excess_php"] + R["injected_excess_php"])} of padding injected in total. These amounts illustrate the scale '
          'a screening tool can bring to attention; they are not findings about any real contract.')
 
-    # RQ5
+    H('Extension to Hospitals, Transport Terminals, Airfields and Ports', 2)
+    para('The sixth research question tested whether the same engine and generator extend to the largest public facilities.')
+    H('a.) Design Templates and Space Standards', 3)
+    pp.table(['DESIGN', 'ST.', 'L × W (m)', 'CAPACITY', 'START', 'STANDARD'], [[t['name'], t['N'], f"{t['L']:.1f} × {t['W']:.1f}",
+        ', '.join(f'{v} {k}' for k, v in t['capacity'].items() if k != 'consult'), pm(t['start']).replace(' million', 'M'),
+        pm(t['fair']).replace(' million', 'M')] for t in X['templates']], 'Extension Design Templates (Albay, 2025 Prices)',
+        widths=[2.6, 0.4, 0.9, 1.2, 0.75, 0.75], size=8, first_italic=False)
+    para(f'Table {pp.nt} lists the {len(X["templates"])} new building templates; all {X["counts"]["extPassed"]} of their '
+         f'{X["counts"]["extChecks"]} checks passed, bringing the library to {X["counts"]["buildingTemplates"]} building, '
+         f'{X["counts"]["bridgeTemplates"]} bridge, {X["counts"]["airfieldTemplates"]} airfield and {X["counts"]["portTemplates"]} '
+         f'port designs with {X["counts"]["checksPassed"]} of {X["counts"]["checks"]} checks passed. A 100-bed Level 2 hospital came '
+         'to about ₱40,000 per m², airport terminals to about ₱44,000 per m², and a 20-bay jeepney terminal to about ₱1.6 '
+         'million per bay.')
+    pp.figure(os.path.join(FIG, 'plan_hospital_l2.png'), 'Generated Ground Floor of a 100-Bed Level 2 Hospital', 6.3)
+    pp.figure(os.path.join(FIG, 'plan_terminal.png'), 'Integrated Land Transport Terminal with Jeepney, UV Express and Bus Bays', 4.6)
+    pp.figure(os.path.join(FIG, 'airfield_runway.png'), 'Generated Plan of a 1,200 × 30 m Turboprop Runway', 6.3)
+    pp.figure(os.path.join(FIG, 'port_roro.png'), 'Generated Section of a 60 × 15 m RoRo Pier on PC Spun Piles', 6.3)
+    pp.table(['DESIGN', 'START', 'STANDARD', 'CEILING', 'PER UNIT'], [[c['name'], pm(c['start']).replace(' million', 'M'),
+        pm(c['fair']).replace(' million', 'M'), pm(c['ceiling']).replace(' million', 'M'), peso(c['perUnit']) + ' / ' + c['unit'].replace('m² of ', 'm² ')]
+        for c in X['civil']], 'Airfield and Port Templates', widths=[2.7, 0.8, 0.8, 0.8, 1.4], size=8, first_italic=False)
+    para('Budget-to-design also works for the new usages: ' + '; '.join(
+        f"₱{sc['budget'] / 1e6:,.0f} million buys a {sc['best']['k']}-{sc['capLabel'].replace('peak-hour ', '')} {sc['label'].lower()} in {sc['best']['N']} storey{'s' if sc['best']['N'] > 1 else ''}"
+        for sc in X['scenarios'] if sc['best'] and sc['budget'] in (150e6, 300e6, 60e6, 40e6) and sc['usage'] in ('hospital', 'airport', 'seaport', 'busterm')) +
+        f'. Each search took a median of {X["medianMs"]:.1f} ms.')
+    H('b.) Accuracy of the Standard Estimate', 3)
+    rows = []
+    for c in XB['byClass'] + [dict(XB['overall'], cls='All extension projects')]:
+        a, r_ = c['accuracy'], c['rule']
+        rows.append([c['cls'], c['n'], f"{a['mape']:.2f}%", f"{a['r2']:.4f}", f"{a['leanBelow']:.1f}%", f"{a['ceilingCovers']:.1f}%",
+                     f"{r_['precision']:.3f}", f"{r_['recall']:.3f}", f"{r_['f1']:.3f}"])
+    pp.table(['CLASS', 'n', 'MAPE', 'R²', 'LEAN ≤ AWARD', 'CEILING COVERS', 'PREC.', 'RECALL', 'F1'], rows,
+             'Accuracy and Standards-Based Detection on SBD-EXT', widths=[1.75, 0.35, 0.6, 0.6, 0.75, 0.75, 0.5, 0.55, 0.45], size=8)
+    o = XB['overall']
+    para(f'Against fair awarded costs, the standard estimate reached a MAPE of {o["accuracy"]["mape"]:.2f}% and R^2^ = '
+         f'{o["accuracy"]["r2"]:.4f} across the extension, from {min(c["accuracy"]["mape"] for c in XB["byClass"]):.2f}% for land '
+         f'transport terminals to {max(c["accuracy"]["mape"] for c in XB["byClass"]):.2f}% for hospitals, whose mechanical and '
+         'medical systems vary most. The lean start quotation was at or below the fair award in '
+         f'{o["accuracy"]["leanBelow"]:.1f}% of projects and the ceiling covered {o["accuracy"]["ceilingCovers"]:.1f}%.')
+    H('c.) Detection by the Standards-Based Rule', 3)
+    para(f'The rule caught {o["rule"]["tp"]} of {o["injected"]} padded contracts (recall {o["rule"]["recall"]:.3f}, precision '
+         f'{o["rule"]["precision"]:.3f}, AUC {o["rule"]["auc"]:.3f}); the extension risk index at 30 caught all '
+         f'{o["index"]["tp"]} with precision {o["index"]["precision"]:.3f}. Most false alarms were port structures, where unseen pile '
+         'penetration raises the true cost, the same pattern as bridge piles in SBD-300.')
+    pp.figure(os.path.join(FIG, 'ext_results.png'), 'Accuracy and Detection by Extension Class (SBD-EXT)', 6.3)
+
+    # RQ7
     H('Deployment of BUHAY-AH as a Mobile Application and Download Website', 2)
-    para('The sixth research question concerned how the system reaches its users. BUHAY-AH was deployed as an installable '
+    para('The seventh research question concerned how the system reaches its users. BUHAY-AH was deployed as an installable '
          'mobile application with five screens (Home, Design, Quote, Check and Library), an Android package, an offline ZIP '
          'package and a download website.')
     H('a.) Mobile Application with Design Studio', 3)
@@ -1320,7 +1452,7 @@ return BRI, status, φ, primary driver = argmax_j |z_j|""")
          'actions: design from a budget, open the design templates, quote a plan and check a contract. A strip of templates '
          'from the design library invites users who have no blueprint yet.')
     pp.figure(os.path.join(FIG, 'app_design_templates.png'), 'Design Studio with the Template Library', 6.2)
-    para('The Design screen opens on the template library. Filter chips narrow the 54 templates by facility type, and each '
+    para('The Design screen opens on the template library. Filter chips narrow the 80 designs by facility type, including hospitals, transport terminals, airfields and ports, and each '
          'card shows a floor-plan thumbnail, the capacity, storeys, dimensions, floor area and both quotations.')
     pp.figure(os.path.join(FIG, 'app_design_editor.png'), 'Design Editor with Floor Plan, Spaces, Standards Checks and 3D Model', 6.2)
     para('Opening a design shows the editor. The user renames the design, switches floors, adds or removes spaces with plus '
@@ -1411,10 +1543,18 @@ return BRI, status, φ, primary driver = argmax_j |z_j|""")
         f'of {h["AUC"]:.3f}, the best balance among the four rules. The standards-based ratio was the strongest single signal, '
         f'the XGBoost residual partly absorbed padding from its training data, and an Isolation Forest alone found only '
         f'{pct(i_["Recall"], 1)}. These flags identify contracts for review and do not establish irregularity, error or fraud.',
+        f'The engine and generator extend to hospitals, airport, seaport and land transport terminals, runways and piers: '
+        f'{len(X["templates"])} new templates passed all {X["counts"]["extChecks"]} checks, the standard estimate reached '
+        f'{XB["overall"]["accuracy"]["mape"]:.2f}% MAPE on SBD-EXT, and the standards rule caught {pct(XB["overall"]["rule"]["recall"], 1)} '
+        'of padded contracts without the machine-learning layer.',
         'BUHAY-AH was deployed as an installable offline-capable mobile application, an Android package, an offline ZIP package '
         'and a download website, integrating the design studio, plan import, itemized quotations, floor plans, parametric 3D '
         'models, SHAP explanations, line-item checks and over-budget screening that run entirely on the user\'s device.'],
         numbered=True)
+
+    para('**Limitations.** All accuracy and detection figures come from simulated benchmarks, unit costs are indicative 2025 '
+         'Bicol rates, designs are schematic, and the extension types are screened without the trained models. Extending the '
+         'results needs real contract records, site data and professional review.', indent=False)
 
     H('RECOMMENDATIONS', 1)
     para('Based on these findings, the researcher recommends the following:', indent=False)
@@ -1432,16 +1572,18 @@ return BRI, status, φ, primary driver = argmax_j |z_j|""")
         'and 58 in the benchmark, once real cases are confirmed.',
         '**Extend plan import and design.** Read IFC building information models and scanned PDF plans, and add hydraulic '
         'criteria to the bridge designer so that span choices reflect flood levels and debris.',
-        '**Extend to other project types.** Apply the same engine and models to flood-control structures, water systems and '
-        'roads, joining CORA and BUHAY-AH in one screening tool.',
+        '**Train the models for the extension types.** Retrain XGBoost and the Isolation Forest once hospital, terminal, '
+        'airfield and port contracts are collected, and add pavement and port geotechnical data.',
+        '**Extend to other project types.** Apply the same engine to flood-control structures, water systems and roads, '
+        'joining CORA and BUHAY-AH in one screening tool.',
         '**Pilot with oversight bodies and publish open data.** Test BUHAY-AH with a district engineering office, COA auditors and '
         'a local government, run a usability study, and publish screened records following the Open Contracting Data Standard '
         'and the CoST Infrastructure Data Standard.'], numbered=True)
 
     # ============================================================ REFERENCES
     H('REFERENCES', 1)
-    for r in REFERENCES:
-        p = pp.para(r, indent=False, align='left', spacing=2.0)
+    for r in [x for x in REFERENCES if x.split('.')[0].split(',')[0] in MAIN_REFS]:
+        p = pp.para(r, indent=False, align='left', spacing=1.0, size=11, after=5)
         p.paragraph_format.left_indent = Inches(0.5)
         p.paragraph_format.first_line_indent = Inches(-0.5)
 
@@ -1538,7 +1680,7 @@ def appendices(pp):
         ('Rationale.', 'Public buildings and bridges lose value to overpricing, and communities without plans cannot tell what '
          'their budget should buy. An open tool that designs, prices and screens projects from national standards can make '
          'padding visible before and after award.'),
-        ('Research questions.', 'The six research questions in the Objective of the Study: plan variables, design generation, '
+        ('Research questions.', 'The seven research questions in the Objective of the Study: plan variables, design generation, '
          'take-off accuracy, cost models, detection performance and deployment.'),
         ('Engineering goals.', 'A design generator that turns a requirement or a budget into a standards-compliant schematic '
          'design; a quantity take-off engine with itemized lean, standard and ceiling ABCs; a hybrid screening model with '
@@ -1574,6 +1716,13 @@ def appendices(pp):
             '(research/pipeline: simulate.py, train.py, design_results.js, build_paper.py). Running the pipeline in order '
             'reproduces every table and figure in this paper.', indent=False, spacing=1.5)
     pp.code(snippet('docs/app/js/designs.js', '  function fromBudget(usage, budget, opt) {', 30))
+    pp.page_break()
+    pp.para('Appendix O. Additional References Cited', indent=False, align='center', bold=True, spacing=1.5)
+    pp.apps.append(('O', 'Additional References Cited'))
+    for r in [x for x in REFERENCES if x.split('.')[0].split(',')[0] not in MAIN_REFS]:
+        q = pp.para(r, indent=False, align='left', spacing=1.0, size=10, after=4)
+        q.paragraph_format.left_indent = Inches(0.5)
+        q.paragraph_format.first_line_indent = Inches(-0.5)
 
 
 def tbl_plain(pp, header, rows, widths, size=9):
@@ -1723,6 +1872,10 @@ DEFINITIONS = [
      'reference for the over-budget ratio.'),
 ]
 
+# NSTF 2026 (DM 058): the reference section should not exceed one page; the rest are listed in Appendix O
+MAIN_REFS = {'Association of Structural Engineers of the Philippines', 'Buban', 'Chen', 'Department of Public Works and Highways',
+             'Federal Aviation Administration', 'International Civil Aviation Organization', 'Liu', 'Lundberg',
+             'Overseas Coastal Area Development Institute of Japan', 'Shapley', 'Transparency International', 'U'}
 REFERENCES = [
     'American Association of State Highway and Transportation Officials. (2020). *AASHTO LRFD bridge design specifications* (9th ed.).',
     'Association of Structural Engineers of the Philippines. (2016). *National structural code of the Philippines 2015: Volume I, buildings, towers and other vertical structures* (7th ed.).',
@@ -1732,6 +1885,8 @@ REFERENCES = [
     'Chen, T., & Guestrin, C. (2016). XGBoost: A scalable tree boosting system. In *Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining* (pp. 785–794). https://doi.org/10.1145/2939672.2939785',
     'Coffie, G. H., & Cudjoe, S. K. F. (2024). Using extreme gradient boosting (XGBoost) machine learning to predict construction cost overruns. *International Journal of Construction Management, 24*(16), 1742–1750. https://doi.org/10.1080/15623599.2023.2289754',
     'CoST – The Infrastructure Transparency Initiative. (n.d.). *Why infrastructure transparency matters*. https://infrastructuretransparency.org/',
+    'Department of Health. (2012). *Administrative Order No. 2012-0012: Rules and regulations governing the new classification of hospitals and other health facilities in the Philippines*.',
+    'Department of Transportation. (2017). *Department Order No. 2017-011: Omnibus guidelines on the planning and identification of public road transportation services and franchise issuance*.',
     'Department of Education. (2010). *Educational facilities manual* (Rev. ed.).',
     'Department of Health. (2016). *Guidelines in the planning and design of hospitals and other health facilities* (Administrative Order No. 2016-0042).',
     'Department of Public Works and Highways. (2013). *DPWH standard specifications for highways, bridges and airports* (Vol. II).',
@@ -1739,6 +1894,13 @@ REFERENCES = [
     'Department of Public Works and Highways. (2021). *Department Order No. 42, series of 2021: Adoption of the DPWH standard specifications for public works structures, Volume III, 2019 edition*.',
     'Department of Public Works and Highways. (2025). *Department Order No. 30, series of 2025*.',
     'DZRH News. (2025, August 11). *20 percent of the entire P545-B flood control project went to 15 contractors — Pres. Marcos*. https://dzrh.com.ph/',
+    'Federal Aviation Administration. (2021). *Airport pavement design and evaluation* (Advisory Circular 150/5320-6G). U.S. Department of Transportation.',
+    'International Air Transport Association. (2019). *Airport development reference manual* (11th ed.).',
+    'International Civil Aviation Organization. (2022). *Annex 14 to the Convention on International Civil Aviation: Aerodromes, Volume I — Aerodrome design and operations* (9th ed.).',
+    'Overseas Coastal Area Development Institute of Japan. (2009). *Technical standards and commentaries for port and harbour facilities in Japan*.',
+    'PIANC. (2002). *Guidelines for the design of fender systems* (Report of MarCom Working Group 33).',
+    'Republic Act No. 11223. (2019). *Universal health care act*.',
+    'American Association of State Highway and Transportation Officials. (2018). *A policy on geometric design of highways and streets* (7th ed.).',
     'Elmousalami, H. H. (2020). Artificial intelligence and parametric construction cost estimate modeling: State-of-the-art review. *Journal of Construction Engineering and Management, 146*(1), 03119008. https://doi.org/10.1061/(ASCE)CO.1943-7862.0001678',
     'Fazekas, M., & Tóth, I. J. (2016). From corruption to state capture: A new analytical framework with empirical applications from Hungary. *Political Research Quarterly, 69*(2), 320–334. https://doi.org/10.1177/1065912916639137',
     'Flyvbjerg, B., Holm, M. S., & Buhl, S. (2002). Underestimating costs in public works projects: Error or lie? *Journal of the American Planning Association, 68*(3), 279–295. https://doi.org/10.1080/01944360208976273',
@@ -1773,6 +1935,7 @@ REFERENCES = [
     'Vapnik, V. N. (1998). *Statistical learning theory*. Wiley.',
 ]
 
+REFERENCES.sort(key=lambda r: re.sub(r'[^a-z0-9 ]', '', r.lower().replace('u.s.', 'us')))
 
 # ------------------------------------------------------------------ build & paginate
 def build(pages, path):
@@ -1842,8 +2005,8 @@ def paginate(pdf):
         if i is not None:
             pages[f't:{nt}'] = label(i); cur = i
     cur = body_start
-    for ne, _ in EQS:
-        i = find(f'Eq. {ne}.', cur)
+    for ne, *_ in EQS:
+        i = find(f'Eq. {ne}', cur)
         if i is not None:
             pages[f'e:{ne}'] = label(i); cur = i
     cur = find('APPENDICES', body_start) or body_start

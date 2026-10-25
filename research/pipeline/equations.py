@@ -30,6 +30,10 @@ EQ = {
     'opt': r'$x^{*}=\arg\max_{k,\,N}\ \kappa(k,N)\quad \mathrm{s.t.}\quad \mathrm{ABC}_{\tau}(k,N)\leq B,\ \ L(k,N)\leq L_{\max},\ \ N\leq N_{\max}$',
     'pareto': r'$x\ \mathrm{is\ dominated}\ \Leftrightarrow\ \exists\,y:\ \kappa(y)\geq\kappa(x),\ \mathrm{ABC}(y)\leq\mathrm{ABC}(x),\ y\neq x$',
     'bridge': r'$(t^{*},n^{*})=\arg\min_{t,\,n}\ \mathrm{ABC}_{\mathrm{std}}(t,n)\quad \mathrm{s.t.}\quad S_{\min}(t)\leq G/n\leq S_{\max}(t)$',
+    'bays': r'$A_{\mathrm{site}}=\sum_{m} n_m\, w_m\,(d_m+a_m)\,(1+h_m),\qquad A_{\mathrm{canopy}}=\sum_{m} n_m\, w_m\, c_m$',
+    'airfield': r'$V_{\mathrm{PCC}}=L\,W\,t_{\mathrm{PCC}},\quad V_{b}=L\,W\,t_{b},\quad V_{s}=(L\,W+2\,s\,L)\,t_{s},\quad n_{\ell}=2(\lfloor L/60\rfloor+1)+2\lceil W/3\rceil$',
+    'piles': r'$\ell_p=1.05\,(D+z_d+e),\quad n_p=(\lfloor L/b\rfloor+1)(\lceil W/4\rceil+1),\quad n_f=\max(2,\lceil fL/12\rceil)$',
+    'bri_ext': r'$\mathrm{BRI}_{\mathrm{ext}}=100\,S_{\mathrm{OBR}}=100\left[\dfrac{\mathrm{OBR}-1}{0.5}\right]_0^1$',
 }
 for k, tex in EQ.items():
     fig = plt.figure(figsize=(0.1, 0.1))

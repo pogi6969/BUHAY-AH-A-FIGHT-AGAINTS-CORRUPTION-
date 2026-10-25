@@ -1,5 +1,5 @@
 /*
- * BUHAY-AH parametric 3D viewer: builds a building or bridge model straight from the plan
+ * BUHAY-AH parametric 3D viewer: builds a building, bridge, airfield or port model straight from the plan
  * geometry returned by the cost engine and draws it on a 2D canvas (orthographic projection,
  * painter's algorithm, flat shading). Drag to orbit, scroll or pinch to zoom, double-tap to reset.
  */
@@ -43,7 +43,8 @@
 
   var PAL = {
     concrete: '#b9bec6', slab: '#c9ced6', column: '#8c95a3', wall: '#e9e4d8', roof: '#3f6d9e', ground: '#cfd8c4',
-    deck: '#9aa1ab', asphalt: '#4a4f57', girder: '#a7aeb8', steel: '#c4561f', water: '#5b9bd5', soil: '#a68b65', rail: '#d9dde3'
+    deck: '#9aa1ab', asphalt: '#4a4f57', girder: '#a7aeb8', steel: '#c4561f', water: '#5b9bd5', soil: '#a68b65', rail: '#d9dde3',
+    pcc: '#c8ccd2', grass: '#9fbf86', mark: '#ffffff', light: '#e3a51a', rock: '#8d8577', fender: '#26292e', glass: '#8fb8de'
   };
   var TINT = { green: '#2f9e5b', amber: '#e0a100', red: '#d03b2f' };
 
@@ -67,6 +68,18 @@
       [[0, 0, 0.15, W], [L - 0.15, 0, 0.15, W]].forEach(function (w) {
         s.box(w[0], w[1], k * h + 0.1, w[2], w[3], top - g.beamD - k * h - 0.1, PAL.wall);
       });
+    }
+    // glazed facade band (terminals) and site works in front of the building: pavement, loading canopy
+    if (g.glass) s.box(0.2, -0.05, 0.3, L - 0.4, 0.1, Math.min(H, h) - 0.6, PAL.glass, 0.85);
+    if (g.pave > 0) {
+      var PL = Math.max(L, 30), PD = g.pave / PL;
+      s.box(0, -PD - 1.5, 0, PL, PD, 0.12, PAL.asphalt);
+      for (var mx = 3; mx < PL; mx += 3.5) s.box(mx, -6.5, 0.12, 0.12, 5, 0.01, PAL.mark);
+      if (g.canopy > 0) {
+        var CD = Math.min(PD, g.canopy / PL), ch = 4.2;
+        for (var px = 0; px <= PL + 0.01; px += 6) { s.box(px - 0.1, -CD - 1.5, 0, 0.2, 0.2, ch, PAL.column); s.box(px - 0.1, -1.7, 0, 0.2, 0.2, ch, PAL.column); }
+        s.box(-0.3, -CD - 1.8, ch, PL + 0.6, CD + 0.6, 0.15, tint || PAL.roof);
+      }
     }
     if (g.roof !== 'rc_deck') {
       var o = 0.9, rise = (W / 2 + o) * Math.tan(18 * Math.PI / 180);
@@ -142,6 +155,48 @@
     });
   }
 
+  // runway / taxiway / apron: shown with the length compressed so the slab, shoulders and markings stay readable
+  function buildAirfield(s, g, tint) {
+    var apron = g.facility === 'apron';
+    var L = apron ? g.L : Math.min(g.L, Math.max(120, g.W * 8)), W = g.W, sh = g.sh, strip = Math.max(g.strip || 0, W + 2 * sh + 10);
+    s.box(-10, -strip / 2, -0.4, L + 20, strip, 0.3, PAL.grass);
+    if (sh > 0) s.box(0, -W / 2 - sh, -0.1, L, W + 2 * sh, 0.1, PAL.asphalt);
+    s.box(0, -W / 2, -0.1, L, W, Math.max(0.25, g.pcc), tint || PAL.pcc);
+    var top = Math.max(0.25, g.pcc) - 0.1;
+    if (g.facility === 'runway') {
+      for (var x = 8; x < L - 8; x += 12) s.box(x, -0.3, top, 6, 0.6, 0.02, PAL.mark);
+      for (var i = 0; i < 6; i++) { var y = -W / 2 + W * (i + 0.5) / 6 - 0.4; s.box(1, y, top, 5, 0.8, 0.02, PAL.mark); s.box(L - 6, y, top, 5, 0.8, 0.02, PAL.mark); }
+    } else if (g.facility === 'taxiway') s.box(0, -0.15, top, L, 0.3, 0.02, PAL.light);
+    else for (var st = 0; st < Math.max(1, Math.floor(L / 30)); st++) s.box((st + 0.5) * L / Math.max(1, Math.floor(L / 30)) - 0.15, -W / 2 + 4, top, 0.3, W - 8, 0.02, PAL.light);
+    if (g.lights) for (var lx = 0; lx <= L; lx += Math.max(4, L / 20)) { s.box(lx, -W / 2 - 0.8, 0, 0.4, 0.4, 0.5, PAL.light); s.box(lx, W / 2 + 0.4, 0, 0.4, 0.4, 0.5, PAL.light); }
+    if (g.masts) for (var m = 0; m < g.masts; m++) s.box((m + 0.5) * L / g.masts, W / 2 + 3, 0, 0.6, 0.6, 18, PAL.column);
+  }
+
+  // open-type pier or wharf: piles from the seabed to the deck, beams, deck slab, fenders, causeway and RoRo ramp
+  function buildPort(s, g, tint) {
+    var L = g.L, W = g.W, D = g.depth, dk = g.deck, cw = Math.min(g.causeway || 0, 60);
+    s.box(-cw - 10, -10, -D - 1, L + cw + 30, W + 20, 0.6, PAL.soil);
+    s.box(-cw - 10, -10, -0.05, L + cw + 30, W + 20, 0.05, PAL.water, 0.45);
+    var nB = Math.min(g.nBents, 40), nP = Math.min(g.nPer, 8);
+    for (var i = 0; i < nB; i++) for (var j = 0; j < nP; j++) {
+      var x = i * L / Math.max(1, nB - 1), y = j * W / Math.max(1, nP - 1);
+      if (g.steel) s.cylinder(x, y, -D - 0.5, 0.4, D + dk - 1.1, PAL.column); else s.box(x - 0.3, y - 0.3, -D - 0.5, 0.6, 0.6, D + dk - 1.1, PAL.concrete);
+    }
+    for (var b = 0; b < nB; b++) s.box(b * L / Math.max(1, nB - 1) - 0.6, -0.3, dk - 1.6, 1.2, W + 0.6, 1.2, PAL.concrete);
+    s.box(-0.3, -0.3, dk - 0.4, L + 0.6, W + 0.6, 0.4, tint || PAL.slab);
+    var faces = g.facility === 'pier' ? [-0.7, W + 0.3] : [W + 0.3];
+    faces.forEach(function (y) { for (var f = 0; f < Math.max(2, Math.ceil(L / 12)); f++) s.box((f + 0.5) * L / Math.max(2, Math.ceil(L / 12)) - 0.6, y, dk - 1.8, 1.2, 0.4, 1.5, PAL.fender); });
+    for (var bl = 0; bl < Math.max(2, Math.ceil(L / 15)); bl++) s.cylinder((bl + 0.5) * L / Math.max(2, Math.ceil(L / 15)), W - 0.6, dk, 0.25, 0.6, PAL.steel);
+    if (cw > 0) {
+      var hb = 0.6 * D + dk;
+      s.face([[-cw, -6, -0.6 * D], [0, -6, -0.6 * D], [0, W / 2 - 4, dk], [-cw, W / 2 - 4, dk]], PAL.rock);
+      s.face([[-cw, W + 6, -0.6 * D], [-cw, W / 2 + 4, dk], [0, W / 2 + 4, dk], [0, W + 6, -0.6 * D]], PAL.rock);
+      s.box(-cw, W / 2 - 4, dk - 0.3, cw, 8, 0.3, PAL.asphalt);
+      if (hb < 0) hb = 0;
+    }
+    if (g.roro) s.face([[L, W / 2 - 4, dk], [L + 18, W / 2 - 4, 0.3], [L + 18, W / 2 + 4, 0.3], [L, W / 2 + 4, dk]], PAL.deck);
+  }
+
   function shade(hex, f) {
     var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
     r = Math.min(255, Math.round(r * f)); g = Math.min(255, Math.round(g * f)); b = Math.min(255, Math.round(b * f));
@@ -171,7 +226,10 @@
   }
   Viewer.prototype.set = function (geometry, tintKey) {
     var s = new Scene(), tint = tintKey ? TINT[tintKey] : null;
-    if (geometry.kind === 'bridge') buildBridge(s, geometry, tint); else buildBuilding(s, geometry, tint);
+    if (geometry.kind === 'bridge') buildBridge(s, geometry, tint);
+    else if (geometry.kind === 'airfield') buildAirfield(s, geometry, tint);
+    else if (geometry.kind === 'port') buildPort(s, geometry, tint);
+    else buildBuilding(s, geometry, tint);
     var mn = [Infinity, Infinity, Infinity], mx = [-Infinity, -Infinity, -Infinity];
     s.faces.forEach(function (f) { f.p.forEach(function (p) { for (var i = 0; i < 3; i++) { mn[i] = Math.min(mn[i], p[i]); mx[i] = Math.max(mx[i], p[i]); } }); });
     this.center = [(mn[0] + mx[0]) / 2, (mn[1] + mx[1]) / 2, (mn[2] + mx[2]) / 2];

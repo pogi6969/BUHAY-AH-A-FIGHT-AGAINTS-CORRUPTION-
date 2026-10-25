@@ -11,7 +11,10 @@ const capText = d => {
   if (c.persons) p.push(`${c.persons} persons`); if (c.stalls) p.push(`${c.stalls} stalls`);
   return p.join(', ') || '—';
 };
-const templates = D.TEMPLATES.map(t => {
+// core study (SBD-300 scope): the original seven usages; the extension usages are reported by extension_results.js
+const CORE = ['school', 'health', 'office', 'evacuation', 'market', 'dorm', 'court'];
+const CORE_SPACES = Object.keys(D.SPACES).filter(k => D.SPACES[k].groups.some(g => CORE.indexOf(g) >= 0 || g === 'civic' || g === 'all'));
+const templates = D.TEMPLATES.filter(t => CORE.indexOf(t.usage) >= 0).map(t => {
   const d = D.build(t), q = D.quote(d);
   return { id: t.id, name: t.name, usage: t.usage, N: d.N, L: d.L, W: d.W, gfa: d.gfa, cap: capText(d), capacity: d.capacity,
     rooms: d.rooms.filter(r => r.cat !== 'void').length, start: q.start, fair: q.fair, ceiling: q.ceiling, perM2: q.fair / d.gfa,
@@ -54,4 +57,4 @@ const times = [];
 for (let i = 0; i < 50; i++) { const t0 = process.hrtime.bigint(); D.fromBudget('school', 50e6, { maxLength: 60 }); times.push(Number(process.hrtime.bigint() - t0) / 1e6); }
 times.sort((a, b) => a - b);
 console.log(JSON.stringify({ templates, bridges, scenarios, frontier, avgGain: gain.reduce((a, b) => a + b, 0) / gain.length, maxGain: Math.max(...gain),
-  bridgeSel, medianMs: times[25], spaces: Object.keys(D.SPACES).length, usages: Object.keys(D.USAGE).length }));
+  bridgeSel, medianMs: times[25], spaces: CORE_SPACES.length, usages: CORE.length }));

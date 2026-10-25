@@ -1,6 +1,7 @@
 /*
  * BUHAY-AH cost engine — standards-based quantity take-off (QTO) and
- * Approved Budget for the Contract (ABC) builder for public buildings and bridges.
+ * Approved Budget for the Contract (ABC) builder for public buildings (schools, hospitals,
+ * airport, seaport and land transport terminals, …), bridges, airfield pavements and port structures.
  *
  * One source of truth: the same file runs in the browser app (window.BuhayEngine)
  * and in the Node.js research pipeline (require('./engine.js')).
@@ -8,7 +9,9 @@
  * Quantities follow parametric rules derived from NSCP 2015 Vol. I (buildings),
  * DPWH Standard Specifications (Vol. II 2013 highways & bridges, Vol. III 2019
  * public works structures), DPWH DGCS 2015 / Bridge Seismic Design Specifications,
- * AASHTO LRFD girder proportions, PD 1096 (National Building Code) and BP 344.
+ * AASHTO LRFD girder proportions, PD 1096 (National Building Code) and BP 344; airfield pavements
+ * follow ICAO Annex 14 / CAAP aerodrome dimensions with FAA AC 150/5320-6G rigid-pavement sections;
+ * open-type piers and wharves follow OCDI (2009), BS 6349-2 and PIANC (2002) fender guidance.
  * Indirect costs follow DPWH D.O. 197 s. 2016, carried into D.O. 30 s. 2025.
  * Unit rates are indicative direct costs (materials + labor + equipment) for
  * Bicol Region V, base Albay, 2025-Q4, and are meant to be replaced by the
@@ -20,7 +23,7 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '1.1.0';
+  var VERSION = '1.2.0';
   var PRICE_BASIS = 'Bicol Region V, base Albay (Legazpi City), 2025-Q4, direct cost (materials + labor + equipment)';
 
   // ---------------------------------------------------------------- price book
@@ -66,6 +69,14 @@
     railing:     ['1047 (5)',  'Steel railings — corridors, balconies & stairs', 'm', 4800, 'steel'],
     insulation:  ['—',         'Roof insulation, fascia & eaves soffit', 'm²', 420, 'roof'],
     canal:       ['—',         'Perimeter drainage canal with grating', 'm', 1450, 'earth'],
+    medgas:      ['—',         'Medical gas pipeline system (oxygen, vacuum, medical air) incl. outlets', 'm²', 0, 'mepf'],
+    genset:      ['—',         'Standby generator set with ATS, fuel tank & enclosure', 'kVA', 9500, 'mepf'],
+    elevator:    ['—',         'Elevator, bed / passenger type, installed & tested', 'unit', 4800000, 'mepf'],
+    baggage:     ['—',         'Baggage handling system (check-in conveyors, make-up belt, claim carousel)', 'set', 7500000, 'mepf'],
+    curtain:     ['1008 (3)',  'Aluminum curtain wall / storefront glazing', 'm²', 9800, 'openings'],
+    sitepave:    ['311 + 201', 'PCCP 230 mm on aggregate base — driveways, loading bays & parking', 'm²', 3650, 'concrete'],
+    canopy:      ['1047 (6)',  'Steel canopy with long-span roofing over loading bays / curbside', 'm²', 5600, 'steel'],
+    sitemark:    ['612 (1)',   'Pavement markings, bay numbering, wheel stops & signage', 'm²', 95, 'finish'],
 
     // bridge works — DPWH Vol. II (2013) item numbering
     clear_b:     ['100 (1)',   'Clearing and grubbing', 'm²', 55, 'earth'],
@@ -95,7 +106,35 @@
     scupper:     ['—',         'Deck drains / scuppers', 'pc', 2200, 'misc'],
     riprap:      ['505 (2)',   'Grouted riprap, Class A (slope protection)', 'm³', 3100, 'earth'],
     asphalt:     ['310',       'Asphalt wearing course 50 mm', 'm²', 640, 'finish'],
-    pccp:        ['311 + 201', 'PCCP 230 mm on aggregate base (approaches)', 'm²', 3650, 'concrete']
+    pccp:        ['311 + 201', 'PCCP 230 mm on aggregate base (approaches)', 'm²', 3650, 'concrete'],
+
+    // airfield pavements — DPWH Vol. II (2013) items, ICAO Annex 14 / CAAP aerodrome geometry
+    strip:       ['100 (2)',   'Runway / taxiway strip clearing, grading & compaction', 'm²', 85, 'earth'],
+    exc_air:     ['102 (2)',   'Unsuitable material excavation & disposal', 'm³', 320, 'earth'],
+    embank:      ['104 (1)',   'Embankment from selected borrow, compacted', 'm³', 520, 'earth'],
+    subbase:     ['200 (1)',   'Aggregate subbase course', 'm³', 1450, 'earth'],
+    base_air:    ['201 (1)',   'Aggregate base course (crushed)', 'm³', 1750, 'earth'],
+    pcc_air:     ['311 (1)',   'Airfield PCC pavement, flexural strength 4.5 MPa, incl. joints & curing', 'm³', 8900, 'concrete'],
+    shoulder:    ['310 (1)',   'Asphalt shoulder 50 mm on 150 mm aggregate base', 'm²', 1250, 'finish'],
+    mark_air:    ['612 (2)',   'Airfield markings, reflectorized thermoplastic paint', 'm²', 650, 'finish'],
+    agl:         ['—',         'Airfield ground lighting fixture incl. cable, isolation transformer & base can', 'each', 110000, 'mepf'],
+    ccr:         ['—',         'Constant current regulators & AGL vault equipment', 'set', 4500000, 'mepf'],
+    mast:        ['—',         'High-mast apron floodlight, 25 m', 'each', 1600000, 'mepf'],
+    drain_air:   ['500 (1)',   'RC lined open drain & cross culverts along pavement', 'm', 7500, 'earth'],
+    fence:       ['—',         'Security perimeter fence, chain-link with barbed wire (aerodrome / port)', 'm', 3400, 'misc'],
+
+    // ports — open-type piers & wharves on piles, causeways (OCDI 2009, BS 6349-2, PIANC 2002)
+    pile_steel:  ['400 (21)',  'Steel pipe piles 800 mm Ø × 12 mm, coated, furnished & driven (marine)', 'm', 52000, 'pile'],
+    pile_spun:   ['400 (22)',  'Prestressed concrete spun piles 600 mm Ø, furnished & driven (marine)', 'm', 17500, 'pile'],
+    conc_marine: ['405 (1)e',  'Structural concrete Class AA (marine), fc′ 34.5 MPa, incl. forms', 'm³', 15500, 'concrete'],
+    fender:      ['—',         'Rubber fender system (cone / cell type) with frontal panel', 'each', 1850000, 'misc'],
+    bollard:     ['—',         'Cast steel bollard 50 t, anchored', 'each', 165000, 'misc'],
+    ladder:      ['—',         'Galvanized steel berthing ladder & mooring rings', 'each', 85000, 'misc'],
+    portutil:    ['—',         'Deck lighting, water & fire lines, utility trench', 'm²', 1400, 'mepf'],
+    roro:        ['—',         'RC RoRo ramp with adjustable apron, 20 × 8 m', 'set', 18000000, 'misc'],
+    core_rock:   ['506 (1)',   'Quarry-run core / rubble fill, placed (causeway)', 'm³', 1350, 'earth'],
+    armor_rock:  ['506 (2)',   'Armor rock 0.5–1.0 t, placed', 'm³', 2900, 'earth'],
+    dredge:      ['—',         'Dredging & disposal', 'm³', 520, 'earth']
   };
 
   // MEPF allowances (PHP per m² of gross floor area), standard tier
@@ -106,9 +145,26 @@
     evacuation: { label: 'Multi-purpose hall / evacuation center', elec: 1400, plumb: 950,  mech: 0,    w: 10.0, wall: 0.05, win: 0.18, doorArea: 60, sog: 1 },
     dorm:       { label: 'Dormitory / staff housing',              elec: 1700, plumb: 1700, mech: 0,    w: 10.5, wall: 0.28, win: 0.18, doorArea: 12, sog: 1 },
     market:     { label: 'Public market',                          elec: 1500, plumb: 1400, mech: 0,    w: 13.0, wall: 0.10, win: 0.15, doorArea: 25, sog: 1 },
-    court:      { label: 'Covered court / open pavilion',          elec: 650,  plumb: 250,  mech: 0,    w: 4.0,  wall: 0,    win: 0,    doorArea: 400, sog: 1, open: true }
+    court:      { label: 'Covered court / open pavilion',          elec: 650,  plumb: 250,  mech: 0,    w: 4.0,  wall: 0,    win: 0,    doorArea: 400, sog: 1, open: true },
+    // extension types (hospitals and transport terminals): priced by the same take-off, screened by the over-budget ratio
+    hospital:   { label: 'Hospital (DOH Level 1–3)',               elec: 4200, plumb: 3100, mech: 4400, w: 13.0, wall: 0.30, win: 0.18, doorArea: 11, sog: 1, kva: 0.10, medgas: 950, lift: 3000, sprinkler: true },
+    airport:    { label: 'Airport passenger terminal',             elec: 3600, plumb: 1500, mech: 4200, w: 12.5, wall: 0.06, win: 0.12, doorArea: 120, sog: 1, kva: 0.08, curtain: 0.35, baggage: 2500, lift: 5000, sprinkler: true },
+    seaport:    { label: 'Seaport passenger terminal',             elec: 2700, plumb: 1500, mech: 2600, w: 12.0, wall: 0.08, win: 0.12, doorArea: 60, sog: 1, kva: 0.05, curtain: 0.20, lift: 5000, sprinkler: true },
+    terminal:   { label: 'Land transport terminal (jeepney / UV Express / bus)', elec: 1500, plumb: 1350, mech: 0, w: 10.5, wall: 0.07, win: 0.15, doorArea: 50, sog: 1, kva: 0.02 }
   };
   var TYPE_INDEX = { court: 1, evacuation: 1, school: 2, market: 3, dorm: 4, office: 5, health: 6 };
+  // building types the machine-learning layer was trained on (SBD-300); others are screened by the over-budget ratio
+  var ML_TYPES = { court: 1, evacuation: 1, school: 1, market: 1, dorm: 1, office: 1, health: 1 };
+  var FEATURE_TYPE = { hospital: 6, airport: 5, seaport: 5, terminal: 3 };
+
+  var AIRCRAFT = {
+    code_b:    { label: 'Small aircraft (code B, e.g. BN-2, Cessna 208)', pcc: 0.22, base: 0.15, sub: 0.20, rwyW: 23, twyW: 10.5 },
+    turboprop: { label: 'Turboprop (code C, e.g. ATR 72, Q400)',        pcc: 0.30, base: 0.20, sub: 0.25, rwyW: 30, twyW: 15 },
+    jet:       { label: 'Narrow-body jet (code C/D, e.g. A320, B737)',  pcc: 0.40, base: 0.25, sub: 0.30, rwyW: 45, twyW: 23 }
+  };
+  var AIRFIELD_FACILITIES = { runway: { label: 'Runway' }, taxiway: { label: 'Taxiway' }, apron: { label: 'Apron' } };
+  var PORT_FACILITIES = { pier: { label: 'Open-type pier / jetty (berths both faces)', faces: 2 }, wharf: { label: 'Marginal wharf (berth one face)', faces: 1 } };
+  var PORT_PILES = { steel_pipe: { label: 'Steel pipe piles 800 mm Ø' }, pc_spun: { label: 'PC spun piles 600 mm Ø' } };
 
   var SUPERSTRUCTURES = {
     box_culvert: { label: 'RC box culvert', idx: 1, maxSpan: 6 },
@@ -160,6 +216,24 @@
     'PD 1096 National Building Code (light & ventilation) and BP 344 Accessibility Law',
     'DPWH D.O. 197 s. 2016 / D.O. 30 s. 2025 — indirect costs in the ABC',
     'ICMS 3rd ed. & ISO 15686-5 — international cost classification and life-cycle costing'
+  ];
+  var STANDARDS_BY_TYPE = {
+    hospital: ['DOH A.O. 2016-0042 — planning and design of hospitals and other health facilities', 'DOH A.O. 2012-0012 — classification of hospitals (Level 1–3)', 'NFPA 99 — medical gas and vacuum systems; RA 9514 sprinklers'],
+    airport: ['ICAO Annex 14 Vol. I & CAAP Manual of Standards for Aerodromes — airside interfaces', 'IATA Airport Development Reference Manual — terminal space per peak-hour passenger', 'RA 9514 sprinklers; BP 344 accessible routes and lifts'],
+    seaport: ['PIANC & OCDI (2009) passenger-terminal planning guidance; PPA-administered ports', 'RA 9514 sprinklers; BP 344 accessible routes and lifts'],
+    terminal: ['AASHTO Green Book (2018) design vehicles — bus 12 m, modern jeepney 9 m, UV Express van 5.4 m', 'BP 344 accessibility, PD 1096 and RA 9514 for the passenger concourse']
+  };
+  var STANDARDS_AIRFIELD = [
+    'ICAO Annex 14 Vol. I (9th ed.) & CAAP Manual of Standards for Aerodromes — runway, taxiway and apron widths, strips and markings',
+    'FAA AC 150/5320-6G — airport pavement design (rigid PCC sections)',
+    'DPWH Standard Specifications for Highways, Bridges and Airports, Vol. II (2013) — Items 100–311',
+    'DPWH D.O. 197 s. 2016 / D.O. 30 s. 2025 — indirect costs in the ABC'
+  ];
+  var STANDARDS_PORT = [
+    'OCDI (2009) Technical Standards and Commentaries for Port and Harbour Facilities in Japan — open-type wharves on piles',
+    'BS 6349-2:2019 — quay walls, jetties and dolphins; PIANC (2002) WG 33 — fender systems',
+    'NSCP 2015 durability (marine exposure) and DPWH Vol. II (2013) Items 400–506',
+    'DPWH D.O. 197 s. 2016 / D.O. 30 s. 2025 — indirect costs in the ABC'
   ];
 
   // ------------------------------------------------------------------ helpers
@@ -227,6 +301,9 @@
     p.roof = p.roof === 'rc_deck' ? 'rc_deck' : 'steel_truss';
     p.soilBearing = clamp(num(p.soilBearing, 150), 50, 600);
     p.seismicZone = num(p.seismicZone, 4) === 2 ? 2 : 4;
+    p.sitePavement = Math.max(0, num(p.sitePavement, 0));
+    p.canopyArea = Math.max(0, num(p.canopyArea, 0));
+    p.bays = Math.max(0, Math.round(num(p.bays, 0)));
     p.province = PROVINCES[p.province] ? p.province : 'Albay';
     p.year = Math.round(num(p.year, 2025));
     return p;
@@ -288,9 +365,10 @@
     // masonry, finishes, openings
     var clearH = Math.max(2.2, h - beamD);
     var extWallGross = bt.open ? P * 1.2 : P * clearH * N;
-    var winArea = bt.open ? 0 : Math.max(bt.win * extWallGross, 0.10 * GFA); // PD 1096: windows ≥ 10% of floor area
+    var curtainArea = bt.curtain ? bt.curtain * extWallGross : 0;
+    var winArea = bt.open ? 0 : Math.max(bt.win * extWallGross, 0.10 * GFA - curtainArea); // PD 1096: windows ≥ 10% of floor area
     var nDoors = bt.open ? 2 : Math.ceil(GFA / bt.doorArea) + 2 * N;
-    var extWall = Math.max(0, extWallGross - winArea - 2 * N * 2.1 * 1.8);
+    var extWall = Math.max(0, extWallGross - winArea - curtainArea - 2 * N * 2.1 * 1.8);
     var intLen = bt.open ? 0 : num(p.interiorWallLength, 0) > 0 ? num(p.interiorWallLength) * N : bt.wall * A * N;
     var intWall = intLen * clearH * 0.90 - Math.max(0, nDoors - 2 * N) * 0.9 * 2.1;
     intWall = Math.max(0, intWall);
@@ -346,15 +424,33 @@
 
     boq.add(G5, 'door', nDoors, { rate: { lean: 11500, standard: 13500, premium: 17500 }[T.finish] });
     boq.add(G5, 'window', winArea, { rate: { lean: 5400, standard: 6200, premium: 7600 }[T.finish] });
+    boq.add(G5, 'curtain', curtainArea, { rate: { lean: 8600, standard: 9800, premium: 12500 }[T.finish] });
 
     var mepf = T.mepf * qmul(adjust, 'mepf');
     boq.add(G6, 'elec', GFA, { rate: bt.elec * mepf });
     boq.add(G6, 'plumb', GFA, { rate: bt.plumb * mepf });
-    var needsSprinkler = N >= 3 || p.type === 'health' || p.type === 'market' || p.type === 'dorm';
+    var needsSprinkler = N >= 3 || p.type === 'health' || p.type === 'market' || p.type === 'dorm' || !!bt.sprinkler;
     boq.add(G6, 'fire', GFA, { rate: (needsSprinkler ? 650 : 120) * mepf, desc: needsSprinkler ? 'Fire sprinkler, alarm & detection (RA 9514)' : 'Fire extinguishers, alarm & detection (RA 9514)' });
     if (bt.mech > 0) boq.add(G6, 'mech', GFA, { rate: bt.mech * (tierKey === 'lean' ? 0.25 : mepf), desc: tierKey === 'lean' ? 'Mechanical provisions (rough-in, sleeves, outlets)' : 'Mechanical / air-conditioning works' });
     boq.add(G6, 'septic', 1, { rate: Math.min(400000, 60000 + 45 * GFA) * mepf });
     boq.add(G6, 'ramp', 1);
+    // extension types: medical gases, standby power, lifts and baggage handling
+    if (bt.medgas) boq.add(G6, 'medgas', GFA, { rate: bt.medgas * mepf });
+    if (bt.kva) boq.add(G6, 'genset', Math.max(30, Math.ceil(bt.kva * GFA / 5) * 5), { rate: 9500 * mepf });
+    var nLift = bt.lift && N > 1 ? Math.max(1, Math.ceil(GFA / bt.lift)) : 0;
+    if (nLift) boq.add(G6, 'elevator', nLift, { rate: { lean: 4300000, standard: 4800000, premium: 5800000 }[T.finish] });
+    var nBag = bt.baggage ? Math.max(1, Math.round(GFA / bt.baggage)) : 0;
+    if (nBag) boq.add(G6, 'baggage', nBag, { rate: 7500000 * mepf });
+
+    // site development: driveways, loading bays and canopies (terminals, curbsides)
+    var G7 = 'Part G — Site development (driveways, loading bays & canopies)';
+    if (p.sitePavement > 0) {
+      boq.add(G7, 'clear', p.sitePavement * 1.1);
+      boq.add(G7, 'sitepave', p.sitePavement * qmul(adjust, 'concrete'));
+      boq.add(G7, 'sitemark', p.sitePavement);
+      boq.add(G7, 'canal', 2 * Math.sqrt(p.sitePavement) + 10);
+    }
+    if (p.canopyArea > 0) boq.add(G7, 'canopy', p.canopyArea * qmul(adjust, 'steel'), { rate: { lean: 4900, standard: 5600, premium: 6900 }[T.finish] });
 
     // general requirements, as a share of works
     var works = boq.total() * T.extra;
@@ -368,18 +464,23 @@
     if (span > 8) notes.push({ level: 'warn', text: 'Beam span ' + span.toFixed(1) + ' m exceeds 8 m; beam depth set to ' + beamD.toFixed(2) + ' m (L/12). Confirm with structural design.' });
     if (N > 6) notes.push({ level: 'warn', text: 'Buildings above 6 storeys need a full NSCP structural analysis; the parametric take-off is indicative only.' });
     notes.push({ level: 'info', text: 'Columns ' + Math.round(colB * 1000) + ' mm sq (NSCP 418.7.2.1 special moment frame minimum 300 mm), slab ' + Math.round(ts * 1000) + ' mm, footing B = ' + B.toFixed(1) + ' m for qa = ' + p.soilBearing + ' kPa.' });
-    notes.push({ level: 'info', text: 'Window area ' + winArea.toFixed(0) + ' m² ≥ 10% of floor area (PD 1096 natural light).' });
+    notes.push({ level: 'info', text: 'Window area ' + (winArea + curtainArea).toFixed(0) + ' m² ≥ 10% of floor area (PD 1096 natural light).' });
+    if (nLift) notes.push({ level: 'info', text: nLift + ' ' + (p.type === 'hospital' ? 'bed elevator' : 'passenger elevator') + (nLift > 1 ? 's' : '') + ' for a ' + N + '-storey ' + bt.label.toLowerCase() + ' (BP 344 accessible route' + (p.type === 'hospital' ? '; DOH A.O. 2016-0042 patient transport' : '') + ').' });
+    if (bt.medgas) notes.push({ level: 'info', text: 'Medical gas pipeline (oxygen, vacuum, medical air) per NFPA 99; standby generator sized at ' + Math.round(bt.kva * 1000) + ' VA per m².' });
+    if (nBag) notes.push({ level: 'info', text: nBag + ' baggage handling set' + (nBag > 1 ? 's' : '') + ' (check-in conveyor, make-up belt and claim carousel).' });
+    if (p.sitePavement > 0) notes.push({ level: 'info', text: 'Site works: ' + p.sitePavement.toFixed(0) + ' m² PCCP driveways and loading bays' + (p.canopyArea > 0 ? ', ' + p.canopyArea.toFixed(0) + ' m² canopy' : '') + '.' });
 
     return {
       boq: boq.lines,
       direct: boq.total(),
-      metrics: { gfa: GFA, footprint: A, unit: 'm² GFA', unitBase: GFA },
+      metrics: p.type === 'terminal' && p.bays > 0 ? { gfa: GFA, footprint: A, unit: 'loading bay', unitBase: p.bays } : { gfa: GFA, footprint: A, unit: 'm² GFA', unitBase: GFA },
       quantities: {
         concrete_m3: vStruct + V.sog, rebar_kg: kgTotal, formwork_m2: formTotal, chb_m2: extWall + intWall,
         roof_m2: p.roof === 'rc_deck' ? A : roofArea, steel_kg: trussKg, excavation_m3: excav,
-        columns: nCol * N, footings: nCol, doors: nDoors, windows_m2: winArea
+        columns: nCol * N, footings: nCol, doors: nDoors, windows_m2: winArea + curtainArea,
+        elevators: nLift, pavement_m2: p.sitePavement, canopy_m2: p.canopyArea
       },
-      geometry: { kind: 'building', L: L, W: W, N: N, h: h, gx: gx, gy: gy, sx: sx, sy: sy, colB: colB, beamD: beamD, ts: ts, roof: p.roof, B: B },
+      geometry: { kind: 'building', L: L, W: W, N: N, h: h, gx: gx, gy: gy, sx: sx, sy: sy, colB: colB, beamD: beamD, ts: ts, roof: p.roof, B: B, pave: p.sitePavement, canopy: p.canopyArea, glass: bt.curtain || 0 },
       notes: notes,
       plan: p
     };
@@ -546,6 +647,164 @@
     };
   }
 
+  // ---------------------------------------------------------- airfield pavements
+  function normalizeAirfield(plan) {
+    var p = Object.assign({}, plan);
+    p.facility = AIRFIELD_FACILITIES[p.facility] ? p.facility : 'runway';
+    p.aircraft = AIRCRAFT[p.aircraft] ? p.aircraft : 'turboprop';
+    var A = AIRCRAFT[p.aircraft];
+    p.length = clamp(num(p.length, p.facility === 'apron' ? 120 : 1200), 20, 4000);
+    p.width = clamp(num(p.width, p.facility === 'runway' ? A.rwyW : p.facility === 'taxiway' ? A.twyW : 80), 6, 400);
+    p.shoulder = clamp(num(p.shoulder, p.facility === 'apron' ? 0 : p.aircraft === 'jet' ? 7.5 : 3), 0, 15);
+    p.stripWidth = clamp(num(p.stripWidth, p.facility === 'runway' ? (p.aircraft === 'code_b' ? 60 : 75) : p.facility === 'taxiway' ? 30 : 0), 0, 300);
+    p.pcc = clamp(num(p.pcc, A.pcc * 1000), 150, 600) / 1000;
+    p.base = clamp(num(p.base, A.base * 1000), 100, 400) / 1000;
+    p.subbase = clamp(num(p.subbase, A.sub * 1000), 100, 600) / 1000;
+    p.lighting = p.lighting === false || p.lighting === 'false' ? false : true;
+    p.fence = Math.max(0, num(p.fence, 0));
+    p.province = PROVINCES[p.province] ? p.province : 'Albay';
+    p.year = Math.round(num(p.year, 2025));
+    return p;
+  }
+
+  function airfieldQTO(plan, tierKey, prices, adjust) {
+    var p = normalizeAirfield(plan), T = TIERS[tierKey], A = AIRCRAFT[p.aircraft];
+    var loc = PROVINCES[p.province].factor * (YEAR_INDEX[p.year] || 1);
+    var boq = new Boq(prices, adjust, loc), notes = [];
+    var L = p.length, W = p.width, sh = p.shoulder, area = L * W, shArea = 2 * sh * L;
+    var cf = qmul(adjust, 'concrete'), ef = qmul(adjust, 'earth');
+    var G1 = 'Part A — General requirements', G2 = 'Part B — Earthworks & strip grading', G3 = 'Part C — Base & subbase courses',
+        G4 = 'Part D — Rigid pavement & shoulders', G5 = 'Part E — Drainage', G6 = 'Part F — Markings, lighting & fencing';
+    var vPcc = area * p.pcc * cf, vBase = area * p.base, vSub = (area + shArea) * p.subbase;
+    var graded = p.stripWidth > W + 2 * sh ? (p.stripWidth - W - 2 * sh) * L : 0;
+    boq.add(G2, 'strip', graded + (area + shArea) * 1.1);
+    boq.add(G2, 'exc_air', (area + shArea) * 0.30 * ef);
+    boq.add(G2, 'embank', area * 0.40 * ef);
+    boq.add(G3, 'subbase', vSub);
+    boq.add(G3, 'base_air', vBase);
+    boq.add(G4, 'pcc_air', vPcc, { desc: 'Airfield PCC pavement ' + Math.round(p.pcc * 1000) + ' mm, flexural strength 4.5 MPa, incl. joints & curing' });
+    boq.add(G4, 'rebar_b', vPcc * 14 * T.rebar * qmul(adjust, 'rebar'), { desc: 'Dowel & tie bars at contraction and construction joints' });
+    boq.add(G4, 'shoulder', shArea);
+    var markShare = p.facility === 'runway' ? 0.05 : p.facility === 'taxiway' ? 0.03 : 0.02;
+    boq.add(G6, 'mark_air', area * markShare);
+    var drainLen = p.facility === 'apron' ? 2 * (L + W) : 2 * L;
+    boq.add(G5, 'drain_air', drainLen, { rate: { lean: 6800, standard: 7500, premium: 8600 }[T.finish] });
+    var nLights = 0, nMast = 0, mepf = T.mepf * qmul(adjust, 'mepf');
+    if (p.lighting) {
+      if (p.facility === 'runway') nLights = 2 * (Math.floor(L / 60) + 1) + 2 * Math.ceil(W / 3);
+      else if (p.facility === 'taxiway') nLights = 2 * (Math.floor(L / 30) + 1);
+      else nMast = Math.max(2, Math.ceil(area / 3000));
+      if (nLights) boq.add(G6, 'agl', nLights, { rate: 110000 * mepf });
+      if (nLights) boq.add(G6, 'ccr', 1, { rate: (p.facility === 'runway' ? 4500000 : 1800000) * mepf });
+      if (nMast) boq.add(G6, 'mast', nMast, { rate: 1600000 * mepf });
+    }
+    boq.add(G6, 'fence', p.fence);
+
+    var works = boq.total() * T.extra;
+    if (T.extra > 1) boq.lump(G1, 'survey', boq.total() * (T.extra - 1), 'Design contingency on scope (ceiling tier)');
+    boq.lump(G1, 'mobil', works * (T.mobil + 0.004));
+    boq.lump(G1, 'osh', works * T.osh);
+    boq.lump(G1, 'traffic', works * 0.006, 'Airside safety, NOTAM coordination & works-area barriers');
+    boq.add(G1, 'billboard', 2);
+    boq.lump(G1, 'survey', works * 0.006);
+
+    var reqW = p.facility === 'runway' ? A.rwyW : p.facility === 'taxiway' ? A.twyW : 0;
+    if (reqW && W < reqW) notes.push({ level: 'warn', text: AIRFIELD_FACILITIES[p.facility].label + ' width ' + W.toFixed(1) + ' m is below the ' + reqW + ' m ICAO Annex 14 / CAAP width for ' + A.label + '.' });
+    notes.push({ level: 'info', text: 'Rigid section: ' + Math.round(p.pcc * 1000) + ' mm PCC on ' + Math.round(p.base * 1000) + ' mm base and ' + Math.round(p.subbase * 1000) + ' mm subbase (FAA AC 150/5320-6G design for ' + A.label + ').' });
+    if (graded) notes.push({ level: 'info', text: 'Graded strip ' + p.stripWidth.toFixed(0) + ' m wide (ICAO Annex 14 runway / taxiway strip).' });
+    if (nLights) notes.push({ level: 'info', text: nLights + ' edge, threshold and end lights at ICAO spacing (60 m runway, 30 m taxiway).' });
+
+    return {
+      boq: boq.lines, direct: boq.total(),
+      metrics: { area: area, unit: 'm² of pavement', unitBase: area },
+      quantities: { concrete_m3: vPcc, base_m3: vBase, subbase_m3: vSub, pavement_m2: area, shoulder_m2: shArea, lights: nLights + nMast, excavation_m3: (area + shArea) * 0.30 },
+      geometry: { kind: 'airfield', facility: p.facility, L: L, W: W, sh: sh, strip: p.stripWidth, pcc: p.pcc, lights: nLights, masts: nMast },
+      notes: notes, plan: p
+    };
+  }
+
+  // ------------------------------------------------------------------- ports
+  function normalizePort(plan) {
+    var p = Object.assign({}, plan);
+    p.facility = PORT_FACILITIES[p.facility] ? p.facility : 'pier';
+    p.pileType = PORT_PILES[p.pileType] ? p.pileType : 'pc_spun';
+    p.length = clamp(num(p.length, 60), 6, 600);
+    p.width = clamp(num(p.width, 15), 3, 60);
+    p.waterDepth = clamp(num(p.waterDepth, 6), 1, 20);
+    p.deckLevel = clamp(num(p.deckLevel, 3.5), 1.5, 6);
+    p.embedment = clamp(num(p.embedment, 12), 4, 40);
+    p.bentSpacing = clamp(num(p.bentSpacing, 5), 3, 8);
+    p.roro = p.roro === true || p.roro === 'true';
+    p.causeway = Math.max(0, num(p.causeway, 0));
+    p.dredging = Math.max(0, num(p.dredging, 0));
+    p.fence = Math.max(0, num(p.fence, 0));
+    p.province = PROVINCES[p.province] ? p.province : 'Albay';
+    p.year = Math.round(num(p.year, 2025));
+    return p;
+  }
+
+  function portQTO(plan, tierKey, prices, adjust) {
+    var p = normalizePort(plan), T = TIERS[tierKey], F = PORT_FACILITIES[p.facility];
+    var loc = PROVINCES[p.province].factor * (YEAR_INDEX[p.year] || 1);
+    var boq = new Boq(prices, adjust, loc), notes = [];
+    var L = p.length, W = p.width, rf = T.rebar * qmul(adjust, 'rebar'), cf = qmul(adjust, 'concrete');
+    var G1 = 'Part A — General requirements', G2 = 'Part B — Piling', G3 = 'Part C — Pile caps, beams & deck',
+        G4 = 'Part D — Berthing & mooring', G5 = 'Part E — Causeway, dredging & protection', G6 = 'Part F — Deck utilities & ancillaries';
+    // open-type deck on piles: transverse bents every bentSpacing, pile rows about 4 m apart
+    var nBents = Math.floor(L / p.bentSpacing) + 1, nPer = Math.ceil(W / 4) + 1, nPiles = nBents * nPer;
+    var pileLen = (p.waterDepth + p.deckLevel + p.embedment) * 1.05 * qmul(adjust, 'pile');
+    var pileM = nPiles * pileLen;
+    boq.add(G2, p.pileType === 'steel_pipe' ? 'pile_steel' : 'pile_spun', pileM, { desc: PORT_PILES[p.pileType].label + ', furnished & driven (' + nPiles + ' piles × ' + pileLen.toFixed(1) + ' m incl. raking)' });
+    boq.add(G2, 'pda', Math.max(2, Math.ceil(nPiles * (tierKey === 'lean' ? 0.03 : 0.05))));
+    var vCap = nBents * W * 1.2 * 1.2 * cf, vBeam = nPer * L * 0.6 * 1.0 * cf, vDeck = L * W * 0.40 * cf;
+    var vPlug = p.pileType === 'steel_pipe' ? nPiles * Math.PI / 4 * 0.78 * 0.78 * 3.0 : 0;
+    boq.add(G3, 'conc_marine', vCap, { desc: 'Structural concrete Class AA (marine) — pile caps / transverse beams (' + nBents + ' bents)' });
+    boq.add(G3, 'conc_marine', vBeam, { desc: 'Structural concrete Class AA (marine) — longitudinal beams (' + nPer + ' lines)' });
+    boq.add(G3, 'conc_marine', vDeck, { desc: 'Structural concrete Class AA (marine) — deck slab 400 mm' });
+    if (vPlug) boq.add(G3, 'conc_marine', vPlug, { desc: 'Structural concrete Class AA (marine) — pile head plugs (3 m)' });
+    var vConc = vCap + vBeam + vDeck + vPlug, kg = (vCap * 160 + vBeam * 170 + vDeck * 130 + vPlug * 120) * rf;
+    boq.add(G3, 'rebar_b', kg, { desc: 'Reinforcing steel Gr. 60, epoxy-coated where exposed — pile caps, beams & deck' });
+    var berth = L * F.faces;
+    var nFender = Math.max(2, Math.ceil(berth / 12)), nBollard = Math.max(2, Math.ceil(berth / 15)), nLadder = Math.max(1, Math.ceil(berth / 30));
+    boq.add(G4, 'fender', nFender, { rate: { lean: 1550000, standard: 1850000, premium: 2300000 }[T.finish] });
+    boq.add(G4, 'bollard', nBollard);
+    boq.add(G4, 'ladder', nLadder);
+    if (p.roro) boq.add(G4, 'roro', 1);
+    var vCore = 0, vArmor = 0;
+    if (p.causeway > 0) {
+      var Hc = 0.6 * p.waterDepth + p.deckLevel, crest = 10;
+      vCore = p.causeway * Hc * (crest + 1.5 * Hc) * qmul(adjust, 'earth');
+      vArmor = p.causeway * 2 * Math.sqrt(1 + 1.5 * 1.5) * Hc * 1.2;
+      boq.add(G5, 'core_rock', vCore);
+      boq.add(G5, 'armor_rock', vArmor);
+      boq.add(G5, 'pccp', p.causeway * 8, { desc: 'PCCP 230 mm on aggregate base — causeway roadway 8 m' });
+    }
+    boq.add(G5, 'dredge', p.dredging);
+    boq.add(G6, 'portutil', L * W, { rate: 1400 * T.mepf * qmul(adjust, 'mepf') });
+    boq.add(G6, 'rail_steel', p.facility === 'pier' ? 2 * p.bentSpacing : L * 0.2, { desc: 'Steel safety railing at deck ends & landward edge' });
+    boq.add(G6, 'fence', p.fence);
+
+    var works = boq.total() * T.extra;
+    if (T.extra > 1) boq.lump(G1, 'survey', boq.total() * (T.extra - 1), 'Design contingency on scope (ceiling tier)');
+    boq.lump(G1, 'mobil', works * (T.mobil + 0.02), 'Mobilization / demobilization incl. marine plant (crane barge, pile hammer)');
+    boq.lump(G1, 'osh', works * T.osh);
+    boq.lump(G1, 'traffic', works * 0.004, 'Navigation safety, marker buoys & silt curtains');
+    boq.add(G1, 'billboard', 2);
+    boq.lump(G1, 'survey', works * 0.008, 'Hydrographic & topographic survey, testing & as-built plans');
+
+    notes.push({ level: 'info', text: F.label + ': ' + L.toFixed(0) + ' × ' + W.toFixed(1) + ' m deck at +' + p.deckLevel.toFixed(1) + ' m, ' + nBents + ' bents × ' + nPer + ' piles; pile length = water depth + deck level + ' + p.embedment.toFixed(0) + ' m embedment.' });
+    notes.push({ level: 'info', text: nFender + ' fenders (about 12 m apart, PIANC 2002), ' + nBollard + ' bollards (about 15 m apart) along ' + berth.toFixed(0) + ' m of berth face.' });
+    if (p.waterDepth > 12) notes.push({ level: 'warn', text: 'Water depth above 12 m: piles need site-specific lateral-load design (OCDI 2009 / BS 6349-2); the take-off is indicative.' });
+
+    return {
+      boq: boq.lines, direct: boq.total(),
+      metrics: { area: L * W, unit: 'm² of deck', unitBase: L * W },
+      quantities: { concrete_m3: vConc, rebar_kg: kg, pile_m: pileM, piles: nPiles, fenders: nFender, rock_m3: vCore + vArmor, deck_m2: L * W },
+      geometry: { kind: 'port', facility: p.facility, L: L, W: W, nBents: nBents, nPer: nPer, bent: p.bentSpacing, pileLen: pileLen, depth: p.waterDepth, deck: p.deckLevel, causeway: p.causeway, roro: p.roro, steel: p.pileType === 'steel_pipe' },
+      notes: notes, plan: p
+    };
+  }
+
   // ------------------------------------------------------------- indirect cost
   function indirect(edc, settings) {
     settings = settings || {};
@@ -563,9 +822,28 @@
   }
 
   // ---------------------------------------------------------------- quotation
+  var QTO = { building: buildingQTO, bridge: bridgeQTO, airfield: airfieldQTO, port: portQTO };
+  function kindOf(plan) { return QTO[plan.kind] ? plan.kind : 'building'; }
+  function normalize(plan) {
+    return { building: normalizeBuilding, bridge: normalizeBridge, airfield: normalizeAirfield, port: normalizePort }[kindOf(plan)](plan);
+  }
+  function standardsFor(plan) {
+    var k = kindOf(plan);
+    if (k === 'airfield') return STANDARDS_AIRFIELD;
+    if (k === 'port') return STANDARDS_PORT;
+    if (k === 'building') { var t = normalizeBuilding(plan).type; if (STANDARDS_BY_TYPE[t]) return STANDARDS.concat(STANDARDS_BY_TYPE[t]); }
+    return STANDARDS;
+  }
+  // true when the trained ML layer covers this plan (SBD-300 buildings and bridges)
+  function mlSupported(plan) {
+    var k = kindOf(plan);
+    if (k === 'bridge') return true;
+    return k === 'building' && !!ML_TYPES[normalizeBuilding(plan).type];
+  }
+
   function compute(plan, tierKey, opts) {
     opts = opts || {};
-    var q = plan.kind === 'bridge' ? bridgeQTO(plan, tierKey, opts.prices, opts.adjust) : buildingQTO(plan, tierKey, opts.prices, opts.adjust);
+    var q = QTO[kindOf(plan)](plan, tierKey, opts.prices, opts.adjust);
     q.tier = tierKey; q.tierLabel = TIERS[tierKey].label;
     q.abc = indirect(q.direct, opts.indirect);
     q.groups = groupTotals(q.boq);
@@ -574,7 +852,7 @@
   }
 
   function quote(plan, opts) {
-    var out = { version: VERSION, kind: plan.kind === 'bridge' ? 'bridge' : 'building', tiers: {} };
+    var out = { version: VERSION, kind: kindOf(plan), tiers: {} };
     ['lean', 'standard', 'ceiling'].forEach(function (t) { out.tiers[t] = compute(plan, t, opts); });
     out.plan = out.tiers.standard.plan;
     out.start = out.tiers.lean.abc.total;
@@ -582,7 +860,8 @@
     out.ceiling = out.tiers.ceiling.abc.total;
     out.savingsVsStandard = 1 - out.start / out.fair;
     out.priceBasis = PRICE_BASIS;
-    out.standards = STANDARDS;
+    out.standards = standardsFor(plan);
+    out.mlSupported = mlSupported(plan);
     return out;
   }
 
@@ -605,6 +884,7 @@
 
   // Features used by the machine-learning layer (must match research/pipeline)
   function features(plan) {
+    if (plan.kind === 'airfield' || plan.kind === 'port') return null;
     if (plan.kind === 'bridge') {
       var b = normalizeBridge(plan), Wd = b.carriageway + 2 * b.sidewalk + 0.6;
       return {
@@ -619,7 +899,7 @@
     return {
       GFA: p.footprintArea * p.storeys, Footprint: p.footprintArea, Storeys: p.storeys,
       Span: Math.max(p.length / Math.max(1, Math.round(p.length / p.bayX)), p.width / Math.max(1, Math.round(p.width / p.bayY))),
-      FloorHeight: p.floorHeight, TypeIndex: TYPE_INDEX[p.type], RoofRC: p.roof === 'rc_deck' ? 1 : 0,
+      FloorHeight: p.floorHeight, TypeIndex: TYPE_INDEX[p.type] || FEATURE_TYPE[p.type], RoofRC: p.roof === 'rc_deck' ? 1 : 0,
       LocationFactor: PROVINCES[p.province].factor, YearIndex: YEAR_INDEX[p.year] || 1
     };
   }
@@ -647,11 +927,28 @@
     { id: 'truss-50', kind: 'bridge', name: 'Two-lane steel truss bridge 1 × 50 m', superstructure: 'steel_truss', totalLength: 50, spans: 1, carriageway: 6.7, sidewalk: 0.75, abutmentHeight: 7, foundation: 'bored_pile', pileLength: 20 }
   ];
 
+  // Extension reference plans: hospitals, airport / seaport / land transport terminals, airfield pavements and ports
+  var EXT_ARCHETYPES = [
+    { id: 'hosp-l1-50', kind: 'building', name: 'Level 1 hospital, 50 beds (3-storey)', type: 'hospital', length: 42, width: 14.4, storeys: 3, floorHeight: 3.8, bayX: 6, bayY: 4.8, roof: 'rc_deck' },
+    { id: 'hosp-l2-100', kind: 'building', name: 'Level 2 hospital, 100 beds (4-storey)', type: 'hospital', length: 60, width: 14.4, storeys: 4, floorHeight: 3.8, bayX: 6, bayY: 4.8, roof: 'rc_deck' },
+    { id: 'ap-term-200', kind: 'building', name: 'Community airport passenger terminal (200 peak-hour passengers)', type: 'airport', length: 60, width: 40, storeys: 1, floorHeight: 7, bayX: 9, bayY: 8, roof: 'steel_truss', sitePavement: 1800, canopyArea: 360 },
+    { id: 'sp-term-300', kind: 'building', name: 'Seaport passenger terminal (300 passengers)', type: 'seaport', length: 36, width: 30, storeys: 1, floorHeight: 5, bayX: 7.5, bayY: 7.5, roof: 'steel_truss', sitePavement: 900, canopyArea: 150 },
+    { id: 'jt-20', kind: 'building', name: 'Jeepney terminal, 20 loading bays', type: 'terminal', length: 30, width: 10, storeys: 1, floorHeight: 4.5, bayX: 6, bayY: 5, roof: 'steel_truss', sitePavement: 1680, canopyArea: 420, bays: 20 },
+    { id: 'bus-12', kind: 'building', name: 'Bus terminal, 12 sawtooth bays', type: 'terminal', length: 48, width: 10, storeys: 1, floorHeight: 4.5, bayX: 6, bayY: 5, roof: 'steel_truss', sitePavement: 1820, canopyArea: 324, bays: 12 },
+    { id: 'af-rwy-1200', kind: 'airfield', name: 'Runway 1,200 × 30 m (turboprop, PCC)', facility: 'runway', aircraft: 'turboprop', length: 1200, width: 30 },
+    { id: 'af-apron-4', kind: 'airfield', name: 'Apron, 4 turboprop stands (120 × 80 m)', facility: 'apron', aircraft: 'turboprop', length: 120, width: 80 },
+    { id: 'pt-pier-60', kind: 'port', name: 'RC pier 60 × 15 m with RoRo ramp (PC spun piles)', facility: 'pier', length: 60, width: 15, waterDepth: 6, pileType: 'pc_spun', roro: true },
+    { id: 'pt-wharf-100', kind: 'port', name: 'Marginal wharf 100 × 20 m (steel pipe piles)', facility: 'wharf', length: 100, width: 20, waterDepth: 9, pileType: 'steel_pipe' }
+  ];
+
   return {
     VERSION: VERSION, PRICE_BASIS: PRICE_BASIS, PRICE_BOOK: PRICE_BOOK, BUILDING_TYPES: BUILDING_TYPES, TYPE_INDEX: TYPE_INDEX,
     SUPERSTRUCTURES: SUPERSTRUCTURES, FOUNDATIONS: FOUNDATIONS, PROVINCES: PROVINCES, YEAR_INDEX: YEAR_INDEX,
     TIERS: TIERS, INDIRECT_TABLE: INDIRECT_TABLE, VAT_RATE: VAT_RATE, STANDARDS: STANDARDS, ARCHETYPES: ARCHETYPES,
+    EXT_ARCHETYPES: EXT_ARCHETYPES, AIRCRAFT: AIRCRAFT, AIRFIELD_FACILITIES: AIRFIELD_FACILITIES, PORT_FACILITIES: PORT_FACILITIES, PORT_PILES: PORT_PILES,
+    ML_TYPES: ML_TYPES,
     compute: compute, quote: quote, assess: assess, indirect: indirect, checkMarkups: checkMarkups, features: features,
-    normalizeBuilding: normalizeBuilding, normalizeBridge: normalizeBridge
+    normalize: normalize, normalizeBuilding: normalizeBuilding, normalizeBridge: normalizeBridge,
+    normalizeAirfield: normalizeAirfield, normalizePort: normalizePort, mlSupported: mlSupported, kindOf: kindOf
   };
 }));

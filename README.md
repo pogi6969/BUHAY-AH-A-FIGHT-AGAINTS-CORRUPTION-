@@ -3,7 +3,9 @@
 **B**uildings-and-Bridges **U**nit-cost **H**ybrid **A**nalytics and **Y**ardstick for **A**ccountable and **H**onest
 infrastructure.
 
-BUHAY-AH designs, prices and checks public buildings and bridges.
+BUHAY-AH designs, prices and checks public buildings, hospitals, airport / seaport / jeepney, UV Express and bus terminals, bridges, runways and piers.
+
+**Live website and app (GitHub Pages):** https://pogi6969.github.io/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/ (app: `.../app/`)
 
 - **Design:** no blueprint needed. Start from one of 41 building and 13 bridge templates, from a requirement
   (classrooms, beds, staff, evacuees, stalls), or from a budget alone. 55 reusable space modules on DepEd, DOH, NBC and
@@ -55,9 +57,11 @@ python3 research/pipeline/train.py         # models, metrics, figures, app model
 python3 research/pipeline/bundle.py        # app data bundle
 node research/pipeline/paper_data.js > research/outputs/paper_data.json
 node research/pipeline/design_results.js   # templates, budget scenarios, bridge selection
+node research/pipeline/extension_results.js   # hospitals, terminals, airfields, ports (SBD-EXT)
+python3 research/pipeline/extension_figures.py && node research/pipeline/render_svgs.js
 python3 research/pipeline/equations.py
 python3 research/pipeline/build_paper.py   # DOCX + PDF (needs LibreOffice)
-NODE_PATH=<dir with pptxgenjs, react-icons, react, react-dom, sharp> node research/pipeline/build_decks.js
+python3 research/pipeline/build_pr2_decks.py     # PR2 decks from research/presentation/PR2-TEMPLATE.pptx
 ```
 
 ## Important

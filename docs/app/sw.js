@@ -1,5 +1,5 @@
 /* BUHAY-AH offline cache: app shell + data, network-first for map tiles. */
-var CACHE = 'buhay-ah-v1.1.0';
+var CACHE = 'buhay-ah-v1.2.0';
 var SHELL = [
   './', './index.html', './app.css', './manifest.webmanifest',
   './js/engine.js', './js/ml.js', './js/plan-import.js', './js/viewer3d.js', './js/designs.js', './js/app.js',

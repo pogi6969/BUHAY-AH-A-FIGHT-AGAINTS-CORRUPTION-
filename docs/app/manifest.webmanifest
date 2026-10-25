@@ -1,7 +1,7 @@
 {
-  "name": "BUHAY-AH — Design, Quote & Check Public Buildings and Bridges",
+  "name": "BUHAY-AH — Design, Quote & Check Public Infrastructure",
   "short_name": "BUHAY-AH",
-  "description": "Design public buildings and bridges from a requirement or a budget, price them with standards-based quantity take-off, and flag over-budgeted contracts.",
+  "description": "Design public buildings, hospitals, transport terminals, bridges, runways and piers from a requirement or a budget, price them with standards-based quantity take-off, and flag over-budgeted contracts.",
   "start_url": "./index.html#home",
   "scope": "./",
   "display": "standalone",
