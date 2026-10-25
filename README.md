@@ -5,8 +5,6 @@ infrastructure.
 
 BUHAY-AH designs, prices and checks public buildings, hospitals, airport / seaport / jeepney, UV Express and bus terminals, bridges, runways and piers.
 
-**Live website and app (GitHub Pages):** https://pogi6969.github.io/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/ (app: `.../app/`)
-
 - **Design:** no blueprint needed. Start from one of 41 building and 13 bridge templates, from a requirement
   (classrooms, beds, staff, evacuees, stalls), or from a budget alone. 55 reusable space modules on DepEd, DOH, NBC and
   DSWD norms are laid out into schematic floor plans that can be edited, saved and combined into other designs. The
@@ -17,6 +15,24 @@ BUHAY-AH designs, prices and checks public buildings, hospitals, airport / seapo
   D.O. 197 s. 2016 / D.O. 30 s. 2025 indirect costs). Plans can also come from DXF or BUHAY-AH plan files.
 - **Check:** a contract amount is screened with the BUHAY-AH Risk Index (over-budget ratio + XGBoost + Isolation
   Forest, explained with SHAP), plus markup and line-item checks of a contractor's BOQ.
+
+
+## Links
+
+| | |
+| --- | --- |
+| 🌐 **Website** | https://pogi6969.github.io/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/ |
+| 📱 **Web app** | https://pogi6969.github.io/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/app/ |
+| 🤖 **Android app (APK)** | https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/releases/download/apk-latest/BUHAY-AH.apk |
+| 💻 **Offline app (ZIP)** | https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/raw/claude/buhay-buildings-bridges/docs/downloads/BUHAY-AH-App-Offline.zip |
+| 📄 **Research paper (PDF)** | https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/blob/claude/buhay-buildings-bridges/docs/downloads/BUHAY-AH-Research-Paper.pdf |
+| 📝 **Research paper (Word)** | https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/raw/claude/buhay-buildings-bridges/docs/downloads/BUHAY-AH-Research-Paper.docx |
+| 🎤 **Rationale script (PDF)** | https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/blob/claude/buhay-buildings-bridges/docs/downloads/BUHAY-AH-Rationale-Script.pdf |
+| 📊 **PR2 deck — Introduction & Methodology** | https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/raw/claude/buhay-buildings-bridges/docs/downloads/BUHAY-AH-PR2-Introduction-Methodology.pptx |
+| 📊 **PR2 deck — Full research** | https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/raw/claude/buhay-buildings-bridges/docs/downloads/BUHAY-AH-PR2-Full-Research.pptx |
+| 🗂️ **Source code** | https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/tree/claude/buhay-buildings-bridges |
+
+The website and web app go live once GitHub Pages is on (Settings → Pages → Deploy from a branch → `claude/buhay-buildings-bridges`, folder `/docs`).
 
 Lead researcher: **Enrique Miguel C. Buban**
 
