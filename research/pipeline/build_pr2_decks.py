@@ -161,7 +161,7 @@ def build(full, name):
 
     s = clone(prs, ttl)
     set_text(shape(s, 'TextBox 6'), 'BUHAY-AH', 86)
-    set_text(shape(s, 'TextBox 9'), 'Enrique Miguel C. Buban · Lead Researcher')
+    set_text(shape(s, 'TextBox 9'), 'Enrique Miguel C. Buban (Lead) · Peter John A. Brimbuela · Dave Justin Ll. De Asis · Yeaseong Shin')
     tb = shape(s, 'TextBox 6')
     text(s, tb.left / 914400 - 0.6, tb.top / 914400 + tb.height / 914400 + 0.05, tb.width / 914400 + 1.2, 1.6, [TITLE],
          size=17, bullets=False, align=PP_ALIGN.CENTER)

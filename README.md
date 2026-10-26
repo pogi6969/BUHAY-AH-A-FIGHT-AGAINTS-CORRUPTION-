@@ -34,7 +34,8 @@ BUHAY-AH designs, prices and checks public buildings, hospitals, airport / seapo
 
 The website and web app go live once GitHub Pages is on (Settings → Pages → Deploy from a branch → `claude/buhay-buildings-bridges`, folder `/docs`).
 
-Lead researcher: **Enrique Miguel C. Buban**
+Lead researcher: **Enrique Miguel C. Buban**  
+Researchers: **Peter John A. Brimbuela**, **Dave Justin Ll. De Asis**, **Yeaseong Shin**
 
 ## What is in this repository
 
