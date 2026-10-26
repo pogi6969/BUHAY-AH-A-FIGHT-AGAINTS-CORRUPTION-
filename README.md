@@ -2,7 +2,8 @@
 
 Design, price and check public buildings, hospitals, airport, seaport and jeepney / UV Express / bus terminals, bridges, runways and piers.
 
-Lead researcher: **Enrique Miguel C. Buban**
+Lead researcher: **Enrique Miguel C. Buban**  
+Researchers: **Peter John A. Brimbuela**, **Dave Justin Ll. De Asis**, **Yeaseong Shin**
 
 ## Links
 
@@ -19,6 +20,6 @@ Lead researcher: **Enrique Miguel C. Buban**
 | 📊 **PR2 deck — Full research** | https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/raw/claude/buhay-buildings-bridges/docs/downloads/BUHAY-AH-PR2-Full-Research.pptx |
 | 🗂️ **Source code** | https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/tree/claude/buhay-buildings-bridges |
 
-The website and web app go live once GitHub Pages is on (Settings → Pages → Deploy from a branch → `claude/buhay-buildings-bridges`, folder `/docs`).
+The website and web app are served by GitHub Pages from the `gh-pages` branch.
 
 All files and code are on the [`claude/buhay-buildings-bridges`](https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/tree/claude/buhay-buildings-bridges) branch.
