@@ -38,8 +38,9 @@ XB = X['benchmark']
 
 TITLE = ('BUHAY-AH: A Budget-to-Blueprint Design Generator, Standards-Based Quantity Take-Off, and Hybrid Machine '
          'Learning System for Start Quotations and Over-Budget Detection in Public Buildings, Bridges, Airports and Seaports')
-AUTHOR = 'Enrique Miguel C. Buban'
-RESEARCHERS = ['Peter John A. Brimbuela', 'Dave Justin Ll. De Asis', 'Yeaseong Shin']
+AUTHOR = 'Dave Justin Ll. De Asis'
+RESEARCHERS = ['Peter John A. Brimbuela', 'Yeaseong Shin']
+SUPPORT = ['Yuriel']
 
 
 # ------------------------------------------------------------------ formatting helpers
@@ -350,7 +351,7 @@ EQ_USE = {
 def front_matter(pp):
     d = pp.doc
     # title page (section 1, no page number)
-    for _ in range(5):
+    for _ in range(4):
         pp.para('', indent=False)
     pp.para(TITLE, indent=False, align='center', bold=True, spacing=2.0)
     for _ in range(3):
@@ -361,6 +362,10 @@ def front_matter(pp):
     for r in RESEARCHERS:
         pp.para(r, indent=False, align='center', bold=True)
     pp.para('Researchers', indent=False, align='center')
+    pp.para('', indent=False)
+    for r in SUPPORT:
+        pp.para(r, indent=False, align='center', bold=True)
+    pp.para('Support Group', indent=False, align='center')
     for _ in range(3):
         pp.para('', indent=False)
     pp.para('Mathematics and Computational Science', indent=False, align='center')

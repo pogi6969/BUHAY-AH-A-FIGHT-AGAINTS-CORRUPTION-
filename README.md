@@ -34,8 +34,9 @@ BUHAY-AH designs, prices and checks public buildings, hospitals, airport / seapo
 
 The website and web app are served by GitHub Pages from the `gh-pages` branch, which is updated from `docs/` on every push.
 
-Lead researcher: **Enrique Miguel C. Buban**  
-Researchers: **Peter John A. Brimbuela**, **Dave Justin Ll. De Asis**, **Yeaseong Shin**
+Lead researcher: **Dave Justin Ll. De Asis**  
+Researchers: **Peter John A. Brimbuela**, **Yeaseong Shin**  
+Support group: **Yuriel**
 
 ## What is in this repository
 

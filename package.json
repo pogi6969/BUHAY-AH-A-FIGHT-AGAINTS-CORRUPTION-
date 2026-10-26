@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "private": true,
   "description": "BUHAY-AH — Buildings-and-Bridges Unit-cost Hybrid Analytics and Yardstick for Accountable and Honest infrastructure. Android wrapper for the BUHAY-AH web app.",
-  "author": "Enrique Miguel C. Buban, Peter John A. Brimbuela, Dave Justin Ll. De Asis, Yeaseong Shin",
+  "author": "Dave Justin Ll. De Asis, Peter John A. Brimbuela, Yeaseong Shin",
   "license": "MIT",
   "scripts": {
     "android:add": "cap add android",
