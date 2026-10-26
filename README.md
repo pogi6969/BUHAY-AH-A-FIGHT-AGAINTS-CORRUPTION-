@@ -4,7 +4,7 @@ Design, price and check public buildings, hospitals, airport, seaport and jeepne
 
 Lead researcher: **Dave Justin Ll. De Asis**  
 Researchers: **Peter John A. Brimbuela**, **Yeaseong Shin**  
-Support group: **Yuriel**
+Support group: **Uriel Sizouzemihr D. Guianan**
 
 ## Links
 
