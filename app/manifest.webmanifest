@@ -1,0 +1,17 @@
+{
+  "name": "BUHAY-AH — Design, Quote & Check Public Infrastructure",
+  "short_name": "BUHAY-AH",
+  "description": "Design public buildings, hospitals, transport terminals, bridges, runways and piers from a requirement or a budget, price them with standards-based quantity take-off, and flag over-budgeted contracts.",
+  "start_url": "./index.html#home",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b1424",
+  "theme_color": "#13213a",
+  "categories": ["productivity", "utilities", "business"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
