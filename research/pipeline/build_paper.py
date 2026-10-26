@@ -40,7 +40,7 @@ TITLE = ('BUHAY-AH: A Budget-to-Blueprint Design Generator, Standards-Based Quan
          'Learning System for Start Quotations and Over-Budget Detection in Public Buildings, Bridges, Airports and Seaports')
 AUTHOR = 'Dave Justin Ll. De Asis'
 RESEARCHERS = ['Peter John A. Brimbuela', 'Yeaseong Shin']
-SUPPORT = ['Yuriel']
+SUPPORT = ['Uriel Sizouzemihr D. Guianan']
 
 
 # ------------------------------------------------------------------ formatting helpers

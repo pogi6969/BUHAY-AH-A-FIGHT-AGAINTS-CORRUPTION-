@@ -165,7 +165,7 @@ def build(full, name):
     set_text(names, 'Dave Justin Ll. De Asis · Lead Researcher', 24)
     p2 = copy.deepcopy(names.text_frame.paragraphs[0]._p)
     names.text_frame._txBody.append(p2)
-    names.text_frame.paragraphs[1].runs[0].text = 'Researchers: Peter John A. Brimbuela, Yeaseong Shin  ·  Support group: Yuriel'
+    names.text_frame.paragraphs[1].runs[0].text = 'Researchers: Peter John A. Brimbuela, Yeaseong Shin  ·  Support group: Uriel Sizouzemihr D. Guianan'
     names.text_frame.paragraphs[1].runs[0].font.size = Pt(18)
     names.left, names.top, names.width, names.height = Inches(3.63), Inches(7.95), Inches(12.74), Inches(1.4)
     tb = shape(s, 'TextBox 6')

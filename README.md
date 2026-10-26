@@ -36,7 +36,7 @@ The website and web app are served by GitHub Pages from the `gh-pages` branch, w
 
 Lead researcher: **Dave Justin Ll. De Asis**  
 Researchers: **Peter John A. Brimbuela**, **Yeaseong Shin**  
-Support group: **Yuriel**
+Support group: **Uriel Sizouzemihr D. Guianan**
 
 ## What is in this repository
 
