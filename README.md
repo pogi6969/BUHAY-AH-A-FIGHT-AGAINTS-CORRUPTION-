@@ -32,7 +32,7 @@ BUHAY-AH designs, prices and checks public buildings, hospitals, airport / seapo
 | 📊 **PR2 deck — Full research** | https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/raw/claude/buhay-buildings-bridges/docs/downloads/BUHAY-AH-PR2-Full-Research.pptx |
 | 🗂️ **Source code** | https://github.com/pogi6969/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/tree/claude/buhay-buildings-bridges |
 
-The website and web app go live once GitHub Pages is on (Settings → Pages → Deploy from a branch → `claude/buhay-buildings-bridges`, folder `/docs`).
+The website and web app are served by GitHub Pages from the `gh-pages` branch, which is updated from `docs/` on every push.
 
 Lead researcher: **Enrique Miguel C. Buban**  
 Researchers: **Peter John A. Brimbuela**, **Dave Justin Ll. De Asis**, **Yeaseong Shin**
@@ -58,8 +58,8 @@ Researchers: **Peter John A. Brimbuela**, **Dave Justin Ll. De Asis**, **Yeaseon
 
 ## Use it
 
-- **Website + web app:** enable GitHub Pages (Settings → Pages → Deploy from a branch → `main`, folder `/docs`).
-  The site is then at `https://<user>.github.io/<repo>/` and the app at `.../app/`.
+- **Website + web app:** https://pogi6969.github.io/BUHAY-AH-A-FIGHT-AGAINTS-CORRUPTION-/ and `.../app/`. The
+  *Publish website and app to gh-pages* workflow copies `docs/` to the `gh-pages` branch on every push.
 - **Android:** every push that touches the app runs the *Build Android APK* workflow; download `BUHAY-AH.apk`
   from the `apk-latest` release (the website's Android button points there).
 - **Offline:** unzip `docs/downloads/BUHAY-AH-App-Offline.zip` and open `BUHAY-AH-App/index.html`.
