@@ -106,7 +106,7 @@
   </div>
   <div class="cue">SLIDE: The five gaps.</div>
   <div class="say">
-    <p>My earlier study, CORA, screened road contracts with machine learning. Building on it, I found five gaps.</p>
+    <p>Machine-learning screens for public works have so far focused on roads and on past prices. Looking at them, I found five gaps.</p>
     <ol>
       <li><b>Scope gap.</b> Cost screening research has focused on roads. Buildings and bridges have different structures: frames, footings, girders, piles.</li>
       <li><b>Reference gap.</b> Data-driven models learn what similar projects <i>have</i> cost. If past prices were padded, the model learns the padding. They cannot say what a project <i>should</i> cost.</li>
@@ -199,7 +199,7 @@
     <h3>4.5 Probability: The Isolation Forest</h3>
     <div class="row"><b>Say</b><div>An Isolation Forest isolates a record by random splits. Unusual records are isolated in fewer splits, so their average path length is short and their anomaly score is high.</div></div>
     <div class="eq"><img src="../figures/eq/iforest.png" alt=""><span class="lab">Anomaly score from expected path length, normalized with the harmonic number H</span></div>
-    <div class="row"><b>Why MCS</b><div>This is the CORA-style detector. BUHAY-AH shows mathematically why it is not enough on its own: an ordinary building at a padded price is not unusual in its plan features, so the forest cannot see it. It needs a reference price.</div></div>
+    <div class="row"><b>Why MCS</b><div>This is the usual unsupervised detector. BUHAY-AH shows mathematically why it is not enough on its own: an ordinary building at a padded price is not unusual in its plan features, so the forest cannot see it. It needs a reference price.</div></div>
   </div>
 
   <div class="math">
@@ -269,7 +269,7 @@
     <tr><th>Signal (all 300 projects)</th><th class="n">Precision</th><th class="n">Recall</th><th class="n">F1</th><th class="n">AUC</th></tr>
     <tr><td>Standards-based rule (above ceiling)</td><td class="n">0.682</td><td class="n">0.833</td><td class="n">0.750</td><td class="n">0.994</td></tr>
     <tr><td>XGBoost residual (&gt; 1.25 × predicted)</td><td class="n">0.706</td><td class="n">0.667</td><td class="n">0.686</td><td class="n">0.955</td></tr>
-    <tr><td>Isolation Forest (CORA-style)</td><td class="n">0.556</td><td class="n">0.278</td><td class="n">0.370</td><td class="n">0.731</td></tr>
+    <tr><td>Isolation Forest alone</td><td class="n">0.556</td><td class="n">0.278</td><td class="n">0.370</td><td class="n">0.731</td></tr>
     <tr><td><b>BUHAY-AH Risk Index (≥ 30)</b></td><td class="n"><b>0.642</b></td><td class="n"><b>0.944</b></td><td class="n"><b>0.764</b></td><td class="n"><b>0.987</b></td></tr>
   </table>
   <div class="say"><p>The Risk Index caught 34 of 36 padded contracts. The Isolation Forest alone caught only 27.8 percent, which proves the validation gap was real: a padded ordinary building looks normal unless you know what it should cost. For buildings alone the index reached an F1 of 0.927. Most false alarms were bridges with pile lengths longer than planned, which is why the paper recommends site geotechnical data before a bridge is flagged.</p></div>
@@ -317,8 +317,7 @@
   <div class="qa"><p class="q">8. Can the generated designs be built?</p><p>They are schematic designs for estimating and planning. They satisfy space standards such as classroom size, corridor width, exits, toilets and PWD access, but must be developed and signed by licensed architects and engineers.</p></div>
   <div class="qa"><p class="q">9. How is SHAP computed on a phone?</p><p>The exact TreeSHAP algorithm was ported to JavaScript and runs on the exported trees. Its output matches the Python reference within 1 × 10⁻⁵.</p></div>
   <div class="qa"><p class="q">10. What happens if a flag is wrong?</p><p>A flag is a reason to look, never an accusation. The app shows the drivers, the line items above the price book, and reminds the user that a flag calls for review by the implementing office, the COA, the Ombudsman or the ICI.</p></div>
-  <div class="qa"><p class="q">11. How is this different from your earlier study, CORA?</p><p>CORA screened roads using past prices and an Isolation Forest. BUHAY-AH covers buildings and bridges, adds a standards-based reference price, generates designs from budgets, and validates detection where overpricing is known. CORA-style isolation alone caught 27.8% of padded contracts; the Risk Index caught 94.4%.</p></div>
-  <div class="qa"><p class="q">12. Can a local government use its own prices?</p><p>Yes. The price book is editable in the Library screen, and every design and quotation follows the new rates immediately.</p></div>
+  <div class="qa"><p class="q">11. Can a local government use its own prices?</p><p>Yes. The price book is editable in the Library screen, and every design and quotation follows the new rates immediately.</p></div>
 
 <!-- ============================== VIDEO -->
   <h2>2-Minute Video Explainer Script</h2>

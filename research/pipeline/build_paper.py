@@ -408,7 +408,7 @@ def abstract_text():
         f'a mean absolute percentage error of {B["qto_vs_awarded_normal"]["MAPE"]:.2f}% for buildings and '
         f'{R["qto_vs_awarded_normal"]["MAPE"]:.2f}% for bridges. XGBoost outperformed regression on bridges (MAPE '
         f'{R["xgb_loocv"]["MAPE"]:.2f}% vs. {R["mlr_loocv"]["MAPE"]:.2f}%), and the risk index flagged '
-        f'{pct(h["Recall"], 1)} of padded contracts (AUC = {h["AUC"]:.3f}) against {pct(P["Isolation Forest (CORA-style)"]["Recall"], 1)} '
+        f'{pct(h["Recall"], 1)} of padded contracts (AUC = {h["AUC"]:.3f}) against {pct(P["Isolation Forest alone"]["Recall"], 1)} '
         f'for an Isolation Forest alone. Budget-to-design searches finished in a median of {DR["medianMs"]:.1f} ms, all '
         f'{sum(t["checks"] for t in DR["templates"])} space-standard checks passed, and allowing multi-storey designs added '
         f'up to {DR["maxGain"]} classrooms per school budget. Extended to hospitals, airport, seaport and jeepney, UV Express '
@@ -489,9 +489,8 @@ def body(pp):
          'estimate from the plans.')
     para('Bicol Region V faces these concerns directly. The region lies in NSCP Seismic Zone 4 and in the path of frequent '
          'typhoons, so its public works program builds many school buildings, evacuation centers, health facilities and '
-         'bridges. Earlier work on Bicol road contracts documented Commission on Audit findings on DPWH-Bicol projects worth '
-         '₱13 billion with lapses, and a 2025 Senate hearing that questioned farm-to-market road projects priced 68% above '
-         'benchmark (Buban, 2026). These findings show that cost checks against an independent estimate are needed, but that '
+         'bridges. Audit findings, such as a Commission on Audit report that a public hospital contract price was bloated by '
+         '₱62 million (Cebu Daily News, 2023), show that cost checks against an independent estimate are needed, but that '
          'they currently happen late, one project at a time, and mostly after funds have been released.')
     para('The same need reaches beyond schools and bridges. Hospitals funded under the Universal Health Care Act '
          '(Republic Act No. 11223), airport passenger terminals and runways, seaport terminals, piers and RoRo ramps, and the '
@@ -505,9 +504,7 @@ def body(pp):
          'applied explainable machine learning to 11,646 road contracts, while Coffie and Cudjoe (2024) paired Extreme '
          'Gradient Boosting (XGBoost) with Shapley additive explanations (SHAP) to predict construction cost overruns. For '
          'anomaly detection, Isolation Forest isolates unusual records without requiring labelled fraud cases (Liu et al., '
-         '2008). Locally, the CORA system combined Multiple Linear Regression, XGBoost and Isolation Forest on 90 completed '
-         'DPWH road contracts in Bicol, reaching an R^2^ of 0.8723 and a MAPE of 29.20% and flagging three contracts for '
-         'review (Buban, 2026).')
+         '2008).')
     para('These tools, however, share one blind spot: they learn what similar projects *have* cost, not what a project '
          '*should* cost. If past prices are padded, the model learns the padding. They also cannot give a contractor, a local '
          'government or a citizen a defensible starting price for a new building or bridge. Cost engineering has long answered '
@@ -529,12 +526,12 @@ def body(pp):
          'a ceiling. When a contract amount is entered, the system compares it with the ceiling, with an XGBoost estimate learned '
          'from past projects and with an Isolation Forest score, and combines the three into the BUHAY-AH Risk Index. The name '
          '*buhay*, Filipino for "life", reflects both the research brought to life as a working application and the lives that '
-         'depend on honest public infrastructure. Like CORA, BUHAY-AH is a screening layer: a flag calls for review and is never '
+         'depend on honest public infrastructure. BUHAY-AH is a screening layer: a flag calls for review and is never '
          'treated as proof of wrongdoing.')
 
     H('Research Gap and Rationale', 2)
-    para('Five gaps motivate this study. First, there is a **scope gap**. Local cost-screening research has focused on roads, '
-         'and CORA itself recommended extending the approach to buildings, bridges and other project types (Buban, 2026). '
+    para('Five gaps motivate this study. First, there is a **scope gap**. Machine-learning cost screening has focused on road '
+         'contracts (Larocque et al., 2025). '
          'Buildings and bridges have very different cost structures from pavements: vertical structural frames, masonry and '
          'finishes, mechanical, electrical, plumbing and fire protection works, piles, girders and substructures. A road model '
          'cannot price them.')
@@ -543,8 +540,8 @@ def body(pp):
          'quotation. Bottom-up estimates based on standards are the professional norm for fair pricing (GAO, 2020), but no '
          'open tool in the Philippines generates one from a plan and puts it beside a machine-learning check.')
     para('Third, there is a **validation gap**. Anomaly detectors in procurement are rarely tested against cases whose truth '
-         'is known. CORA could report which contracts Isolation Forest flagged but not how many padded contracts it missed, and '
-         'it recommended validating the flags (Buban, 2026). Without known positives, precision and recall cannot be measured.')
+         'is known. An unsupervised detector can report which contracts it flags but not how many padded contracts it '
+         'misses. Without known positives, precision and recall cannot be measured.')
     para('Fourth, there is a **design gap**. Cost tools assume that a plan already exists. Communities that only know what '
          'they need and how much they have cannot obtain an independent starting design and price, and no local study has '
          'treated the choice of storeys and capacity under a budget as an optimization problem that can be solved exactly.')
@@ -627,7 +624,7 @@ def body(pp):
          'hospitals, airport and seaport passenger terminals, land transport terminals for jeepneys, UV Express vans and buses, '
          'rigid runway, taxiway and apron pavements, and open-type piers and wharves on piles with causeways and RoRo ramps.')
     para('Air-traffic, navigation, medical and baggage equipment beyond the allowances, breakwater design, '
-         'roads (covered by CORA), flood-control structures, water supply systems, land acquisition, right-of-way, '
+         'roads, flood-control structures, water supply systems, land acquisition, right-of-way, '
          'design and supervision fees, furniture and equipment are excluded. Unit costs are indicative direct costs for 2025 '
          'based in Albay, adjusted by province location factors and a yearly cost index, and are meant to be replaced by the '
          'implementing office\'s current Detailed Unit Price Analysis or regional price data. Plan input accepts dimensions, '
@@ -982,7 +979,7 @@ return BOQ, EDC, ABC""")
          'record receives an anomaly score from its average path length (Liu et al., 2008):')
     eq('iforest')
     para('where *E*[*h*(*x*)] is the average path length of record *x* across trees, *c*(*n*) is the average path length of '
-         'an unsuccessful search in a tree of *n* records and *H* is the harmonic number. As in CORA, a statistically unusual '
+         'an unsuccessful search in a tree of *n* records and *H* is the harmonic number. A statistically unusual '
          'contract was reported only if its cost was also above both the model and the standards-based estimates. SHAP values '
          'were computed on the final XGBoost model with the exact tree path-dependent algorithm (Lundberg et al., 2018), so '
          'that each prediction splits into a base value and feature contributions:')
@@ -1019,7 +1016,7 @@ return BRI, status, φ, primary driver = argmax_j |z_j|""")
          'performance with the area under the ROC curve:')
     eq('prf')
     para('Four screening rules were compared: the standards-based rule (amount above the ceiling), the model residual rule '
-         '(amount more than 1.25 times the XGBoost LOOCV prediction), the CORA-style Isolation Forest flag, and the BUHAY-AH Risk '
+         '(amount more than 1.25 times the XGBoost LOOCV prediction), the Isolation Forest flag, and the BUHAY-AH Risk '
          'Index at 30.')
 
     H('3D Visualization', 3)
@@ -1269,8 +1266,8 @@ return BRI, status, φ, primary driver = argmax_j |z_j|""")
              [[LAB[k], f'{v:.4f}', (f'{R["vif_reduced"][k]:.4f}' if k in R['vif_reduced'] else 'removed')] for k, v in vf_r.items() if k != 'const'],
              'Variance Inflation Factor of the Bridge Predictors, Full and Reduced Models', widths=[2.6, 1.6, 1.8])
     para(f'For bridges (Table {pp.nt}), total length ({vf_r["TotalLength"]:.2f}) and deck area ({vf_r["DeckArea"]:.2f}) '
-         'showed severe multicollinearity, structurally expected because deck area is total length times deck width, the same '
-         'pattern CORA found between road length and pavement area (Buban, 2026). Superstructure type '
+         'showed severe multicollinearity, structurally expected because deck area is total length times deck width. '
+         'Superstructure type '
          f'({vf_r["SuperTypeIndex"]:.2f}) was also collinear with span length because span determines the girder system. '
          f'Removing {" and ".join(LAB[k] for k in R["mlr_dropped"])} brought every VIF to '
          f'{max(v for k, v in R["vif_reduced"].items() if k != "const"):.2f} or below.')
@@ -1336,8 +1333,7 @@ return BRI, status, φ, primary driver = argmax_j |z_j|""")
          f'identical R^2^ ({R["xgb_loocv"]["R2"]:.4f}). Training on log cost and splitting by superstructure type let it price '
          f'culverts and long bridges on their own terms. For buildings, however, XGBoost (MAPE {B["xgb_loocv"]["MAPE"]:.2f}%, '
          f'R^2^ = {B["xgb_loocv"]["R2"]:.4f}) did slightly worse than linear regression, because building cost in this benchmark '
-         'is close to linear in floor area and a tree ensemble approximates a straight line with steps. This differs from CORA, '
-         'where XGBoost outperformed regression on every metric for roads (Buban, 2026), and it supports Elmousalami\'s (2020) '
+         'is close to linear in floor area and a tree ensemble approximates a straight line with steps. This supports Elmousalami\'s (2020) '
          'observation that the best model depends on the cost structure of the asset.')
     pp.table(['ASPECT', 'MULTIPLE LINEAR REGRESSION', 'EXTREME GRADIENT BOOSTING'], [
         ['Buildings: R² / MAPE', f'{B["mlr_loocv"]["R2"]:.4f} / {B["mlr_loocv"]["MAPE"]:.2f}%', f'{B["xgb_loocv"]["R2"]:.4f} / {B["xgb_loocv"]["MAPE"]:.2f}%'],
@@ -1370,15 +1366,15 @@ return BRI, status, φ, primary driver = argmax_j |z_j|""")
             rows.append([f'{scope}: {SHORT[k]}', f'{v["Precision"]:.3f}', f'{v["Recall"]:.3f}', f'{v["F1"]:.3f}', f'{v["AUC"]:.3f}', f'{v["TP"]} / {v["FP"]} / {v["FN"]}'])
     pp.table(['SCOPE AND RULE', 'PRECISION', 'RECALL', 'F1', 'AUC', 'TP / FP / FN'], rows,
              'Detection Performance against Injected Overpricing', widths=[2.6, 0.8, 0.7, 0.6, 0.6, 1.0], size=8.5)
-    h, q, x, i_ = P['BUHAY-AH hybrid (BRI >= 30)'], P['QTO rule (OBR > ceiling)'], P['XGBoost residual (actual > 1.25 x predicted)'], P['Isolation Forest (CORA-style)']
+    h, q, x, i_ = P['BUHAY-AH hybrid (BRI >= 30)'], P['QTO rule (OBR > ceiling)'], P['XGBoost residual (actual > 1.25 x predicted)'], P['Isolation Forest alone']
     para(f'Across all projects, the BUHAY-AH Risk Index caught {h["TP"]} of 36 padded contracts (recall {h["Recall"]:.3f}) with '
          f'{h["FP"]} false alarms, for the highest F1-score ({h["F1"]:.3f}). The standards-based rule alone was the strongest single '
          f'signal: its continuous ratio reached the highest AUC ({q["AUC"]:.3f}) and its ceiling rule had good precision '
          f'({q["Precision"]:.3f}) but missed {q["FN"]} contracts whose padding stayed under the ceiling. The XGBoost residual rule '
          f'found {pct(x["Recall"], 1)} of the cases; because it learns from prices that include padding, part of the overpricing '
-         'becomes "normal" to it. The CORA-style Isolation Forest found only '
+         'becomes "normal" to it. The Isolation Forest alone found only '
          f'{pct(i_["Recall"], 1)} (AUC {i_["AUC"]:.3f}): a padded contract for an ordinary building is not unusual in its plan '
-         'features, so isolation alone cannot see it. This answers the validation gap that CORA left open and shows why a '
+         'features, so isolation alone cannot see it. This answers the validation gap and shows why a '
          'standards-based reference is needed.')
     para(f'By asset class, buildings were screened almost perfectly (BRI F1 = {B["detection"]["BUHAY-AH hybrid (BRI >= 30)"]["F1"]:.3f}, '
          f'recall {B["detection"]["BUHAY-AH hybrid (BRI >= 30)"]["Recall"]:.3f}). Bridges kept a high recall '
@@ -1585,7 +1581,7 @@ return BRI, status, φ, primary driver = argmax_j |z_j|""")
         '**Train the models for the extension types.** Retrain XGBoost and the Isolation Forest once hospital, terminal, '
         'airfield and port contracts are collected, and add pavement and port geotechnical data.',
         '**Extend to other project types.** Apply the same engine to flood-control structures, water systems and roads, '
-        'joining CORA and BUHAY-AH in one screening tool.',
+        'so that one screening tool covers all public works.',
         '**Pilot with oversight bodies and publish open data.** Test BUHAY-AH with a district engineering office, COA auditors and '
         'a local government, run a usability study, and publish screened records following the Open Contracting Data Standard '
         'and the CoST Infrastructure Data Standard.'], numbered=True)
@@ -1825,7 +1821,7 @@ SYM = {'GFA': 'GFA', 'Footprint': 'Footprint', 'Storeys': 'Storeys', 'Span': 'Sp
        'FoundationIndex': 'Foundation', 'PileLength': 'PileLength'}
 SHORT = {'QTO rule (OBR > ceiling)': 'standards-based rule (above ceiling)',
          'XGBoost residual (actual > 1.25 x predicted)': 'XGBoost residual (> 1.25 × predicted)',
-         'Isolation Forest (CORA-style)': 'Isolation Forest (CORA-style)', 'BUHAY-AH hybrid (BRI >= 30)': 'BUHAY-AH Risk Index (≥ 30)'}
+         'Isolation Forest alone': 'Isolation Forest alone', 'BUHAY-AH hybrid (BRI >= 30)': 'BUHAY-AH Risk Index (≥ 30)'}
 
 DEFINITIONS = [
     ('Approved Budget for the Contract (ABC)', 'The ceiling price a procuring entity sets for a contract. In this study, it is '
@@ -1883,14 +1879,13 @@ DEFINITIONS = [
 ]
 
 # NSTF 2026 (DM 058): the reference section should not exceed one page; the rest are listed in Appendix O
-MAIN_REFS = {'Association of Structural Engineers of the Philippines', 'Buban', 'Chen', 'Department of Public Works and Highways',
+MAIN_REFS = {'Association of Structural Engineers of the Philippines', 'Cebu Daily News', 'Chen', 'Department of Public Works and Highways',
              'Federal Aviation Administration', 'International Civil Aviation Organization', 'Liu', 'Lundberg',
              'Overseas Coastal Area Development Institute of Japan', 'Shapley', 'Transparency International', 'U'}
 REFERENCES = [
     'American Association of State Highway and Transportation Officials. (2020). *AASHTO LRFD bridge design specifications* (9th ed.).',
     'Association of Structural Engineers of the Philippines. (2016). *National structural code of the Philippines 2015: Volume I, buildings, towers and other vertical structures* (7th ed.).',
     'Batas Pambansa Blg. 344. (1983). *Accessibility law*.',
-    'Buban, E. M. C. (2026). *CORA: Computational outlier recognition and analytics for road construction cost prediction and potential anomaly detection via a hybrid machine learning system* [Unpublished research paper].',
     'Cebu Daily News. (2023, July 21). *COA: CCMC project contract price was bloated by P62M*. https://cebudailynews.inquirer.net/517377/coa-ccmc-project-contract-price-was-bloated-by-p62m',
     'Chen, T., & Guestrin, C. (2016). XGBoost: A scalable tree boosting system. In *Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining* (pp. 785–794). https://doi.org/10.1145/2939672.2939785',
     'Coffie, G. H., & Cudjoe, S. K. F. (2024). Using extreme gradient boosting (XGBoost) machine learning to predict construction cost overruns. *International Journal of Construction Management, 24*(16), 1742–1750. https://doi.org/10.1080/15623599.2023.2289754',

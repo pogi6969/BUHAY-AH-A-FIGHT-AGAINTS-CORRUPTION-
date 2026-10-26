@@ -247,7 +247,7 @@ def run(kind, df, report, models, scored):
     R['detection'] = {
         'QTO rule (OBR > ceiling)': detection(yt, (obr > ceil_ratio).astype(int), obr),
         'XGBoost residual (actual > 1.25 x predicted)': detection(yt, (ml_ratio > 1.25).astype(int), ml_ratio),
-        'Isolation Forest (CORA-style)': detection(yt, iso_flag.astype(int), iso_score),
+        'Isolation Forest alone': detection(yt, iso_flag.astype(int), iso_score),
         'BUHAY hybrid (BRI >= 30)': detection(yt, (risk >= BRI_FLAG).astype(int), risk),
     }
     sev = d.severity.values
@@ -336,7 +336,7 @@ def main():
     report['pooled'] = {
         'QTO rule (OBR > ceiling)': detection(yt, (obr > cr).astype(int), obr),
         'XGBoost residual (actual > 1.25 x predicted)': detection(yt, (mlr_ > 1.25).astype(int), mlr_),
-        'Isolation Forest (CORA-style)': detection(yt, isf, iso),
+        'Isolation Forest alone': detection(yt, isf, iso),
         'BUHAY hybrid (BRI >= 30)': detection(yt, (risk >= BRI_FLAG).astype(int), risk),
     }
     report['bri'] = {'weights': BRI_W, 'flag': BRI_FLAG, 'review': BRI_REVIEW}

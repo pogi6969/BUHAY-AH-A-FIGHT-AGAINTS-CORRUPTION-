@@ -27,7 +27,7 @@ DR = json.load(open(os.path.join(ROOT, 'research', 'outputs', 'design_results.js
 X = json.load(open(os.path.join(ROOT, 'research', 'outputs', 'extension_results.json')))
 B, R, P = M['building'], M['bridge'], M['pooled']
 HY = next(v for k, v in P.items() if 'hybrid' in k)
-ISO = P['Isolation Forest (CORA-style)']
+ISO = P['Isolation Forest alone']
 XO = X['benchmark']['overall']
 RED, DARK, WHITE = RGBColor(0x8B, 0x07, 0x07), RGBColor(0x5C, 0x03, 0x03), RGBColor(0xFF, 0xFF, 0xFF)
 FONT = 'ITC Avant Garde Gothic'
@@ -218,7 +218,6 @@ def build(full, name):
         ['Coffie & Cudjoe (2024)', 'XGBoost + SHAP', 'Explains cost overruns', 'No reference price'],
         ['Larocque et al. (2025)', 'Explainable ML', '11,646 road contracts', 'Roads only'],
         ['Liu et al. (2008)', 'Isolation Forest', 'Label-free anomalies', 'Misses ordinary padding'],
-        ['Buban (2026), CORA', 'MLR + XGBoost + IF', 'R² 0.8723, MAPE 29.20%', 'Recall unknown'],
         ['GAO (2020)', 'Should-cost estimating', 'Bottom-up fair price', 'No open tool'],
         ['ICAO (2022); OCDI (2009)', 'Aerodrome / port standards', 'Runway, pier rules', 'Not priced'],
     ], [4.4, 4.6, 4.8, 4.6], size=21, rowh=0.86)
@@ -381,11 +380,10 @@ def build(full, name):
             'Add geotechnical data for bridge and port piles.',
             'Connect current DPWH and PSA price data.',
             'Retrain the models for the extension types; calibrate thresholds by class.',
-            'Extend to flood control, water systems and roads with CORA.',
+            'Extend to flood control, water systems and roads.',
             'Pilot with oversight bodies; publish open contracting data.'], size=27)
         sl = page('REFERENCES')
         text(sl, 0.9, 2.2, 18.2, 8.8, [
-            'Buban, E. M. C. (2026). CORA: Computational outlier recognition and analytics for road construction cost prediction.',
             'Chen, T., & Guestrin, C. (2016). XGBoost: A scalable tree boosting system. KDD, 785–794.',
             'Department of Public Works and Highways. (2016). D.O. No. 197, s. 2016: Approved budget for the contract.',
             'Federal Aviation Administration. (2021). Airport pavement design and evaluation (AC 150/5320-6G).',
@@ -396,7 +394,8 @@ def build(full, name):
             'Shapley, L. S. (1953). A value for n-person games. Contributions to the Theory of Games II, 307–317.',
             'U.S. Government Accountability Office. (2020). Cost estimating and assessment guide (GAO-20-195G).'], size=19, bullets=False, space=6)
 
-    clone(prs, qa)
+    q = clone(prs, qa)
+    set_text(shape(q, 'TextBox 3'), 'Q & A', 164.81)   # one line on any substitute font
     clone(prs, thanks)
     # drop the ten original template slides
     lst = prs.slides._sldIdLst
