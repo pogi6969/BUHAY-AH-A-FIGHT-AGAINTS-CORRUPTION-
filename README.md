@@ -2,8 +2,9 @@
 
 Design, price and check public buildings, hospitals, airport, seaport and jeepney / UV Express / bus terminals, bridges, runways and piers.
 
-Lead researcher: **Enrique Miguel C. Buban**  
-Researchers: **Peter John A. Brimbuela**, **Dave Justin Ll. De Asis**, **Yeaseong Shin**
+Lead researcher: **Dave Justin Ll. De Asis**  
+Researchers: **Peter John A. Brimbuela**, **Yeaseong Shin**  
+Support group: **Yuriel**
 
 ## Links
 
